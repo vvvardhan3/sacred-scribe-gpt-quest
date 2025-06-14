@@ -1,10 +1,13 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import ChatHeader from '@/components/chat/ChatHeader';
 import MessageList from '@/components/chat/MessageList';
 import ChatInput from '@/components/chat/ChatInput';
+import ConversationSidebar from '@/components/chat/ConversationSidebar';
+import { useConversations } from '@/hooks/useConversations';
 
 interface Message {
   id: string;
@@ -21,8 +24,67 @@ const Chat = () => {
   const [expandedCitations, setExpandedCitations] = useState<{ [key: string]: boolean }>({});
   const { toast } = useToast();
 
+  const {
+    conversations,
+    activeConversationId,
+    setActiveConversationId,
+    createNewConversation,
+    updateConversation,
+    deleteConversation,
+    renameConversation,
+    getActiveConversation
+  } = useConversations();
+
+  // Load messages when active conversation changes
+  useEffect(() => {
+    const activeConv = getActiveConversation();
+    if (activeConv) {
+      const messagesWithDates = activeConv.messages.map((msg: any) => ({
+        ...msg,
+        timestamp: new Date(msg.timestamp)
+      }));
+      setMessages(messagesWithDates);
+    } else {
+      setMessages([]);
+    }
+  }, [activeConversationId, getActiveConversation]);
+
+  // Save messages to active conversation
+  useEffect(() => {
+    if (activeConversationId && messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      const title = messages.length === 1 && messages[0].role === 'user' 
+        ? messages[0].content.slice(0, 50) + (messages[0].content.length > 50 ? '...' : '')
+        : getActiveConversation()?.title || 'New Conversation';
+      
+      updateConversation(activeConversationId, {
+        messages,
+        lastMessage: lastMessage.content.slice(0, 100),
+        title
+      });
+    }
+  }, [messages, activeConversationId]);
+
+  const handleSelectConversation = (id: string) => {
+    setActiveConversationId(id);
+    setExpandedCitations({});
+  };
+
+  const handleCreateNew = () => {
+    const newId = createNewConversation();
+    setMessages([]);
+    setInput('');
+    setExpandedCitations({});
+  };
+
   const sendMessage = async () => {
     if (!input.trim()) return;
+
+    // Create new conversation if none is active
+    let currentConvId = activeConversationId;
+    if (!currentConvId) {
+      currentConvId = createNewConversation();
+    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -91,26 +153,48 @@ const Chat = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-red-50">
-      <ChatHeader />
-
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="h-[calc(100vh-200px)] flex flex-col bg-white rounded-2xl shadow-xl border border-orange-100">
-          <MessageList
-            messages={messages}
-            loading={loading}
-            expandedCitations={expandedCitations}
-            onToggleCitations={toggleCitations}
-            onSuggestionClick={handleSuggestionClick}
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full">
+          <ConversationSidebar
+            conversations={conversations}
+            activeConversationId={activeConversationId}
+            onSelectConversation={handleSelectConversation}
+            onCreateNew={handleCreateNew}
+            onRename={renameConversation}
+            onDelete={deleteConversation}
           />
+          
+          <SidebarInset className="flex-1">
+            <div className="flex flex-col h-screen">
+              <div className="flex items-center gap-2 p-4 border-b border-orange-100 bg-white/80 backdrop-blur-sm">
+                <SidebarTrigger />
+                <div className="flex-1">
+                  <ChatHeader />
+                </div>
+              </div>
 
-          <ChatInput
-            input={input}
-            loading={loading}
-            onInputChange={setInput}
-            onSendMessage={sendMessage}
-          />
+              <main className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
+                <div className="flex-1 flex flex-col bg-white rounded-2xl shadow-xl border border-orange-100">
+                  <MessageList
+                    messages={messages}
+                    loading={loading}
+                    expandedCitations={expandedCitations}
+                    onToggleCitations={toggleCitations}
+                    onSuggestionClick={handleSuggestionClick}
+                  />
+
+                  <ChatInput
+                    input={input}
+                    loading={loading}
+                    onInputChange={setInput}
+                    onSendMessage={sendMessage}
+                  />
+                </div>
+              </main>
+            </div>
+          </SidebarInset>
         </div>
-      </main>
+      </SidebarProvider>
     </div>
   );
 };
