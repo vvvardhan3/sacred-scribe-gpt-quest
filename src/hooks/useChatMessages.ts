@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -20,6 +21,7 @@ export const useChatMessages = (
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [expandedCitations, setExpandedCitations] = useState<{ [key: string]: boolean }>({});
+  const [titleGenerated, setTitleGenerated] = useState(false);
   const { toast } = useToast();
 
   // Load messages when active conversation changes
@@ -33,11 +35,13 @@ export const useChatMessages = (
       }));
       console.log('Loaded messages:', messagesWithDates);
       setMessages(messagesWithDates);
+      setTitleGenerated(!!activeConv.title && activeConv.title !== 'New Conversation');
     } else {
       console.log('No active conversation or no messages, resetting');
       setMessages([]);
+      setTitleGenerated(false);
     }
-  }, [activeConversationId, getActiveConversation]);
+  }, [activeConversationId]);
 
   const generateTitle = async (message: string): Promise<string> => {
     try {
@@ -72,8 +76,9 @@ export const useChatMessages = (
       const currentConv = getActiveConversation();
       let title = currentConv?.title || 'New Conversation';
       
-      // Generate AI title only for the first user message
-      if (messages.length >= 1 && messages[0].role === 'user' && (!currentConv?.title || currentConv.title === 'New Conversation')) {
+      // Generate AI title only for the first user message and only once
+      if (messages.length >= 1 && messages[0].role === 'user' && !titleGenerated) {
+        setTitleGenerated(true);
         generateTitle(messages[0].content).then(generatedTitle => {
           updateConversation(activeConversationId, {
             messages,
@@ -90,7 +95,7 @@ export const useChatMessages = (
         title
       });
     }
-  }, [messages, activeConversationId, getActiveConversation, updateConversation]);
+  }, [messages, activeConversationId]);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -188,6 +193,7 @@ export const useChatMessages = (
     setMessages([]);
     setInput('');
     setExpandedCitations({});
+    setTitleGenerated(false);
   };
 
   return {
