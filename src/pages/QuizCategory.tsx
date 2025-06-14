@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -59,14 +58,17 @@ const QuizCategory = () => {
       // Get the current session to ensure we have proper auth headers
       const { data: { session } } = await supabase.auth.getSession();
       
-      if (!session) {
+      if (!session?.access_token) {
         throw new Error('Please log in to generate a quiz');
       }
 
       console.log('User session found, calling edge function...');
       
       const { data, error } = await supabase.functions.invoke('quiz-generate', {
-        body: { category: decodeURIComponent(category || '') }
+        body: { category: decodeURIComponent(category || '') },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
 
       if (error) {

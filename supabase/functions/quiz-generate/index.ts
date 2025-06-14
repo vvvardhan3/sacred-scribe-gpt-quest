@@ -24,18 +24,23 @@ serve(async (req) => {
 
     console.log(`Starting quiz generation for category: ${category}`);
 
-    // Create Supabase client with service role key
+    // Create Supabase client with service role key for database operations
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Get user from the authorization header
     const authHeader = req.headers.get('authorization');
-    if (!authHeader) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.error('Missing or invalid authorization header');
       throw new Error('Authorization header is required');
     }
 
-    // Create client with anon key to get user info
+    // Extract the JWT token
+    const token = authHeader.replace('Bearer ', '');
+    console.log('Authorization token received, verifying user...');
+
+    // Create client with anon key to verify the JWT token
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabaseAnon = createClient(supabaseUrl, supabaseAnonKey, {
       global: {
@@ -45,7 +50,7 @@ serve(async (req) => {
       },
     });
 
-    const { data: { user }, error: userError } = await supabaseAnon.auth.getUser();
+    const { data: { user }, error: userError } = await supabaseAnon.auth.getUser(token);
     if (userError || !user) {
       console.error('Error getting user:', userError);
       throw new Error('User authentication failed');
