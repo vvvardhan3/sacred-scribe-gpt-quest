@@ -23,7 +23,12 @@ import {
   AlertDialogHeader, 
   AlertDialogTitle 
 } from '@/components/ui/alert-dialog';
-import { Plus, Edit2, Trash2, MessageSquare } from 'lucide-react';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Plus, Edit2, Trash2, MessageSquare, MoreHorizontal } from 'lucide-react';
 import { Conversation } from '@/hooks/useConversations';
 
 interface ConversationSidebarProps {
@@ -46,10 +51,12 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [openPopoverId, setOpenPopoverId] = useState<string | null>(null);
 
   const startEdit = (conv: Conversation) => {
     setEditingId(conv.id);
     setEditTitle(conv.title);
+    setOpenPopoverId(null);
   };
 
   const saveEdit = () => {
@@ -63,6 +70,11 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
   const cancelEdit = () => {
     setEditingId(null);
     setEditTitle('');
+  };
+
+  const handleDelete = (id: string) => {
+    setDeleteId(id);
+    setOpenPopoverId(null);
   };
 
   return (
@@ -98,11 +110,11 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
                   ) : (
                     conversations.map((conv) => (
                       <SidebarMenuItem key={conv.id}>
-                        <div className="group relative">
+                        <div className="relative flex items-center w-full">
                           <SidebarMenuButton
                             isActive={activeConversationId === conv.id}
                             onClick={() => onSelectConversation(conv.id)}
-                            className="w-full justify-start p-3 h-auto"
+                            className="flex-1 justify-start p-3 h-auto"
                           >
                             <div className="flex-1 min-w-0">
                               {editingId === conv.id ? (
@@ -127,30 +139,43 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
                           </SidebarMenuButton>
                           
                           {editingId !== conv.id && (
-                            <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 w-6 p-0"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  startEdit(conv);
-                                }}
-                              >
-                                <Edit2 className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setDeleteId(conv.id);
-                                }}
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
+                            <Popover 
+                              open={openPopoverId === conv.id} 
+                              onOpenChange={(open) => setOpenPopoverId(open ? conv.id : null)}
+                            >
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 ml-1 opacity-60 hover:opacity-100"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-32 p-1" align="end">
+                                <div className="flex flex-col">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="justify-start h-8 px-2"
+                                    onClick={() => startEdit(conv)}
+                                  >
+                                    <Edit2 className="h-3 w-3 mr-2" />
+                                    Edit
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="justify-start h-8 px-2 text-destructive hover:text-destructive"
+                                    onClick={() => handleDelete(conv.id)}
+                                  >
+                                    <Trash2 className="h-3 w-3 mr-2" />
+                                    Delete
+                                  </Button>
+                                </div>
+                              </PopoverContent>
+                            </Popover>
                           )}
                         </div>
                       </SidebarMenuItem>
