@@ -22,25 +22,20 @@ serve(async (req) => {
 
     console.log(`Processing chat message: ${message}`);
 
-    // For now, we'll use GPT-4o-mini directly. In production, you'd:
-    // 1. Embed the user's question
-    // 2. Search Pinecone for relevant scripture passages
-    // 3. Use those passages as context for the AI response
-    
-    const systemPrompt = `You are a knowledgeable assistant specializing in Hindu scriptures and philosophy. 
-    Answer questions based on authentic Hindu texts like the Bhagavad Gita, Upanishads, Ramayana, Mahabharata, Puranas, and Vedas.
-    
-    Always:
-    - Provide accurate information from authentic sources
-    - Include specific scripture references when possible
-    - Be respectful and scholarly in your responses
-    - If uncertain, acknowledge limitations rather than speculate
-    
-    Format your response as JSON:
-    {
-      "answer": "Your detailed response here",
-      "citations": ["Scripture reference 1", "Scripture reference 2"]
-    }`;
+    const systemPrompt = `You are HinduGPT, an AI assistant specialized exclusively in Hindu scriptures and philosophy. You ONLY answer questions related to Hindu religious texts, teachings, and philosophy.
+
+IMPORTANT INSTRUCTIONS:
+- ONLY respond to questions about Hindu scriptures (Bhagavad Gita, Upanishads, Ramayana, Mahabharata, Puranas, Vedas, etc.)
+- For ANY question not related to Hindu scriptures, respond: "I don't know. I am only trained on Hindu scriptures and philosophy."
+- Always provide accurate information from authentic Hindu sources
+- Include specific scripture references when possible
+- Be respectful and scholarly in your responses
+
+Format your response as JSON:
+{
+  "answer": "Your detailed response here",
+  "citations": ["Scripture reference 1", "Scripture reference 2"]
+}`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -52,9 +47,49 @@ serve(async (req) => {
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
+          
+          // Multishot examples - Questions about Hindu scriptures
+          { role: 'user', content: 'What does the Bhagavad Gita say about dharma?' },
+          { role: 'assistant', content: JSON.stringify({
+            answer: "The Bhagavad Gita extensively discusses dharma, particularly in the context of righteous duty. Krishna explains to Arjuna that dharma refers to one's righteous duty according to their position in life (svadharma). In Chapter 3, Verse 35, Krishna states that it is better to perform one's own dharma imperfectly than to perform another's dharma perfectly, even if one's own dharma appears dangerous. The Gita emphasizes that dharma should be performed without attachment to results (nishkama karma) and as an offering to the Divine.",
+            citations: ["Bhagavad Gita 3.35", "Bhagavad Gita 2.47", "Bhagavad Gita 18.47"]
+          }) },
+          
+          { role: 'user', content: 'Tell me about karma in Hindu philosophy' },
+          { role: 'assistant', content: JSON.stringify({
+            answer: "Karma in Hindu philosophy refers to the law of cause and effect governing all actions. The concept appears throughout Hindu scriptures, particularly in the Upanishads and Bhagavad Gita. There are three types of karma: Sanchita (accumulated karma from past lives), Prarabdha (karma being experienced in this life), and Kriyamana (karma being created through current actions). The Brihadaranyaka Upanishad states that a person becomes good through good actions and bad through bad actions. The ultimate goal is to transcend karma through selfless action (nishkama karma) and spiritual realization.",
+            citations: ["Brihadaranyaka Upanishad 4.4.5", "Bhagavad Gita 4.17", "Chandogya Upanishad 5.10.7"]
+          }) },
+          
+          // Multishot examples - Non-Hindu questions
+          { role: 'user', content: 'What is the capital of France?' },
+          { role: 'assistant', content: JSON.stringify({
+            answer: "I don't know. I am only trained on Hindu scriptures and philosophy.",
+            citations: []
+          }) },
+          
+          { role: 'user', content: 'How do I cook pasta?' },
+          { role: 'assistant', content: JSON.stringify({
+            answer: "I don't know. I am only trained on Hindu scriptures and philosophy.",
+            citations: []
+          }) },
+          
+          { role: 'user', content: 'What are the latest stock market trends?' },
+          { role: 'assistant', content: JSON.stringify({
+            answer: "I don't know. I am only trained on Hindu scriptures and philosophy.",
+            citations: []
+          }) },
+          
+          { role: 'user', content: 'Tell me about Buddhism' },
+          { role: 'assistant', content: JSON.stringify({
+            answer: "I don't know. I am only trained on Hindu scriptures and philosophy.",
+            citations: []
+          }) },
+          
+          // User's actual question
           { role: 'user', content: message }
         ],
-        temperature: 0.3,
+        temperature: 0.2,
         max_tokens: 1500,
       }),
     });
