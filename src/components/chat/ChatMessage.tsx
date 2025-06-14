@@ -20,6 +20,66 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   expandedCitations, 
   onToggleCitations 
 }) => {
+  // Function to generate online links for citations
+  const getCitationLink = (citation: string) => {
+    const lowerCitation = citation.toLowerCase();
+    
+    // Bhagavad Gita references
+    if (lowerCitation.includes('bhagavad gita') || lowerCitation.includes('gita')) {
+      const chapterMatch = citation.match(/(\d+)\.(\d+)/);
+      if (chapterMatch) {
+        return `https://www.holy-bhagavad-gita.org/chapter/${chapterMatch[1]}/verse/${chapterMatch[2]}`;
+      }
+      return 'https://www.holy-bhagavad-gita.org/';
+    }
+    
+    // Upanishads
+    if (lowerCitation.includes('upanishad')) {
+      if (lowerCitation.includes('brihadaranyaka')) {
+        return 'https://www.sacred-texts.com/hin/sbe15/index.htm';
+      }
+      if (lowerCitation.includes('chandogya')) {
+        return 'https://www.sacred-texts.com/hin/sbe01/index.htm';
+      }
+      if (lowerCitation.includes('katha')) {
+        return 'https://www.sacred-texts.com/hin/sbe15/sbe15054.htm';
+      }
+      if (lowerCitation.includes('mandukya')) {
+        return 'https://www.sacred-texts.com/hin/sbe15/sbe15071.htm';
+      }
+      return 'https://www.sacred-texts.com/hin/upan/index.htm';
+    }
+    
+    // Ramayana
+    if (lowerCitation.includes('ramayana')) {
+      return 'https://www.valmiki.iitk.ac.in/';
+    }
+    
+    // Mahabharata
+    if (lowerCitation.includes('mahabharata')) {
+      return 'https://www.sacred-texts.com/hin/maha/index.htm';
+    }
+    
+    // Puranas
+    if (lowerCitation.includes('purana')) {
+      if (lowerCitation.includes('vishnu')) {
+        return 'https://www.sacred-texts.com/hin/vp/index.htm';
+      }
+      if (lowerCitation.includes('shiva')) {
+        return 'https://www.sacred-texts.com/hin/psa/index.htm';
+      }
+      return 'https://www.sacred-texts.com/hin/index.htm#puranas';
+    }
+    
+    // Vedas
+    if (lowerCitation.includes('veda') || lowerCitation.includes('rig') || lowerCitation.includes('sama') || lowerCitation.includes('yajur') || lowerCitation.includes('atharva')) {
+      return 'https://www.sacred-texts.com/hin/rigveda/index.htm';
+    }
+    
+    // Default to Sacred Texts Hindu section
+    return 'https://www.sacred-texts.com/hin/index.htm';
+  };
+
   return (
     <div className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
       <div className={`flex items-start space-x-3 max-w-[85%] ${message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
@@ -58,9 +118,18 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
               {expandedCitations[message.id] && (
                 <div className="mt-2 p-3 bg-white rounded-lg border text-xs text-gray-700">
                   {message.citations.map((citation, index) => (
-                    <p key={index} className="mb-2 last:mb-0 leading-relaxed">
+                    <div key={index} className="mb-2 last:mb-0 leading-relaxed">
                       <span className="font-medium">#{index + 1}:</span> {citation}
-                    </p>
+                      <br />
+                      <a 
+                        href={getCitationLink(citation)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 underline text-xs mt-1 inline-block"
+                      >
+                        Read online →
+                      </a>
+                    </div>
                   ))}
                 </div>
               )}
