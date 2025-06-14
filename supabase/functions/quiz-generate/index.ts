@@ -23,10 +23,10 @@ serve(async (req) => {
 
     console.log(`Generating quiz for category: ${category}`);
 
-    // Create Supabase client
+    // Create Supabase client with service role key to bypass RLS
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Generate questions using OpenAI
     const prompt = `Generate 10 multiple-choice questions about ${category} from Hindu scriptures. 
