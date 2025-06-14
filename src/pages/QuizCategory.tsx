@@ -56,6 +56,15 @@ const QuizCategory = () => {
     try {
       console.log('Generating quiz for category:', decodeURIComponent(category || ''));
       
+      // Get the current session to ensure we have proper auth headers
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('Please log in to generate a quiz');
+      }
+
+      console.log('User session found, calling edge function...');
+      
       const { data, error } = await supabase.functions.invoke('quiz-generate', {
         body: { category: decodeURIComponent(category || '') }
       });
