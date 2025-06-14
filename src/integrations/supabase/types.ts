@@ -9,7 +9,157 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string | null
+          display_name: string
+          id: string
+          role: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_name: string
+          id: string
+          role?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          display_name?: string
+          id?: string
+          role?: string | null
+        }
+        Relationships: []
+      }
+      progress: {
+        Row: {
+          answers: Json | null
+          completed_at: string | null
+          id: string
+          quiz_id: string
+          score: number
+          total_questions: number
+          user_id: string
+        }
+        Insert: {
+          answers?: Json | null
+          completed_at?: string | null
+          id?: string
+          quiz_id: string
+          score: number
+          total_questions: number
+          user_id: string
+        }
+        Update: {
+          answers?: Json | null
+          completed_at?: string | null
+          id?: string
+          quiz_id?: string
+          score?: number
+          total_questions?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "progress_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      questions: {
+        Row: {
+          answer: string
+          choices: Json
+          created_at: string | null
+          explanation: string | null
+          id: string
+          quiz_id: string | null
+          text: string
+        }
+        Insert: {
+          answer: string
+          choices: Json
+          created_at?: string | null
+          explanation?: string | null
+          id?: string
+          quiz_id?: string | null
+          text: string
+        }
+        Update: {
+          answer?: string
+          choices?: Json
+          created_at?: string | null
+          explanation?: string | null
+          id?: string
+          quiz_id?: string | null
+          text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quizzes: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string | null
+          id: string
+          title: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          title: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      settings: {
+        Row: {
+          created_at: string | null
+          features: Json | null
+          id: string
+          plan_description: string | null
+          plan_name: string
+          price_monthly: number | null
+          stripe_price_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          features?: Json | null
+          id?: string
+          plan_description?: string | null
+          plan_name: string
+          price_monthly?: number | null
+          stripe_price_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          features?: Json | null
+          id?: string
+          plan_description?: string | null
+          plan_name?: string
+          price_monthly?: number | null
+          stripe_price_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
