@@ -38,12 +38,12 @@ const Chat = () => {
 
   const handleSelectConversation = (id: string) => {
     setActiveConversationId(id);
-    resetChat();
+    // Don't call resetChat here - let the useMessageState hook handle loading messages
   };
 
   const handleCreateNew = () => {
     const newId = createNewConversation();
-    resetChat();
+    resetChat(); // Only reset when creating a completely new conversation
   };
 
   return (

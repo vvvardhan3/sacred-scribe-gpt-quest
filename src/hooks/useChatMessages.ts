@@ -32,14 +32,16 @@ export const useChatMessages = (
 
   // Save messages to active conversation
   useEffect(() => {
-    handleTitleGeneration(
-      messages,
-      activeConversationId!,
-      titleGenerated,
-      setTitleGenerated,
-      updateConversation,
-      getActiveConversation
-    );
+    if (activeConversationId && messages.length > 0) {
+      handleTitleGeneration(
+        messages,
+        activeConversationId,
+        titleGenerated,
+        setTitleGenerated,
+        updateConversation,
+        getActiveConversation
+      );
+    }
   }, [messages, activeConversationId]);
 
   const sendMessage = async () => {
@@ -55,8 +57,9 @@ export const useChatMessages = (
     }
 
     const userMessage = createUserMessage(input);
-
     console.log('Adding user message:', userMessage);
+    
+    // Add user message immediately
     setMessages(prev => {
       const newMessages = [...prev, userMessage];
       console.log('Updated messages after user message:', newMessages);

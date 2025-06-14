@@ -12,17 +12,22 @@ export const useMessageState = (
   // Load messages when active conversation changes
   useEffect(() => {
     console.log('Loading messages for conversation:', activeConversationId);
-    const activeConv = getActiveConversation();
-    if (activeConv && activeConv.messages) {
-      const messagesWithDates = activeConv.messages.map((msg: any) => ({
-        ...msg,
-        timestamp: new Date(msg.timestamp)
-      }));
-      console.log('Loaded messages:', messagesWithDates);
-      setMessages(messagesWithDates);
-      setTitleGenerated(!!activeConv.title && activeConv.title !== 'New Conversation');
+    if (activeConversationId) {
+      const activeConv = getActiveConversation();
+      if (activeConv && activeConv.messages && activeConv.messages.length > 0) {
+        const messagesWithDates = activeConv.messages.map((msg: any) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp)
+        }));
+        console.log('Loaded messages:', messagesWithDates);
+        setMessages(messagesWithDates);
+        setTitleGenerated(!!activeConv.title && activeConv.title !== 'New Conversation');
+      } else {
+        console.log('No messages in conversation, keeping current messages');
+        setTitleGenerated(false);
+      }
     } else {
-      console.log('No active conversation or no messages, resetting');
+      console.log('No active conversation, resetting');
       setMessages([]);
       setTitleGenerated(false);
     }
