@@ -11,6 +11,8 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import QuizCategory from "./pages/QuizCategory";
+import QuizPlay from "./pages/QuizPlay";
+import QuizResults from "./pages/QuizResults";
 import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
 
@@ -35,6 +37,16 @@ const App = () => (
             <Route path="/quiz/category/:category" element={
               <AuthGuard>
                 <QuizCategory />
+              </AuthGuard>
+            } />
+            <Route path="/quiz/play/:quizId" element={
+              <AuthGuard>
+                <QuizPlay />
+              </AuthGuard>
+            } />
+            <Route path="/quiz/results/:progressId" element={
+              <AuthGuard>
+                <QuizResults />
               </AuthGuard>
             } />
             <Route path="/chat" element={

@@ -54,19 +54,20 @@ const QuizCategory = () => {
     setGenerating(true);
     
     try {
-      // TODO: Call Edge Function to generate quiz using OpenAI
-      // For now, create a placeholder quiz
-      const { data, error } = await supabase
-        .from('quizzes')
-        .insert({
-          title: `Introduction to ${decodeURIComponent(category || '')}`,
-          category: decodeURIComponent(category || ''),
-          description: `A comprehensive quiz covering the basics of ${decodeURIComponent(category || '')}`
-        })
-        .select()
-        .single();
+      console.log('Generating quiz for category:', decodeURIComponent(category || ''));
+      
+      const { data, error } = await supabase.functions.invoke('quiz-generate', {
+        body: { category: decodeURIComponent(category || '') }
+      });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to generate quiz');
+      }
 
       toast({
         title: "Quiz Generated!",
@@ -79,7 +80,7 @@ const QuizCategory = () => {
       console.error('Error generating quiz:', error);
       toast({
         title: "Error",
-        description: "Failed to generate quiz",
+        description: "Failed to generate quiz. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -116,7 +117,7 @@ const QuizCategory = () => {
             {decodeURIComponent(category || '')} Quizzes
           </h1>
           <p className="text-lg text-gray-600">
-            Test your knowledge with interactive quizzes
+            Test your knowledge with AI-generated quizzes
           </p>
         </div>
 

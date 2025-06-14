@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,35 +34,49 @@ const Chat = () => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = input;
     setInput('');
     setLoading(true);
 
     try {
-      // TODO: Call Edge Function to get AI response
-      // For now, create a mock response
+      console.log('Sending message to chat-ask function:', currentInput);
+
+      const { data, error } = await supabase.functions.invoke('chat-ask', {
+        body: { message: currentInput }
+      });
+
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: `I understand you're asking about "${input}". According to Hindu scriptures, this is a profound topic that requires careful study. The ancient texts provide guidance on this matter through various teachings and philosophical discussions.`,
-        citations: [
-          'Bhagavad Gita 2.47 - "You have a right to perform your prescribed duty, but not to the fruits of action."',
-          'Upanishads - Isha Upanishad 1 - "The entire universe is the creation of the Supreme Power."'
-        ],
+        content: data.answer,
+        citations: data.citations || [],
         timestamp: new Date()
       };
 
-      setTimeout(() => {
-        setMessages(prev => [...prev, assistantMessage]);
-        setLoading(false);
-      }, 1500);
+      setMessages(prev => [...prev, assistantMessage]);
 
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
         title: "Error",
-        description: "Failed to send message",
+        description: "Failed to send message. Please try again.",
         variant: "destructive"
       });
+      
+      // Add error message
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: "I apologize, but I'm unable to process your request at the moment. Please try again later.",
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setLoading(false);
     }
   };
