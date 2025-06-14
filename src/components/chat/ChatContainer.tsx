@@ -27,16 +27,18 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   onSuggestionClick
 }) => {
   return (
-    <div className="flex-1 flex flex-col bg-white rounded-2xl shadow-xl border border-orange-100">
+    <div className="flex flex-col h-full bg-white rounded-2xl shadow-xl border border-orange-100">
       <ChatHeader />
 
-      <MessageList
-        messages={messages}
-        loading={loading}
-        expandedCitations={expandedCitations}
-        onToggleCitations={onToggleCitations}
-        onSuggestionClick={onSuggestionClick}
-      />
+      <div className="flex-1 min-h-0">
+        <MessageList
+          messages={messages}
+          loading={loading}
+          expandedCitations={expandedCitations}
+          onToggleCitations={onToggleCitations}
+          onSuggestionClick={onSuggestionClick}
+        />
+      </div>
 
       <ChatInput
         input={input}

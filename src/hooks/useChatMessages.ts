@@ -25,14 +25,17 @@ export const useChatMessages = (
 
   // Load messages when active conversation changes
   useEffect(() => {
+    console.log('Loading messages for conversation:', activeConversationId);
     const activeConv = getActiveConversation();
-    if (activeConv) {
+    if (activeConv && activeConv.messages) {
       const messagesWithDates = activeConv.messages.map((msg: any) => ({
         ...msg,
         timestamp: new Date(msg.timestamp)
       }));
+      console.log('Loaded messages:', messagesWithDates);
       setMessages(messagesWithDates);
     } else {
+      console.log('No active conversation or no messages, resetting');
       setMessages([]);
     }
   }, [activeConversationId, getActiveConversation]);
@@ -40,6 +43,7 @@ export const useChatMessages = (
   // Save messages to active conversation
   useEffect(() => {
     if (activeConversationId && messages.length > 0) {
+      console.log('Saving messages to conversation:', activeConversationId, messages);
       const lastUserMessage = messages.filter(msg => msg.role === 'user').pop();
       const title = messages.length === 1 && messages[0].role === 'user' 
         ? messages[0].content.slice(0, 50) + (messages[0].content.length > 50 ? '...' : '')
@@ -56,9 +60,12 @@ export const useChatMessages = (
   const sendMessage = async () => {
     if (!input.trim()) return;
 
+    console.log('Sending message:', input);
+
     // Create new conversation if none is active
     let currentConvId = activeConversationId;
     if (!currentConvId) {
+      console.log('Creating new conversation');
       currentConvId = createNewConversation();
     }
 
@@ -69,7 +76,13 @@ export const useChatMessages = (
       timestamp: new Date()
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    console.log('Adding user message:', userMessage);
+    setMessages(prev => {
+      const newMessages = [...prev, userMessage];
+      console.log('Updated messages after user message:', newMessages);
+      return newMessages;
+    });
+    
     const currentInput = input;
     setInput('');
     setLoading(true);
@@ -86,6 +99,8 @@ export const useChatMessages = (
         throw error;
       }
 
+      console.log('Received response:', data);
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
@@ -94,7 +109,12 @@ export const useChatMessages = (
         timestamp: new Date()
       };
 
-      setMessages(prev => [...prev, assistantMessage]);
+      console.log('Adding assistant message:', assistantMessage);
+      setMessages(prev => {
+        const newMessages = [...prev, assistantMessage];
+        console.log('Updated messages after assistant message:', newMessages);
+        return newMessages;
+      });
 
     } catch (error) {
       console.error('Error sending message:', error);
@@ -110,6 +130,7 @@ export const useChatMessages = (
         content: "I apologize, but I'm unable to process your request at the moment. Please try again later.",
         timestamp: new Date()
       };
+      
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setLoading(false);
@@ -128,6 +149,7 @@ export const useChatMessages = (
   };
 
   const resetChat = () => {
+    console.log('Resetting chat');
     setMessages([]);
     setInput('');
     setExpandedCitations({});
