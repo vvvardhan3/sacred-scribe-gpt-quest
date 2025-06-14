@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -40,14 +39,50 @@ export const useChatMessages = (
     }
   }, [activeConversationId, getActiveConversation]);
 
+  const generateTitle = async (message: string): Promise<string> => {
+    try {
+      console.log('Generating AI title for:', message);
+      const { data, error } = await supabase.functions.invoke('generate-chat-title', {
+        body: { message }
+      });
+
+      if (error) {
+        console.error('Title generation error:', error);
+        throw error;
+      }
+
+      console.log('Generated title:', data.title);
+      return data.title;
+    } catch (error) {
+      console.error('Failed to generate AI title, using fallback:', error);
+      // Fallback to simple truncation
+      return message.slice(0, 30) + (message.length > 30 ? '...' : '');
+    }
+  };
+
   // Save messages to active conversation
   useEffect(() => {
     if (activeConversationId && messages.length > 0) {
       console.log('Saving messages to conversation:', activeConversationId, messages);
-      const lastUserMessage = messages.filter(msg => msg.role === 'user').pop();
-      const title = messages.length === 1 && messages[0].role === 'user' 
-        ? messages[0].content.slice(0, 50) + (messages[0].content.length > 50 ? '...' : '')
-        : getActiveConversation()?.title || 'New Conversation';
+      
+      // Filter only user messages for sidebar display
+      const userMessages = messages.filter(msg => msg.role === 'user');
+      const lastUserMessage = userMessages[userMessages.length - 1];
+      
+      const currentConv = getActiveConversation();
+      let title = currentConv?.title || 'New Conversation';
+      
+      // Generate AI title only for the first user message
+      if (messages.length >= 1 && messages[0].role === 'user' && (!currentConv?.title || currentConv.title === 'New Conversation')) {
+        generateTitle(messages[0].content).then(generatedTitle => {
+          updateConversation(activeConversationId, {
+            messages,
+            lastMessage: lastUserMessage ? lastUserMessage.content.slice(0, 100) : 'No messages yet',
+            title: generatedTitle
+          });
+        });
+        return;
+      }
       
       updateConversation(activeConversationId, {
         messages,
