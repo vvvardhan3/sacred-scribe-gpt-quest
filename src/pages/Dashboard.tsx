@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookOpen, MessageCircle, Crown, LogOut } from 'lucide-react';
+import { BookOpen, MessageCircle, LogOut } from 'lucide-react';
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
@@ -41,7 +41,7 @@ const Dashboard = () => {
           <p className="text-lg text-gray-600">Explore Hindu scriptures through interactive quizzes and AI-powered conversations</p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 mb-8">
+        <div className="grid md:grid-cols-2 gap-8">
           {/* Quiz Section */}
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
@@ -95,55 +95,6 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </div>
-
-        {/* Subscription Section */}
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Crown className="w-6 h-6 mr-2 text-yellow-600" />
-              Subscription Plans
-            </CardTitle>
-            <CardDescription>
-              Upgrade for unlimited access and premium features
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="p-4 border rounded-lg">
-                <h4 className="font-bold text-lg">Free</h4>
-                <p className="text-gray-600 text-sm mb-2">Basic access</p>
-                <p className="text-2xl font-bold">$0/month</p>
-                <ul className="text-sm text-gray-600 mt-2">
-                  <li>• 5 quizzes per month</li>
-                  <li>• Basic chat support</li>
-                  <li>• Scripture references</li>
-                </ul>
-              </div>
-              <div className="p-4 border rounded-lg bg-orange-50">
-                <h4 className="font-bold text-lg">Premium</h4>
-                <p className="text-gray-600 text-sm mb-2">Unlimited access</p>
-                <p className="text-2xl font-bold">$9.99/month</p>
-                <ul className="text-sm text-gray-600 mt-2">
-                  <li>• Unlimited quizzes</li>
-                  <li>• Advanced AI chat</li>
-                  <li>• Detailed analytics</li>
-                  <li>• Priority support</li>
-                </ul>
-              </div>
-              <div className="p-4 border rounded-lg">
-                <h4 className="font-bold text-lg">Pro</h4>
-                <p className="text-gray-600 text-sm mb-2">Professional tier</p>
-                <p className="text-2xl font-bold">$19.99/month</p>
-                <ul className="text-sm text-gray-600 mt-2">
-                  <li>• Everything in Premium</li>
-                  <li>• Custom quiz creation</li>
-                  <li>• API access</li>
-                  <li>• Admin dashboard</li>
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </main>
     </div>
   );
