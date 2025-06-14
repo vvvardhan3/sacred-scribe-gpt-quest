@@ -1,7 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import ChatHeader from '@/components/chat/ChatHeader';
 import MessageList from '@/components/chat/MessageList';
@@ -52,14 +54,14 @@ const Chat = () => {
   // Save messages to active conversation
   useEffect(() => {
     if (activeConversationId && messages.length > 0) {
-      const lastMessage = messages[messages.length - 1];
+      const lastUserMessage = messages.filter(msg => msg.role === 'user').pop();
       const title = messages.length === 1 && messages[0].role === 'user' 
         ? messages[0].content.slice(0, 50) + (messages[0].content.length > 50 ? '...' : '')
         : getActiveConversation()?.title || 'New Conversation';
       
       updateConversation(activeConversationId, {
         messages,
-        lastMessage: lastMessage.content.slice(0, 100),
+        lastMessage: lastUserMessage ? lastUserMessage.content.slice(0, 100) : 'No messages yet',
         title
       });
     }
@@ -166,15 +168,23 @@ const Chat = () => {
           
           <SidebarInset className="flex-1">
             <div className="flex flex-col h-screen">
+              {/* Top Navigation Bar */}
               <div className="flex items-center gap-2 p-4 border-b border-orange-100 bg-white/80 backdrop-blur-sm">
                 <SidebarTrigger />
-                <div className="flex-1">
-                  <ChatHeader />
+                <Link to="/dashboard">
+                  <Button variant="ghost" size="sm" className="hover:bg-orange-100">
+                    ← Back to Dashboard
+                  </Button>
+                </Link>
+                <div className="flex items-center ml-4">
+                  <h1 className="text-xl font-semibold text-gray-900">AI Scripture Chat</h1>
                 </div>
               </div>
 
               <main className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
                 <div className="flex-1 flex flex-col bg-white rounded-2xl shadow-xl border border-orange-100">
+                  <ChatHeader />
+
                   <MessageList
                     messages={messages}
                     loading={loading}
