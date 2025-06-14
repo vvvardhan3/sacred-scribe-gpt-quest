@@ -36,7 +36,7 @@ serve(async (req) => {
     - Include the correct answer
     - Provide a brief explanation with scripture reference
     
-    Return JSON in this exact format:
+    Return ONLY valid JSON in this exact format without any markdown formatting:
     {
       "questions": [
         {
@@ -59,7 +59,7 @@ serve(async (req) => {
         messages: [
           { 
             role: 'system', 
-            content: 'You are an expert on Hindu scriptures. Generate accurate quiz questions with proper citations from authentic texts.' 
+            content: 'You are an expert on Hindu scriptures. Generate accurate quiz questions with proper citations from authentic texts. Return ONLY valid JSON without any markdown formatting or code blocks.' 
           },
           { role: 'user', content: prompt }
         ],
@@ -73,9 +73,12 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const content = data.choices[0].message.content;
+    let content = data.choices[0].message.content;
     
     console.log('OpenAI response:', content);
+    
+    // Clean up the response - remove markdown code blocks if present
+    content = content.replace(/```json\s*/, '').replace(/```\s*$/, '').trim();
     
     let questionsData;
     try {
@@ -83,6 +86,10 @@ serve(async (req) => {
     } catch (e) {
       console.error('Failed to parse OpenAI response:', content);
       throw new Error('Invalid response format from OpenAI');
+    }
+
+    if (!questionsData.questions || !Array.isArray(questionsData.questions)) {
+      throw new Error('Invalid questions format from OpenAI');
     }
 
     // Create quiz in database
