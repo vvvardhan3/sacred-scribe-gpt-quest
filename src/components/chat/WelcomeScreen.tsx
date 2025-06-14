@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Bot } from 'lucide-react';
 
 interface WelcomeScreenProps {
   onSuggestionClick: (suggestion: string) => void;
@@ -17,7 +16,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSuggestionClick }) => {
   return (
     <div className="flex flex-col items-center justify-center h-full text-center py-12">
       <div className="w-20 h-20 bg-gradient-to-br from-orange-100 to-red-100 rounded-full flex items-center justify-center mb-6">
-        <Bot className="w-10 h-10 text-orange-600" />
+        <span className="text-orange-600 text-2xl font-bold">AI</span>
       </div>
       <h3 className="text-xl font-semibold text-gray-900 mb-2">Welcome to HinduGPT</h3>
       <p className="text-gray-600 mb-6 max-w-md">Start a conversation about Hindu scriptures, philosophy, and teachings. I'm here to help!</p>

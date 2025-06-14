@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { User, Bot, ChevronDown, ChevronRight } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -30,11 +29,9 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             ? 'bg-gradient-to-br from-blue-500 to-purple-500' 
             : 'bg-gradient-to-br from-orange-500 to-red-500'
         }`}>
-          {message.role === 'user' ? (
-            <User className="w-4 h-4 text-white" />
-          ) : (
-            <Bot className="w-4 h-4 text-white" />
-          )}
+          <span className="text-white text-sm font-medium">
+            {message.role === 'user' ? 'U' : 'AI'}
+          </span>
         </div>
         
         {/* Message Content */}
@@ -52,11 +49,9 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 onClick={() => onToggleCitations(message.id)}
                 className="flex items-center text-xs text-gray-500 hover:text-gray-700 transition-colors"
               >
-                {expandedCitations[message.id] ? (
-                  <ChevronDown className="w-3 h-3 mr-1" />
-                ) : (
-                  <ChevronRight className="w-3 h-3 mr-1" />
-                )}
+                <span className="mr-1">
+                  {expandedCitations[message.id] ? '▼' : '▶'}
+                </span>
                 References ({message.citations.length})
               </button>
               

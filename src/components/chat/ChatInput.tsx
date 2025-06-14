@@ -2,7 +2,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send } from 'lucide-react';
 
 interface ChatInputProps {
   input: string;
@@ -42,7 +41,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           disabled={loading || !input.trim()}
           className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-lg"
         >
-          <Send className="w-4 h-4" />
+          Send
         </Button>
       </div>
     </div>
