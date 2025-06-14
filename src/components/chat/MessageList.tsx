@@ -3,14 +3,7 @@ import React, { useRef, useEffect } from 'react';
 import ChatMessage from './ChatMessage';
 import LoadingMessage from './LoadingMessage';
 import WelcomeScreen from './WelcomeScreen';
-
-interface Message {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  citations?: string[];
-  timestamp: Date;
-}
+import { Message } from '@/types/chat';
 
 interface MessageListProps {
   messages: Message[];

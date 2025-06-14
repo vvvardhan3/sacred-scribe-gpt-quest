@@ -3,7 +3,7 @@ import React from 'react';
 import ChatHeader from './ChatHeader';
 import MessageList from './MessageList';
 import ChatInput from './ChatInput';
-import { Message } from '@/hooks/useChatMessages';
+import { Message } from '@/types/chat';
 
 interface ChatContainerProps {
   messages: Message[];
