@@ -1,15 +1,17 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Message } from '@/types/chat';
+import { useMessageState } from './useMessageState';
+import { 
+  sendMessageToAPI, 
+  createUserMessage, 
+  createAssistantMessage, 
+  createErrorMessage,
+  handleTitleGeneration 
+} from '@/utils/messageOperations';
 
-export interface Message {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  citations?: string[];
-  timestamp: Date;
-}
+export { Message } from '@/types/chat';
 
 export const useChatMessages = (
   activeConversationId: string | null,
@@ -17,84 +19,29 @@ export const useChatMessages = (
   updateConversation: (id: string, updates: any) => void,
   createNewConversation: () => string
 ) => {
-  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [expandedCitations, setExpandedCitations] = useState<{ [key: string]: boolean }>({});
-  const [titleGenerated, setTitleGenerated] = useState(false);
   const { toast } = useToast();
 
-  // Load messages when active conversation changes
-  useEffect(() => {
-    console.log('Loading messages for conversation:', activeConversationId);
-    const activeConv = getActiveConversation();
-    if (activeConv && activeConv.messages) {
-      const messagesWithDates = activeConv.messages.map((msg: any) => ({
-        ...msg,
-        timestamp: new Date(msg.timestamp)
-      }));
-      console.log('Loaded messages:', messagesWithDates);
-      setMessages(messagesWithDates);
-      setTitleGenerated(!!activeConv.title && activeConv.title !== 'New Conversation');
-    } else {
-      console.log('No active conversation or no messages, resetting');
-      setMessages([]);
-      setTitleGenerated(false);
-    }
-  }, [activeConversationId]);
-
-  const generateTitle = async (message: string): Promise<string> => {
-    try {
-      console.log('Generating AI title for:', message);
-      const { data, error } = await supabase.functions.invoke('generate-chat-title', {
-        body: { message }
-      });
-
-      if (error) {
-        console.error('Title generation error:', error);
-        throw error;
-      }
-
-      console.log('Generated title:', data.title);
-      return data.title;
-    } catch (error) {
-      console.error('Failed to generate AI title, using fallback:', error);
-      // Fallback to simple truncation
-      return message.slice(0, 30) + (message.length > 30 ? '...' : '');
-    }
-  };
+  const {
+    messages,
+    setMessages,
+    titleGenerated,
+    setTitleGenerated,
+    resetMessages
+  } = useMessageState(activeConversationId, getActiveConversation);
 
   // Save messages to active conversation
   useEffect(() => {
-    if (activeConversationId && messages.length > 0) {
-      console.log('Saving messages to conversation:', activeConversationId, messages);
-      
-      // Filter only user messages for sidebar display
-      const userMessages = messages.filter(msg => msg.role === 'user');
-      const lastUserMessage = userMessages[userMessages.length - 1];
-      
-      const currentConv = getActiveConversation();
-      let title = currentConv?.title || 'New Conversation';
-      
-      // Generate AI title only for the first user message and only once
-      if (messages.length >= 1 && messages[0].role === 'user' && !titleGenerated) {
-        setTitleGenerated(true);
-        generateTitle(messages[0].content).then(generatedTitle => {
-          updateConversation(activeConversationId, {
-            messages,
-            lastMessage: lastUserMessage ? lastUserMessage.content.slice(0, 100) : 'No messages yet',
-            title: generatedTitle
-          });
-        });
-        return;
-      }
-      
-      updateConversation(activeConversationId, {
-        messages,
-        lastMessage: lastUserMessage ? lastUserMessage.content.slice(0, 100) : 'No messages yet',
-        title
-      });
-    }
+    handleTitleGeneration(
+      messages,
+      activeConversationId!,
+      titleGenerated,
+      setTitleGenerated,
+      updateConversation,
+      getActiveConversation
+    );
   }, [messages, activeConversationId]);
 
   const sendMessage = async () => {
@@ -109,12 +56,7 @@ export const useChatMessages = (
       currentConvId = createNewConversation();
     }
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: input,
-      timestamp: new Date()
-    };
+    const userMessage = createUserMessage(input);
 
     console.log('Adding user message:', userMessage);
     setMessages(prev => {
@@ -128,26 +70,8 @@ export const useChatMessages = (
     setLoading(true);
 
     try {
-      console.log('Sending message to chat-ask function:', currentInput);
-
-      const { data, error } = await supabase.functions.invoke('chat-ask', {
-        body: { message: currentInput }
-      });
-
-      if (error) {
-        console.error('Supabase function error:', error);
-        throw error;
-      }
-
-      console.log('Received response:', data);
-
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: data.answer,
-        citations: data.citations || [],
-        timestamp: new Date()
-      };
+      const data = await sendMessageToAPI(currentInput);
+      const assistantMessage = createAssistantMessage(data.answer, data.citations);
 
       console.log('Adding assistant message:', assistantMessage);
       setMessages(prev => {
@@ -164,13 +88,7 @@ export const useChatMessages = (
         variant: "destructive"
       });
       
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: "I apologize, but I'm unable to process your request at the moment. Please try again later.",
-        timestamp: new Date()
-      };
-      
+      const errorMessage = createErrorMessage();
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setLoading(false);
@@ -190,10 +108,9 @@ export const useChatMessages = (
 
   const resetChat = () => {
     console.log('Resetting chat');
-    setMessages([]);
+    resetMessages();
     setInput('');
     setExpandedCitations({});
-    setTitleGenerated(false);
   };
 
   return {
