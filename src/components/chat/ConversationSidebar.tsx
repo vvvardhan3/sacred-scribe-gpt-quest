@@ -25,7 +25,6 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Plus, Edit2, Trash2, MessageSquare } from 'lucide-react';
 import { Conversation } from '@/hooks/useConversations';
-import { formatDistanceToNow } from 'date-fns';
 
 interface ConversationSidebarProps {
   conversations: Conversation[];
@@ -120,17 +119,9 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
                                   onClick={(e) => e.stopPropagation()}
                                 />
                               ) : (
-                                <>
-                                  <div className="font-medium text-sm truncate">
-                                    {conv.title}
-                                  </div>
-                                  <div className="text-xs text-muted-foreground truncate">
-                                    {conv.lastMessage || 'No messages yet'}
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    {formatDistanceToNow(conv.timestamp, { addSuffix: true })}
-                                  </div>
-                                </>
+                                <div className="font-medium text-sm truncate">
+                                  {conv.title}
+                                </div>
                               )}
                             </div>
                           </SidebarMenuButton>
