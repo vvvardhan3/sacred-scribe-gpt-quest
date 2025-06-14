@@ -1,12 +1,13 @@
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Clock } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Question {
   id: string;
@@ -25,14 +26,14 @@ interface Quiz {
 
 const QuizPlay = () => {
   const { quizId } = useParams<{ quizId: string }>();
-  const { user } = useAuth();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { toast } = useToast();
   
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [userAnswers, setUserAnswers] = useState<{ [key: string]: string }>({});
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedAnswers, setSelectedAnswers] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -59,15 +60,25 @@ const QuizPlay = () => {
         .from('questions')
         .select('*')
         .eq('quiz_id', quizId)
-        .order('created_at');
+        .order('created_at', { ascending: true });
 
       if (questionsError) throw questionsError;
-      setQuestions(questionsData || []);
+      
+      // Transform the data to match our interface
+      const transformedQuestions: Question[] = questionsData.map(q => ({
+        id: q.id,
+        text: q.text,
+        choices: Array.isArray(q.choices) ? q.choices as string[] : [],
+        answer: q.answer,
+        explanation: q.explanation || ''
+      }));
+      
+      setQuestions(transformedQuestions);
     } catch (error) {
       console.error('Error fetching quiz data:', error);
       toast({
         title: "Error",
-        description: "Failed to load quiz",
+        description: "Failed to load quiz data",
         variant: "destructive"
       });
     } finally {
@@ -76,25 +87,25 @@ const QuizPlay = () => {
   };
 
   const handleAnswerSelect = (answer: string) => {
-    setUserAnswers(prev => ({
+    setSelectedAnswers(prev => ({
       ...prev,
-      [questions[currentQuestionIndex].id]: answer
+      [questions[currentQuestion].id]: answer
     }));
   };
 
-  const nextQuestion = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
+  const handleNext = () => {
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion(prev => prev + 1);
     }
   };
 
-  const previousQuestion = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev - 1);
+  const handlePrevious = () => {
+    if (currentQuestion > 0) {
+      setCurrentQuestion(prev => prev - 1);
     }
   };
 
-  const submitQuiz = async () => {
+  const handleSubmit = async () => {
     if (!user || !quiz) return;
 
     setSubmitting(true);
@@ -102,20 +113,21 @@ const QuizPlay = () => {
       // Calculate score
       let score = 0;
       questions.forEach(question => {
-        if (userAnswers[question.id] === question.answer) {
+        const userAnswer = selectedAnswers[question.id];
+        if (userAnswer === question.answer) {
           score++;
         }
       });
 
-      // Save progress to database
-      const { data, error } = await supabase
+      // Save progress
+      const { data: progressData, error } = await supabase
         .from('progress')
         .insert({
           user_id: user.id,
           quiz_id: quiz.id,
-          score: score,
+          score,
           total_questions: questions.length,
-          answers: userAnswers
+          answers: selectedAnswers
         })
         .select()
         .single();
@@ -127,8 +139,7 @@ const QuizPlay = () => {
         description: `You scored ${score} out of ${questions.length}`,
       });
 
-      // Navigate to results page
-      navigate(`/quiz/results/${data.id}`);
+      navigate(`/quiz/results/${progressData.id}`);
     } catch (error) {
       console.error('Error submitting quiz:', error);
       toast({
@@ -151,100 +162,110 @@ const QuizPlay = () => {
 
   if (!quiz || questions.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-100 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <Card>
-          <CardContent className="p-6">
-            <p className="text-center text-gray-600">Quiz not found or no questions available.</p>
-            <Link to="/dashboard" className="block mt-4">
-              <Button className="w-full">Back to Dashboard</Button>
-            </Link>
+          <CardHeader>
+            <CardTitle>Quiz Not Found</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>The quiz you're looking for doesn't exist or has no questions.</p>
+            <Button onClick={() => navigate('/dashboard')} className="mt-4">
+              Back to Dashboard
+            </Button>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  const currentQuestion = questions[currentQuestionIndex];
-  const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+  const currentQ = questions[currentQuestion];
+  const progress = ((currentQuestion + 1) / questions.length) * 100;
+  const allAnswered = questions.every(q => selectedAnswers[q.id]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-100">
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-4">
-            <Link to={`/quiz/category/${encodeURIComponent(quiz.category)}`}>
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Category
-              </Button>
-            </Link>
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <Clock className="w-4 h-4" />
-              <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
+            <div>
+              <h1 className="text-xl font-semibold">{quiz.title}</h1>
+              <p className="text-sm text-gray-600">{quiz.category}</p>
             </div>
+            <Button variant="ghost" onClick={() => navigate('/dashboard')}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Exit Quiz
+            </Button>
           </div>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">{quiz.title}</h1>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className="bg-orange-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            ></div>
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm font-medium text-gray-700">
+              Question {currentQuestion + 1} of {questions.length}
+            </span>
+            <span className="text-sm text-gray-500">
+              {Math.round(progress)}% Complete
+            </span>
           </div>
+          <Progress value={progress} className="w-full" />
         </div>
 
-        <Card>
+        <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="text-lg">{currentQuestion.text}</CardTitle>
+            <CardTitle className="text-lg">{currentQ.text}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3 mb-6">
-              {currentQuestion.choices.map((choice, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleAnswerSelect(choice.charAt(0))}
-                  className={`w-full text-left p-4 rounded-lg border transition-colors ${
-                    userAnswers[currentQuestion.id] === choice.charAt(0)
-                      ? 'bg-orange-100 border-orange-500'
-                      : 'bg-white border-gray-200 hover:bg-gray-50'
-                  }`}
-                >
-                  {choice}
-                </button>
+            <div className="space-y-3">
+              {currentQ.choices.map((choice, index) => (
+                <div key={index} className="flex items-center space-x-3">
+                  <input
+                    type="radio"
+                    id={`choice-${index}`}
+                    name="answer"
+                    value={choice.charAt(0)}
+                    checked={selectedAnswers[currentQ.id] === choice.charAt(0)}
+                    onChange={(e) => handleAnswerSelect(e.target.value)}
+                    className="w-4 h-4 text-primary"
+                  />
+                  <label
+                    htmlFor={`choice-${index}`}
+                    className="flex-1 cursor-pointer text-gray-700 hover:text-gray-900"
+                  >
+                    {choice}
+                  </label>
+                </div>
               ))}
-            </div>
-
-            <div className="flex justify-between">
-              <Button
-                variant="outline"
-                onClick={previousQuestion}
-                disabled={currentQuestionIndex === 0}
-              >
-                Previous
-              </Button>
-
-              {currentQuestionIndex === questions.length - 1 ? (
-                <Button
-                  onClick={submitQuiz}
-                  disabled={submitting || Object.keys(userAnswers).length < questions.length}
-                >
-                  {submitting ? 'Submitting...' : 'Submit Quiz'}
-                </Button>
-              ) : (
-                <Button
-                  onClick={nextQuestion}
-                  disabled={!userAnswers[currentQuestion.id]}
-                >
-                  Next
-                </Button>
-              )}
             </div>
           </CardContent>
         </Card>
+
+        <div className="flex justify-between items-center">
+          <Button
+            variant="outline"
+            onClick={handlePrevious}
+            disabled={currentQuestion === 0}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Previous
+          </Button>
+
+          {currentQuestion === questions.length - 1 ? (
+            <Button
+              onClick={handleSubmit}
+              disabled={!allAnswered || submitting}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {submitting ? 'Submitting...' : 'Submit Quiz'}
+            </Button>
+          ) : (
+            <Button onClick={handleNext}>
+              Next
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          )}
+        </div>
       </main>
     </div>
   );
