@@ -29,11 +29,36 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Check existing quizzes
+    // Get user from the authorization header
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader) {
+      throw new Error('Authorization header is required');
+    }
+
+    // Create client with anon key to get user info
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabaseAnon = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: {
+          authorization: authHeader,
+        },
+      },
+    });
+
+    const { data: { user }, error: userError } = await supabaseAnon.auth.getUser();
+    if (userError || !user) {
+      console.error('Error getting user:', userError);
+      throw new Error('User authentication failed');
+    }
+
+    console.log(`User authenticated: ${user.id}`);
+
+    // Check existing quizzes for this user
     const { data: existingQuizzes, error: fetchError } = await supabase
       .from('quizzes')
       .select('id, title')
-      .eq('category', category);
+      .eq('category', category)
+      .eq('user_id', user.id);
 
     if (fetchError) {
       console.error('Error fetching existing quizzes:', fetchError);
@@ -41,7 +66,7 @@ serve(async (req) => {
     }
 
     const quizNumber = (existingQuizzes?.length || 0) + 1;
-    console.log(`This will be quiz #${quizNumber} for category ${category}`);
+    console.log(`This will be quiz #${quizNumber} for category ${category} for user ${user.id}`);
     console.log(`Existing quizzes:`, existingQuizzes?.map(q => q.title));
 
     // Create a simple, focused prompt for OpenAI
@@ -154,7 +179,7 @@ Return only valid JSON in this exact format:
       }
     }
 
-    // Create quiz in database
+    // Create quiz in database with user_id
     const quizTitle = `${category} Quiz #${quizNumber}`;
     console.log('Creating quiz in database:', quizTitle);
     
@@ -163,7 +188,8 @@ Return only valid JSON in this exact format:
       .insert({
         title: quizTitle,
         category: category,
-        description: `Test your knowledge of ${category} scriptures`
+        description: `Test your knowledge of ${category} scriptures`,
+        user_id: user.id
       })
       .select()
       .single();

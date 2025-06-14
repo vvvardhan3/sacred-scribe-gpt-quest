@@ -113,6 +113,7 @@ export type Database = {
           description: string | null
           id: string
           title: string
+          user_id: string
         }
         Insert: {
           category: string
@@ -120,6 +121,7 @@ export type Database = {
           description?: string | null
           id?: string
           title: string
+          user_id: string
         }
         Update: {
           category?: string
@@ -127,6 +129,7 @@ export type Database = {
           description?: string | null
           id?: string
           title?: string
+          user_id?: string
         }
         Relationships: []
       }
