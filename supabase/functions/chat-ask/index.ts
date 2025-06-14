@@ -28,14 +28,25 @@ IMPORTANT INSTRUCTIONS:
 - ONLY respond to questions about Hindu scriptures (Bhagavad Gita, Upanishads, Ramayana, Mahabharata, Puranas, Vedas, etc.)
 - For ANY question not related to Hindu scriptures, respond: "I don't know. I am only trained on Hindu scriptures and philosophy."
 - Always provide accurate information from authentic Hindu sources
-- Include specific scripture references when possible
+- ALWAYS include EXACT and SPECIFIC scripture references with chapter and verse numbers when possible
+- Use precise citation formats like "Bhagavad Gita 2.47", "Brihadaranyaka Upanishad 4.4.5", "Ramayana, Ayodhya Kanda 2.25"
+- When referencing Upanishads, include the specific Upanishad name and section/verse
+- For Puranas, include the specific Purana name and relevant section
+- For Vedas, include the specific Veda, mandala, and hymn number when possible
 - Be respectful and scholarly in your responses
 
 Format your response as JSON:
 {
   "answer": "Your detailed response here",
-  "citations": ["Scripture reference 1", "Scripture reference 2"]
-}`;
+  "citations": ["Exact scripture reference 1 with chapter.verse", "Exact scripture reference 2 with chapter.verse"]
+}
+
+CITATION EXAMPLES:
+- "Bhagavad Gita 2.47" (not just "Bhagavad Gita")
+- "Brihadaranyaka Upanishad 4.4.5" (not just "Brihadaranyaka Upanishad")
+- "Ramayana, Ayodhya Kanda 2.25" (include specific Kanda and verse)
+- "Vishnu Purana 1.2.10" (include book and verse numbers)
+- "Rig Veda 10.129.1" (include mandala and hymn)`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -48,7 +59,7 @@ Format your response as JSON:
         messages: [
           { role: 'system', content: systemPrompt },
           
-          // Multishot examples - Questions about Hindu scriptures
+          // Multishot examples - Questions about Hindu scriptures with exact references
           { role: 'user', content: 'What does the Bhagavad Gita say about dharma?' },
           { role: 'assistant', content: JSON.stringify({
             answer: "The Bhagavad Gita extensively discusses dharma, particularly in the context of righteous duty. Krishna explains to Arjuna that dharma refers to one's righteous duty according to their position in life (svadharma). In Chapter 3, Verse 35, Krishna states that it is better to perform one's own dharma imperfectly than to perform another's dharma perfectly, even if one's own dharma appears dangerous. The Gita emphasizes that dharma should be performed without attachment to results (nishkama karma) and as an offering to the Divine.",
@@ -59,6 +70,12 @@ Format your response as JSON:
           { role: 'assistant', content: JSON.stringify({
             answer: "Karma in Hindu philosophy refers to the law of cause and effect governing all actions. The concept appears throughout Hindu scriptures, particularly in the Upanishads and Bhagavad Gita. There are three types of karma: Sanchita (accumulated karma from past lives), Prarabdha (karma being experienced in this life), and Kriyamana (karma being created through current actions). The Brihadaranyaka Upanishad states that a person becomes good through good actions and bad through bad actions. The ultimate goal is to transcend karma through selfless action (nishkama karma) and spiritual realization.",
             citations: ["Brihadaranyaka Upanishad 4.4.5", "Bhagavad Gita 4.17", "Chandogya Upanishad 5.10.7"]
+          }) },
+          
+          { role: 'user', content: 'What is the significance of Om in Hindu scriptures?' },
+          { role: 'assistant', content: JSON.stringify({
+            answer: "Om (AUM) is considered the primordial sound and the most sacred symbol in Hindu philosophy. The Mandukya Upanishad dedicates itself entirely to explaining Om, describing it as having three components: A (waking state), U (dream state), and M (deep sleep state), with the silence after representing the fourth state of consciousness (Turiya). The Chandogya Upanishad describes Om as the essence of all existence, stating that all of creation emerges from this sacred sound. In the Bhagavad Gita, Krishna identifies himself with Om, calling it the one-syllable Brahman.",
+            citations: ["Mandukya Upanishad 1.1", "Chandogya Upanishad 1.1.1", "Bhagavad Gita 8.13"]
           }) },
           
           // Multishot examples - Non-Hindu questions
