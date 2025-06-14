@@ -11,7 +11,7 @@ import {
   handleTitleGeneration 
 } from '@/utils/messageOperations';
 
-export { Message } from '@/types/chat';
+export type { Message } from '@/types/chat';
 
 export const useChatMessages = (
   activeConversationId: string | null,
