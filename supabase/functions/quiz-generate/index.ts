@@ -28,10 +28,29 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Generate questions using OpenAI
-    const prompt = `Generate 10 multiple-choice questions about ${category} from Hindu scriptures. 
+    // Check existing quizzes to get context for generating unique questions
+    const { data: existingQuizzes } = await supabase
+      .from('quizzes')
+      .select('id')
+      .eq('category', category);
+
+    const quizNumber = (existingQuizzes?.length || 0) + 1;
+    const timestamp = new Date().toISOString();
+
+    // Generate questions using OpenAI with more specific prompts for uniqueness
+    const prompt = `Generate 10 unique multiple-choice questions about ${category} from Hindu scriptures for Quiz #${quizNumber}. 
+    
+    IMPORTANT: Make these questions DIFFERENT from any previous quizzes. Focus on these aspects:
+    - Explore different texts, chapters, and verses within ${category}
+    - Include questions about different characters, events, and teachings
+    - Vary the difficulty levels (basic, intermediate, advanced)
+    - Cover diverse themes like philosophy, stories, moral lessons, and historical context
+    - Ask about specific verses, their meanings, and interpretations
+    
+    Current timestamp: ${timestamp}
+    
     Each question should:
-    - Test knowledge of key concepts, verses, or teachings
+    - Test unique knowledge of ${category} concepts, verses, or teachings
     - Have 4 options (A, B, C, D)
     - Include the correct answer
     - Provide a brief explanation with scripture reference
@@ -59,12 +78,14 @@ serve(async (req) => {
         messages: [
           { 
             role: 'system', 
-            content: 'You are an expert on Hindu scriptures. Generate accurate quiz questions with proper citations from authentic texts. Return ONLY valid JSON without any markdown formatting or code blocks.' 
+            content: `You are an expert on Hindu scriptures with deep knowledge of ${category}. Generate unique, diverse quiz questions that cover different aspects and avoid repetition. Each quiz should explore different facets of the scripture. Return ONLY valid JSON without any markdown formatting or code blocks.` 
           },
           { role: 'user', content: prompt }
         ],
-        temperature: 0.7,
+        temperature: 0.8, // Increased for more variety
         max_tokens: 3000,
+        presence_penalty: 0.6, // Encourage diverse content
+        frequency_penalty: 0.4, // Reduce repetition
       }),
     });
 
@@ -92,13 +113,14 @@ serve(async (req) => {
       throw new Error('Invalid questions format from OpenAI');
     }
 
-    // Create quiz in database
+    // Create quiz in database with more descriptive title
+    const quizTitle = `${category} Quiz #${quizNumber} - ${new Date().toLocaleDateString()}`;
     const { data: quiz, error: quizError } = await supabase
       .from('quizzes')
       .insert({
-        title: `${category} Quiz - ${new Date().toLocaleDateString()}`,
+        title: quizTitle,
         category: category,
-        description: `Test your knowledge of ${category} with these scripture-based questions`
+        description: `Test your knowledge of ${category} with these unique scripture-based questions`
       })
       .select()
       .single();

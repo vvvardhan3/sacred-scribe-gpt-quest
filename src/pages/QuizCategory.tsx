@@ -139,7 +139,7 @@ const QuizCategory = () => {
         ) : (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Available Quizzes</h2>
+              <h2 className="text-xl font-semibold">{decodeURIComponent(category || '')} Quiz Collection</h2>
               <Button onClick={generateNewQuiz} disabled={generating}>
                 <Plus className="w-4 h-4 mr-2" />
                 {generating ? 'Generating...' : 'Generate New Quiz'}
