@@ -8,6 +8,7 @@ import { Message } from '@/types/chat';
 interface MessageListProps {
   messages: Message[];
   loading: boolean;
+  streamingMessageId?: string;
   expandedCitations: { [key: string]: boolean };
   onToggleCitations: (messageId: string) => void;
   onSuggestionClick: (suggestion: string) => void;
@@ -16,6 +17,7 @@ interface MessageListProps {
 const MessageList: React.FC<MessageListProps> = ({
   messages,
   loading,
+  streamingMessageId,
   expandedCitations,
   onToggleCitations,
   onSuggestionClick
@@ -53,6 +55,7 @@ const MessageList: React.FC<MessageListProps> = ({
             <ChatMessage
               key={message.id}
               message={message}
+              isStreaming={streamingMessageId === message.id}
             />
           ))}
           

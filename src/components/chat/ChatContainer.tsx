@@ -8,6 +8,7 @@ interface ChatContainerProps {
   messages: Message[];
   input: string;
   loading: boolean;
+  streamingMessageId?: string;
   expandedCitations: { [key: string]: boolean };
   onInputChange: (value: string) => void;
   onSendMessage: () => void;
@@ -19,6 +20,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   messages,
   input,
   loading,
+  streamingMessageId,
   expandedCitations,
   onInputChange,
   onSendMessage,
@@ -31,6 +33,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         <MessageList
           messages={messages}
           loading={loading}
+          streamingMessageId={streamingMessageId}
           expandedCitations={expandedCitations}
           onToggleCitations={onToggleCitations}
           onSuggestionClick={onSuggestionClick}

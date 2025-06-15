@@ -19,6 +19,7 @@ export const useChatMessages = (
 ) => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [streamingMessageId, setStreamingMessageId] = useState<string | undefined>();
   const [expandedCitations, setExpandedCitations] = useState<{ [key: string]: boolean }>({});
   const { toast } = useToast();
 
@@ -75,11 +76,20 @@ export const useChatMessages = (
       const assistantMessage = createAssistantMessage(data.answer, data.citations);
 
       console.log('Adding assistant message:', assistantMessage);
+      
+      // Set this message as streaming
+      setStreamingMessageId(assistantMessage.id);
+      
       setMessages(prev => {
         const newMessages = [...prev, assistantMessage];
         console.log('Updated messages after assistant message:', newMessages);
         return newMessages;
       });
+
+      // Stop streaming after a delay (simulating the time it takes to stream)
+      setTimeout(() => {
+        setStreamingMessageId(undefined);
+      }, data.answer.length * 20 + 1000); // Adjust timing based on content length
 
     } catch (error) {
       console.error('Error sending message:', error);
@@ -113,12 +123,14 @@ export const useChatMessages = (
     resetMessages();
     setInput('');
     setExpandedCitations({});
+    setStreamingMessageId(undefined);
   };
 
   return {
     messages,
     input,
     loading,
+    streamingMessageId,
     expandedCitations,
     setInput,
     sendMessage,

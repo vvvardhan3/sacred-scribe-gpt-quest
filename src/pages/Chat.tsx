@@ -22,6 +22,7 @@ const Chat = () => {
     messages,
     input,
     loading,
+    streamingMessageId,
     expandedCitations,
     setInput,
     sendMessage,
@@ -62,6 +63,7 @@ const Chat = () => {
               messages={messages}
               input={input}
               loading={loading}
+              streamingMessageId={streamingMessageId}
               expandedCitations={expandedCitations}
               onInputChange={setInput}
               onSendMessage={sendMessage}
