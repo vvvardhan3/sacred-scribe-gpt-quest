@@ -31,7 +31,7 @@ const Navigation = () => {
           </div>
           
           {user && (
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="text-gray-600 hover:text-orange-600 hover:bg-orange-50">
@@ -59,15 +59,16 @@ const Navigation = () => {
                     <CreditCard className="w-4 h-4 mr-2" />
                     Billing
                   </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    className="hover:bg-red-50 cursor-pointer text-red-600 hover:text-red-700"
+                    onClick={signOut}
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign out
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              
-              <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center">
-                <span className="text-xs font-bold text-white">{user?.email?.charAt(0).toUpperCase()}</span>
-              </div>
-              <Button variant="ghost" size="sm" onClick={signOut} className="text-gray-600 hover:text-red-600">
-                <LogOut className="w-4 h-4" />
-              </Button>
             </div>
           )}
         </div>
