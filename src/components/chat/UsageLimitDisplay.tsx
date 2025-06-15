@@ -1,3 +1,4 @@
+
 import { useUserLimits } from '@/hooks/useUserLimits';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -51,7 +52,7 @@ export const UsageLimitDisplay = () => {
                   />
                 </>
               )}
-              {limits.subscriptionTier === 'Devotee Plan' && (
+              {limits.subscriptionTier === 'Devotee' && (
                 <RazorpayPayment 
                   planId="guru"
                   planName="Guru Plan"
