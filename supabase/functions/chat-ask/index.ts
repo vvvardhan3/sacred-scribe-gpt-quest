@@ -1,3 +1,4 @@
+
 // deno run -A main.ts     ← or deploy this as a Supabase Edge Function
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
@@ -15,10 +16,9 @@ const examples = [
   { role: "user", content: "What does the Bhagavad Gita say about dharma?" },
   {
     role: "assistant",
-    name: "hindu_answer",
     content: JSON.stringify({
       answer:
-        "The Gita defines dharma as one’s sacred duty (svadharma). Krishna advises Arjuna that it is better to perform one’s own dharma, even imperfectly, than another’s perfectly (3.35). He adds that action must be done without attachment to results (2.47) and again exhorts sticking to one’s ordained duty in the final chapter (18.47).",
+        "The Gita defines dharma as one's sacred duty (svadharma). Krishna advises Arjuna that it is better to perform one's own dharma, even imperfectly, than another's perfectly (3.35). He adds that action must be done without attachment to results (2.47) and again exhorts sticking to one's ordained duty in the final chapter (18.47).",
       citations: [
         "Bhagavad Gita 3.35",
         "Bhagavad Gita 2.47",
@@ -31,7 +31,6 @@ const examples = [
   { role: "user", content: "Explain moksha in Hinduism." },
   {
     role: "assistant",
-    name: "hindu_answer",
     content: JSON.stringify({
       answer:
         "Moksha is liberation from saṁsāra and realization of unity with Brahman. The Mundaka Upanishad states that one who knows the Supreme is freed from all bonds (3.2.9). Krishna describes the liberated soul as established in Brahman even at death (2.72). The Katha Upanishad calls moksha the supreme goal attained by realizing the Self beyond virtue and vice (2.3.14).",
@@ -50,10 +49,9 @@ const examples = [
   },
   {
     role: "assistant",
-    name: "hindu_answer",
     content: JSON.stringify({
       answer:
-        "Ātman is the innermost Self, eternal and unchanging. ‘Tat tvam asi’ (That thou art) declares the Chandogya Upanishad, equating individual Self with Brahman (6.8.7). The Brihadaranyaka Upanishad calls it the unseen seer (1.4.10). Krishna says the Self is unborn, indestructible, and cannot be slain (2.20).",
+        "Ātman is the innermost Self, eternal and unchanging. 'Tat tvam asi' (That thou art) declares the Chandogya Upanishad, equating individual Self with Brahman (6.8.7). The Brihadaranyaka Upanishad calls it the unseen seer (1.4.10). Krishna says the Self is unborn, indestructible, and cannot be slain (2.20).",
       citations: [
         "Chandogya Upanishad 6.8.7",
         "Brihadaranyaka Upanishad 1.4.10",
@@ -66,7 +64,6 @@ const examples = [
   { role: "user", content: "Name the four yogas described in the Gita." },
   {
     role: "assistant",
-    name: "hindu_answer",
     content: JSON.stringify({
       answer:
         "The Gita presents Karma-yoga (selfless action, 3.3), Dhyāna/Rāja-yoga (meditative discipline, 6.18), Bhakti-yoga (loving devotion, 12.2) and Jñāna-yoga (knowledge-path culminating in God-realization, 18.55). They are complementary routes to the same goal.",
@@ -83,7 +80,6 @@ const examples = [
   { role: "user", content: "Who is Rudra in the Vedas?" },
   {
     role: "assistant",
-    name: "hindu_answer",
     content: JSON.stringify({
       answer:
         "Rudra is a fierce yet healing deity in early Vedic hymns. Rig Veda 2.33 implores him for protection and medicine. The Śvetāśvatara Upanishad later hails Rudra as the one supreme reality realized by sages (3.2).",
@@ -101,7 +97,6 @@ const examples = [
   },
   {
     role: "assistant",
-    name: "hindu_answer",
     content: JSON.stringify({
       answer:
         "Bhāgavata Purāṇa enumerates ten major descents: Matsya, Kūrma, Varāha, Narasiṁha, Vāmana, Paraśurāma, Rāma, Kṛṣṇa (with Balarāma or Buddha, depending on tradition) and Kalki (yet to come) (1.3.28-32). Viṣṇu Purāṇa repeats this list, noting avatāras manifest whenever dharma declines (3.1).",
@@ -116,10 +111,9 @@ const examples = [
   { role: "user", content: "What role does tapas play in Hindu practice?" },
   {
     role: "assistant",
-    name: "hindu_answer",
     content: JSON.stringify({
       answer:
-        "Tapas is disciplined austerity that purifies and empowers. The Taittirīya Upanishad instructs, ‘Seek to know Brahman through tapas’ (3.1.1). Krishna classifies tapas of body, speech, and mind, adding it must be practiced without attachment (BhG 17.14-16).",
+        "Tapas is disciplined austerity that purifies and empowers. The Taittirīya Upanishad instructs, 'Seek to know Brahman through tapas' (3.1.1). Krishna classifies tapas of body, speech, and mind, adding it must be practiced without attachment (BhG 17.14-16).",
       citations: [
         "Taittiriya Upanishad 3.1.1",
         "Bhagavad Gita 17.14-16",
@@ -131,10 +125,9 @@ const examples = [
   { role: "user", content: "Define māyā in Advaita philosophy." },
   {
     role: "assistant",
-    name: "hindu_answer",
     content: JSON.stringify({
       answer:
-        "Māyā is the power that makes non-dual Brahman appear as the pluralistic world. The Śvetāśvatara Upanishad says all beings are woven in the Lord like a spider’s web (4.10) and urges: ‘Know prakriti as māyā’ (4.9). Krishna calls divine māyā hard to cross without surrendering to Him (BhG 7.14).",
+        "Māyā is the power that makes non-dual Brahman appear as the pluralistic world. The Śvetāśvatara Upanishad says all beings are woven in the Lord like a spider's web (4.10) and urges: 'Know prakriti as māyā' (4.9). Krishna calls divine māyā hard to cross without surrendering to Him (BhG 7.14).",
       citations: [
         "Svetasvatara Upanishad 4.9",
         "Svetasvatara Upanishad 4.10",
@@ -147,10 +140,9 @@ const examples = [
   { role: "user", content: "Describe the three guṇas and their effects." },
   {
     role: "assistant",
-    name: "hindu_answer",
     content: JSON.stringify({
       answer:
-        "Prakriti comprises sattva (luminosity), rajas (activity), and tamas (inertia). Krishna explains sattva brings clarity, rajas fuels craving-driven action, tamas breeds negligence (BhG 14.5-17). The Sāṁkhya-kārikā likens their interplay to a lamp’s flickering flame (kārikā 12). Liberation dawns when one transcends the guṇas (BhG 14.19-20).",
+        "Prakriti comprises sattva (luminosity), rajas (activity), and tamas (inertia). Krishna explains sattva brings clarity, rajas fuels craving-driven action, tamas breeds negligence (BhG 14.5-17). The Sāṁkhya-kārikā likens their interplay to a lamp's flickering flame (kārikā 12). Liberation dawns when one transcends the guṇas (BhG 14.19-20).",
       citations: [
         "Bhagavad Gita 14.5-17",
         "Samkhya Karika 12",
@@ -163,7 +155,6 @@ const examples = [
   { role: "user", content: "Explain the four āśramas (life stages)." },
   {
     role: "assistant",
-    name: "hindu_answer",
     content: JSON.stringify({
       answer:
         "Hindu dharma outlines Brahmacarya (student), Gṛhastha (householder), Vānaprastha (retiree), and Sannyāsa (renunciant). Manusmṛti (6.1-3) prescribes duties for each. The Mahābhārata notes that any of these, performed selflessly, can lead to liberation (Śānti-parva 265.9).",
@@ -178,7 +169,6 @@ const examples = [
   { role: "user", content: "What is prāṇa according to the Upanishads?" },
   {
     role: "assistant",
-    name: "hindu_answer",
     content: JSON.stringify({
       answer:
         "Prāṇa is the vital life-breath. In Praśna Upanishad, sages discover that all faculties depend on prāṇa (2.3-5). The Chandogya Upanishad calls it the deity dwelling in the body; when prāṇa departs, the senses follow (5.1.15).",
@@ -196,7 +186,6 @@ const examples = [
   },
   {
     role: "assistant",
-    name: "hindu_answer",
     content: JSON.stringify({
       answer:
         "Karma-yoga is selfless action dedicated to God; it purifies the mind (3.3). Jñāna-yoga is contemplative insight culminating in direct realization (4.38). Krishna says both reach the same summit, yet action is easier for the restless (5.4-5). When perfected, the karma-yogin gains jñāna and acts without bondage (18.56).",
@@ -209,14 +198,13 @@ const examples = [
     }),
   },
 
-  /* 13 ▸ ‘Neti neti’ */
-  { role: "user", content: "Explain the doctrine of ‘neti neti’." },
+  /* 13 ▸ 'Neti neti' */
+  { role: "user", content: "Explain the doctrine of 'neti neti'." },
   {
     role: "assistant",
-    name: "hindu_answer",
     content: JSON.stringify({
       answer:
-        "‘Neti neti’ (not this, not this) is an Upanishadic method of negation. Yājñavalkya teaches that the Self is to be known by negating all limited attributes (Br̥had 2.3.6). He repeats the formula while describing the ineffable Brahman (4.4.22). By discarding names and forms, the seeker intuits the formless substratum.",
+        "'Neti neti' (not this, not this) is an Upanishadic method of negation. Yājñavalkya teaches that the Self is to be known by negating all limited attributes (Br̥had 2.3.6). He repeats the formula while describing the ineffable Brahman (4.4.22). By discarding names and forms, the seeker intuits the formless substratum.",
       citations: [
         "Brihadaranyaka Upanishad 2.3.6",
         "Brihadaranyaka Upanishad 4.4.22",
@@ -228,7 +216,6 @@ const examples = [
   { role: "user", content: "What is the significance of Om in Hindu texts?" },
   {
     role: "assistant",
-    name: "hindu_answer",
     content: JSON.stringify({
       answer:
         "Om is the primordial sound. The entire Māṇḍūkya Upanishad analyses its three syllables—A, U, M—mapping them to waking, dream, and deep sleep states; the silence after represents Turiya, the fourth consciousness (1.1). Chandogya Upanishad calls Om the essence of all existence (1.1.1). Krishna identifies Himself with Om, the one-syllable Brahman (BhG 8.13).",
@@ -244,7 +231,6 @@ const examples = [
   { role: "user", content: "How do I solve a quadratic equation?" },
   {
     role: "assistant",
-    name: "hindu_answer",
     content: JSON.stringify({
       answer:
         "I don't know. I am only trained on Hindu scriptures and philosophy.",
@@ -255,7 +241,6 @@ const examples = [
   { role: "user", content: "Give me tips for losing weight." },
   {
     role: "assistant",
-    name: "hindu_answer",
     content: JSON.stringify({
       answer:
         "I don't know. I am only trained on Hindu scriptures and philosophy.",
@@ -266,7 +251,6 @@ const examples = [
   { role: "user", content: "Who won the last Football World Cup?" },
   {
     role: "assistant",
-    name: "hindu_answer",
     content: JSON.stringify({
       answer:
         "I don't know. I am only trained on Hindu scriptures and philosophy.",
@@ -277,7 +261,6 @@ const examples = [
   { role: "user", content: "What is the capital of France?" },
   {
     role: "assistant",
-    name: "hindu_answer",
     content: JSON.stringify({
       answer:
         "I don't know. I am only trained on Hindu scriptures and philosophy.",
@@ -285,10 +268,9 @@ const examples = [
     }),
   },
 
-  { role: "user", content: "Explain Einstein’s relativity." },
+  { role: "user", content: "Explain Einstein's relativity." },
   {
     role: "assistant",
-    name: "hindu_answer",
     content: JSON.stringify({
       answer:
         "I don't know. I am only trained on Hindu scriptures and philosophy.",
@@ -299,7 +281,6 @@ const examples = [
   { role: "user", content: "How do I cook pasta?" },
   {
     role: "assistant",
-    name: "hindu_answer",
     content: JSON.stringify({
       answer:
         "I don't know. I am only trained on Hindu scriptures and philosophy.",
@@ -310,7 +291,6 @@ const examples = [
   { role: "user", content: "What are the latest stock-market trends?" },
   {
     role: "assistant",
-    name: "hindu_answer",
     content: JSON.stringify({
       answer:
         "I don't know. I am only trained on Hindu scriptures and philosophy.",
@@ -321,35 +301,11 @@ const examples = [
   { role: "user", content: "Tell me about Buddhism." },
   {
     role: "assistant",
-    name: "hindu_answer",
     content: JSON.stringify({
       answer:
         "I don't know. I am only trained on Hindu scriptures and philosophy.",
       citations: [],
     }),
-  },
-];
-
-/* ────────── TOOL SCHEMA ────────── */
-const tools = [
-  {
-    type: "function",
-    function: {
-      name: "hindu_answer",
-      description:
-        "Answer ONLY questions about Hindu scriptures; return JSON with 'answer' (string) and 'citations' (string array).",
-      parameters: {
-        type: "object",
-        properties: {
-          answer: { type: "string" },
-          citations: {
-            type: "array",
-            items: { type: "string" },
-          },
-        },
-        required: ["answer", "citations"],
-      },
-    },
   },
 ];
 
@@ -383,7 +339,7 @@ serve(async (req) => {
       });
     }
 
-    /* Dynamic max_tokens: 4× prompt length, capped at 1 200 */
+    /* Dynamic max_tokens: 4× prompt length, capped at 1200 */
     const estPromptTokens = Math.ceil(message.length / 4);
     const maxTokens = Math.min(1200, 4 * estPromptTokens);
 
@@ -393,17 +349,18 @@ serve(async (req) => {
       temperature: 0.2,
       top_p: 0.8,
       max_tokens: maxTokens,
-      tools,
       messages: [
         {
           role: "system",
           content:
-            "You are HinduGPT – answer ONLY from Hindu scriptures, philosphy and always include exact citations.",
+            "You are HinduGPT – answer ONLY from Hindu scriptures and philosophy. Always respond with valid JSON containing 'answer' (string) and 'citations' (array of strings). Include exact scripture citations.",
         },
         ...examples,
         { role: "user", content: message },
       ],
     };
+
+    console.log('Sending request to OpenAI:', JSON.stringify(chatReq, null, 2));
 
     const openaiRes = await fetch(
       "https://api.openai.com/v1/chat/completions",
@@ -418,11 +375,15 @@ serve(async (req) => {
     );
 
     if (!openaiRes.ok) {
+      const errorText = await openaiRes.text();
+      console.error(`OpenAI API error: ${openaiRes.status} - ${errorText}`);
       throw new Error(`OpenAI API error: ${openaiRes.status}`);
     }
 
     const data = await openaiRes.json();
-    const content = data.choices[0].message.content; // already JSON string
+    console.log('OpenAI response:', JSON.stringify(data, null, 2));
+    
+    const content = data.choices[0].message.content;
     let parsed = JSON.parse(content) as {
       answer: string;
       citations: string[];
@@ -442,7 +403,7 @@ serve(async (req) => {
     }
 
     const final = JSON.stringify(parsed);
-    memCache.set(key, final); // store result
+    memCache.set(key, final);
 
     return new Response(final, {
       headers: { ...cors, "Content-Type": "application/json" },
