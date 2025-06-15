@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -79,7 +78,7 @@ const Dashboard = () => {
               Spiritual Knowledge
             </Badge>
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-red-500 bg-clip-text text-transparent mb-4">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-600 via-red-500 to-pink-600 bg-clip-text text-transparent mb-4">
             Sacred Scripture Library
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
