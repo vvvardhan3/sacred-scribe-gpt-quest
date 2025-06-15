@@ -5,6 +5,9 @@ import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import ProfileForm from '@/components/ProfileForm';
 import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface UserProfile {
   id: string;
@@ -107,6 +110,14 @@ const Profile = () => {
       <Navigation />
       <div className="min-h-screen px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-4xl mx-auto">
+          <div className="flex items-center space-x-4 mb-8">
+            <Link to="/dashboard">
+              <Button variant="ghost" size="sm" className="text-gray-600 hover:text-orange-600 hover:bg-orange-50">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Dashboard
+              </Button>
+            </Link>
+          </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-8 text-center">Profile Settings</h1>
           {profile && user && (
             <ProfileForm 
