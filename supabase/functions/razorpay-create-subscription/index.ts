@@ -69,7 +69,7 @@ serve(async (req) => {
     
     if (!razorpayKeySecret) {
       console.error('Razorpay key secret not found in environment')
-      throw new Error('Razorpay key secret not configured')
+      throw new Error('Razorpay configuration missing')
     }
 
     console.log('Razorpay credentials configured')
@@ -127,13 +127,13 @@ serve(async (req) => {
     if (!orderResponse.ok) {
       const errorData = await orderResponse.text()
       console.error('Razorpay order creation failed:', errorData)
-      throw new Error(`Failed to create order with Razorpay (${orderResponse.status}): ${errorData}`)
+      throw new Error(`Failed to create order with Razorpay: ${errorData}`)
     }
 
     const order = await orderResponse.json()
     console.log('Razorpay order created successfully:', order.id)
 
-    // Store subscription info in database
+    // Store subscription info in database (as pending until payment is verified)
     const dbPayload = {
       user_id: user.id,
       email: user.email!,
@@ -148,7 +148,7 @@ serve(async (req) => {
 
     const { error: insertError } = await supabase
       .from('subscribers')
-      .upsert(dbPayload)
+      .upsert(dbPayload, { onConflict: 'email' })
 
     if (insertError) {
       console.error('Database insert error:', insertError)

@@ -60,31 +60,49 @@ export const useSubscription = () => {
   const createSubscription = async (planId: string) => {
     if (!user) throw new Error('User not authenticated');
 
-    const { data, error } = await supabase.functions.invoke('razorpay-create-subscription', {
-      body: { planId, userId: user.id },
-      headers: {
-        Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-      },
-    });
+    try {
+      console.log('Creating subscription for plan:', planId);
+      
+      const { data, error } = await supabase.functions.invoke('razorpay-create-subscription', {
+        body: { planId, userId: user.id },
+        headers: {
+          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+        },
+      });
 
-    if (error) throw new Error(error.message || 'Failed to create subscription');
-    return data;
+      console.log('Subscription creation response:', { data, error });
+
+      if (error) {
+        console.error('Subscription creation error:', error);
+        throw new Error(error.message || 'Failed to create subscription');
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Error in createSubscription:', error);
+      throw error;
+    }
   };
 
   const verifyPayment = async (paymentData: any) => {
-    const { data, error } = await supabase.functions.invoke('razorpay-verify-payment', {
-      body: paymentData,
-      headers: {
-        Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-      },
-    });
+    try {
+      const { data, error } = await supabase.functions.invoke('razorpay-verify-payment', {
+        body: paymentData,
+        headers: {
+          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+        },
+      });
 
-    if (error) throw new Error(error.message || 'Failed to verify payment');
-    
-    // Refresh subscription data after successful payment
-    await fetchSubscription();
-    
-    return data;
+      if (error) throw new Error(error.message || 'Failed to verify payment');
+      
+      // Refresh subscription data after successful payment
+      await fetchSubscription();
+      
+      return data;
+    } catch (error) {
+      console.error('Error in verifyPayment:', error);
+      throw error;
+    }
   };
 
   return {

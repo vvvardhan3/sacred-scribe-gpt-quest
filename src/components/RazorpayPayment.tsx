@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -29,6 +29,7 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
 }) => {
   const { toast } = useToast();
   const { createSubscription, verifyPayment } = useSubscription();
+  const [isLoading, setIsLoading] = useState(false);
 
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
@@ -46,7 +47,12 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
   };
 
   const handlePayment = async () => {
+    if (isLoading) return;
+    
     try {
+      setIsLoading(true);
+      console.log('Starting payment process for plan:', planId);
+      
       const scriptLoaded = await loadRazorpayScript();
       
       if (!scriptLoaded) {
@@ -57,6 +63,8 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
         });
         return;
       }
+
+      console.log('Razorpay script loaded successfully');
 
       // Create order
       const orderData = await createSubscription(planId);
@@ -96,7 +104,8 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
         },
         modal: {
           ondismiss: () => {
-            console.log('Payment modal closed');
+            console.log('Payment modal closed by user');
+            setIsLoading(false);
           }
         },
         prefill: {
@@ -116,21 +125,22 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
       console.error('Payment initiation failed:', error);
       toast({
         title: "Error",
-        description: "Failed to initiate payment. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to initiate payment. Please try again.",
         variant: "destructive",
       });
+      setIsLoading(false);
     }
   };
 
   return (
     <Button 
       onClick={handlePayment}
+      disabled={isLoading}
       className={className || "w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"}
     >
-      {buttonText || `Subscribe to ${planName} - ₹${price}`}
+      {isLoading ? "Processing..." : (buttonText || `Subscribe to ${planName} - ₹${price}`)}
     </Button>
   );
 };
 
 export default RazorpayPayment;
-
