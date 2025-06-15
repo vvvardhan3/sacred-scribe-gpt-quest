@@ -28,9 +28,9 @@ const ScriptureCard: React.FC<ScriptureCardProps> = ({ category, isNavigatable =
       <CardContent className="p-8 relative z-10">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            {/* Enhanced title with gradient background and animation */}
+            {/* Enhanced title with gradient background and animation - removed translate effect */}
             <div className="relative">
-              <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-orange-600 group-hover:via-red-600 group-hover:to-amber-600 group-hover:bg-clip-text transition-all duration-500 transform group-hover:scale-110 group-hover:-translate-y-1">
+              <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-orange-600 group-hover:via-red-600 group-hover:to-amber-600 group-hover:bg-clip-text transition-all duration-500 transform group-hover:scale-110">
                 {category.name}
               </h3>
               {/* Animated underline */}
