@@ -108,9 +108,9 @@ export const useChatMessages = (
     // Add user message immediately
     addMessage(userMessage);
     setInput('');
+    
+    // Set loading state but NOT streaming yet
     setLoading(true);
-
-    // Clear any existing streaming state
     setStreamingMessageId(undefined);
 
     // Save user message immediately to database
@@ -124,9 +124,10 @@ export const useChatMessages = (
       const data = await sendMessageToAPI(trimmedInput);
       const assistantMessage = createAssistantMessage(data.answer, data.citations);
 
-      console.log('API response received, adding assistant message with streaming:', assistantMessage.id);
+      console.log('API response received, adding assistant message:', assistantMessage.id);
       
-      // Add message and immediately start streaming
+      // Stop loading and start streaming
+      setLoading(false);
       addMessage(assistantMessage);
       setStreamingMessageId(assistantMessage.id);
 
@@ -151,10 +152,9 @@ export const useChatMessages = (
       const errorMessage = createErrorMessage();
       addMessage(errorMessage);
       
-      // Clear streaming state on error
-      setStreamingMessageId(undefined);
-    } finally {
+      // Clear all loading states on error
       setLoading(false);
+      setStreamingMessageId(undefined);
     }
   };
 
@@ -176,6 +176,7 @@ export const useChatMessages = (
     setInput('');
     setExpandedCitations({});
     setStreamingMessageId(undefined);
+    setLoading(false);
   };
 
   return {

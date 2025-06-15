@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Message } from '@/types/chat';
 
@@ -9,70 +8,79 @@ interface StreamingMessageProps {
 
 const StreamingMessage: React.FC<StreamingMessageProps> = ({ message, isStreaming = false }) => {
   const [displayedContent, setDisplayedContent] = useState('');
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [isComplete, setIsComplete] = useState(!isStreaming);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const hasStartedStreaming = useRef(false);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const indexRef = useRef(0);
 
-  // Initialize and handle streaming
+  // Initialize content based on streaming state
   useEffect(() => {
-    console.log('StreamingMessage effect:', { 
+    console.log('StreamingMessage initialization:', { 
       messageId: message.id, 
       isStreaming, 
-      contentLength: message.content.length,
-      hasStarted: hasStartedStreaming.current
+      contentLength: message.content.length 
     });
 
-    // Clear any existing timeout
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-
-    if (isStreaming && !hasStartedStreaming.current) {
-      console.log('Starting streaming for message:', message.id);
-      hasStartedStreaming.current = true;
+    if (isStreaming) {
+      // Reset for streaming
       setDisplayedContent('');
-      setCurrentIndex(0);
       setIsComplete(false);
+      indexRef.current = 0;
       
-      // Start streaming with initial delay
-      streamCharacters();
-    } else if (!isStreaming) {
-      console.log('Showing complete content for message:', message.id);
-      hasStartedStreaming.current = false;
+      // Start streaming after a brief delay
+      const startDelay = setTimeout(() => {
+        startStreaming();
+      }, 300);
+
+      return () => {
+        clearTimeout(startDelay);
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+      };
+    } else {
+      // Show complete content immediately for non-streaming messages
       setDisplayedContent(message.content);
-      setCurrentIndex(message.content.length);
       setIsComplete(true);
+      indexRef.current = message.content.length;
+    }
+  }, [isStreaming, message.id, message.content]);
+
+  const startStreaming = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
     }
 
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
-    };
-  }, [isStreaming, message.id]);
-
-  const streamCharacters = () => {
-    let index = 0;
+    console.log('Starting streaming animation for message:', message.id);
     
-    const streamNext = () => {
-      if (index < message.content.length) {
-        setDisplayedContent(message.content.substring(0, index + 1));
-        setCurrentIndex(index + 1);
-        index++;
-        
-        timeoutRef.current = setTimeout(streamNext, 30);
+    intervalRef.current = setInterval(() => {
+      const currentIndex = indexRef.current;
+      
+      if (currentIndex < message.content.length) {
+        const nextContent = message.content.substring(0, currentIndex + 1);
+        setDisplayedContent(nextContent);
+        indexRef.current = currentIndex + 1;
       } else {
-        console.log('Streaming complete for message:', message.id);
+        // Streaming complete
+        console.log('Streaming animation complete for message:', message.id);
         setIsComplete(true);
-        hasStartedStreaming.current = false;
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+      }
+    }, 30);
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
-
-    streamNext();
-  };
+  }, []);
 
   // Function to generate online links for citations
   const getCitationLink = (citation: string) => {
