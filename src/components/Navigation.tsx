@@ -47,18 +47,22 @@ const Navigation = () => {
                       Profile
                     </DropdownMenuItem>
                   </Link>
-                  <DropdownMenuItem className="hover:bg-orange-50 cursor-pointer">
-                    <Bell className="w-4 h-4 mr-2" />
-                    Notifications
-                  </DropdownMenuItem>
+                  <Link to="/notifications">
+                    <DropdownMenuItem className="hover:bg-orange-50 cursor-pointer">
+                      <Bell className="w-4 h-4 mr-2" />
+                      Notifications
+                    </DropdownMenuItem>
+                  </Link>
                   <DropdownMenuItem className="hover:bg-orange-50 cursor-pointer">
                     <Palette className="w-4 h-4 mr-2" />
                     Theme
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="hover:bg-orange-50 cursor-pointer">
-                    <CreditCard className="w-4 h-4 mr-2" />
-                    Billing
-                  </DropdownMenuItem>
+                  <Link to="/billing">
+                    <DropdownMenuItem className="hover:bg-orange-50 cursor-pointer">
+                      <CreditCard className="w-4 h-4 mr-2" />
+                      Billing
+                    </DropdownMenuItem>
+                  </Link>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem 
                     className="hover:bg-red-50 cursor-pointer text-red-600 hover:text-red-700"

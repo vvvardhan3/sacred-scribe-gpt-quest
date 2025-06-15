@@ -11,6 +11,8 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
+import Notifications from "./pages/Notifications";
+import Billing from "./pages/Billing";
 import QuizCategory from "./pages/QuizCategory";
 import QuizPlay from "./pages/QuizPlay";
 import QuizResults from "./pages/QuizResults";
@@ -38,6 +40,16 @@ const App = () => (
             <Route path="/profile" element={
               <AuthGuard>
                 <Profile />
+              </AuthGuard>
+            } />
+            <Route path="/notifications" element={
+              <AuthGuard>
+                <Notifications />
+              </AuthGuard>
+            } />
+            <Route path="/billing" element={
+              <AuthGuard>
+                <Billing />
               </AuthGuard>
             } />
             <Route path="/quiz/category/:category" element={
