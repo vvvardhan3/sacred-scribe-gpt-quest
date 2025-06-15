@@ -48,7 +48,7 @@ const MessageList: React.FC<MessageListProps> = ({
       {messages.length === 0 ? (
         <WelcomeScreen onSuggestionClick={onSuggestionClick} />
       ) : (
-        <div className="py-8">
+        <div className="p-6 pt-8">
           {messages.map((message) => (
             <ChatMessage
               key={message.id}
