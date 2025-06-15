@@ -37,22 +37,12 @@ export const useConversations = () => {
         // Load conversations from database
         const dbConversations = await conversationDb.getConversations();
         
-        // Convert to local format
+        // Convert to local format with basic info only (messages loaded separately)
         const convertedConversations = await Promise.all(
           dbConversations.map(async (dbConv: DatabaseConversation) => {
+            // Get message count for preview
             const messages = await conversationDb.getMessages(dbConv.id);
-            
-            // Convert messages to local format
-            const localMessages = messages.map(msg => ({
-              id: msg.id,
-              role: msg.role,
-              content: msg.content,
-              citations: msg.citations || [],
-              timestamp: new Date(msg.created_at)
-            }));
-
-            // Get last user message for preview
-            const userMessages = localMessages.filter(msg => msg.role === 'user');
+            const userMessages = messages.filter(msg => msg.role === 'user');
             const lastUserMessage = userMessages[userMessages.length - 1];
 
             return {
@@ -60,7 +50,7 @@ export const useConversations = () => {
               title: dbConv.title,
               lastMessage: lastUserMessage ? lastUserMessage.content.slice(0, 100) : 'No messages yet',
               timestamp: new Date(dbConv.updated_at),
-              messages: localMessages
+              messages: [] // Don't store messages here, load them when needed
             };
           })
         );
@@ -112,11 +102,19 @@ export const useConversations = () => {
 
       // Update local state
       setConversations(prev => 
-        prev.map(conv => 
-          conv.id === id 
-            ? { ...conv, ...updates, timestamp: new Date() }
-            : conv
-        )
+        prev.map(conv => {
+          if (conv.id === id) {
+            const updatedConv = { ...conv, ...updates, timestamp: new Date() };
+            // Update last message preview if messages were updated
+            if (updates.messages && updates.messages.length > 0) {
+              const userMessages = updates.messages.filter((msg: any) => msg.role === 'user');
+              const lastUserMessage = userMessages[userMessages.length - 1];
+              updatedConv.lastMessage = lastUserMessage ? lastUserMessage.content.slice(0, 100) : 'No messages yet';
+            }
+            return updatedConv;
+          }
+          return conv;
+        })
       );
     } catch (error) {
       console.error('Error updating conversation:', error);
