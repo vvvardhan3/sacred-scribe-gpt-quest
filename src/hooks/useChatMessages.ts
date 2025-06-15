@@ -122,8 +122,9 @@ export const useChatMessages = (
       const assistantMessage = createAssistantMessage(data.answer, data.citations);
 
       console.log('Adding assistant message:', assistantMessage);
+      console.log('Setting streaming message ID:', assistantMessage.id);
       
-      // Set this message as streaming
+      // Set this message as streaming BEFORE adding it
       setStreamingMessageId(assistantMessage.id);
       addMessage(assistantMessage);
 
@@ -137,10 +138,14 @@ export const useChatMessages = (
       // Increment message count after successful API call
       await incrementMessageCount();
 
-      // Stop streaming after a delay
+      // Stop streaming after the message content length determines duration
+      const streamingDuration = Math.max(2000, data.answer.length * 30);
+      console.log('Streaming duration calculated:', streamingDuration);
+      
       setTimeout(() => {
+        console.log('Stopping streaming for message:', assistantMessage.id);
         setStreamingMessageId(undefined);
-      }, data.answer.length * 20 + 1000);
+      }, streamingDuration);
 
     } catch (error) {
       console.error('Error sending message:', error);
@@ -152,6 +157,9 @@ export const useChatMessages = (
       
       const errorMessage = createErrorMessage();
       addMessage(errorMessage);
+      
+      // Clear streaming state on error
+      setStreamingMessageId(undefined);
     } finally {
       setLoading(false);
     }

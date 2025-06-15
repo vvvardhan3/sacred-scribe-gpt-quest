@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useRef } from 'react';
 import { Message } from '@/types/chat';
 
 interface StreamingMessageProps {
@@ -9,31 +10,60 @@ interface StreamingMessageProps {
 const StreamingMessage: React.FC<StreamingMessageProps> = ({ message, isStreaming = false }) => {
   const [displayedContent, setDisplayedContent] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isComplete, setIsComplete] = useState(false);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Reset state when message changes or streaming starts
   useEffect(() => {
-    if (isStreaming && message.content) {
-      if (currentIndex < message.content.length) {
-        const timer = setTimeout(() => {
-          setDisplayedContent(prev => prev + message.content[currentIndex]);
-          setCurrentIndex(prev => prev + 1);
-        }, 30); // Slightly slower for better readability
+    console.log('StreamingMessage: Message or streaming state changed', { 
+      messageId: message.id, 
+      isStreaming, 
+      contentLength: message.content.length 
+    });
 
-        return () => clearTimeout(timer);
-      }
-    } else {
-      // If not streaming, show full content immediately
-      setDisplayedContent(message.content);
-      setCurrentIndex(message.content.length);
-    }
-  }, [message.content, currentIndex, isStreaming]);
-
-  // Reset when message changes
-  useEffect(() => {
     if (isStreaming) {
+      console.log('StreamingMessage: Starting streaming for message', message.id);
       setDisplayedContent('');
       setCurrentIndex(0);
+      setIsComplete(false);
+    } else {
+      console.log('StreamingMessage: Not streaming, showing full content immediately');
+      setDisplayedContent(message.content);
+      setCurrentIndex(message.content.length);
+      setIsComplete(true);
     }
-  }, [message.id, isStreaming]);
+
+    // Clear any existing interval
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  }, [message.id, isStreaming, message.content]);
+
+  // Handle streaming animation
+  useEffect(() => {
+    if (!isStreaming || isComplete) {
+      return;
+    }
+
+    if (currentIndex < message.content.length) {
+      intervalRef.current = setTimeout(() => {
+        const nextChar = message.content[currentIndex];
+        setDisplayedContent(prev => prev + nextChar);
+        setCurrentIndex(prev => prev + 1);
+      }, 30);
+    } else {
+      console.log('StreamingMessage: Streaming complete for message', message.id);
+      setIsComplete(true);
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearTimeout(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [currentIndex, message.content, isStreaming, isComplete]);
 
   // Function to generate online links for citations
   const getCitationLink = (citation: string) => {
@@ -95,17 +125,19 @@ const StreamingMessage: React.FC<StreamingMessageProps> = ({ message, isStreamin
     return 'https://www.sacred-texts.com/hin/index.htm';
   };
 
-  // Check if streaming is complete
-  const isStreamingComplete = !isStreaming || currentIndex >= message.content.length;
-
   return (
     <div className="rounded-2xl px-5 py-4 shadow-sm bg-white border border-gray-200 text-gray-900">
       <div className="flex items-start">
         <div className="flex-1">
-          <p className="text-base leading-relaxed whitespace-pre-wrap">{displayedContent}</p>
+          <p className="text-base leading-relaxed whitespace-pre-wrap">
+            {displayedContent}
+            {isStreaming && !isComplete && (
+              <span className="inline-block w-2 h-5 bg-gray-400 ml-1 animate-pulse" />
+            )}
+          </p>
           
-          {/* Only show references after streaming is complete */}
-          {isStreamingComplete && message.citations && message.citations.length > 0 && (
+          {/* Only show references after streaming is complete or when not streaming */}
+          {(isComplete || !isStreaming) && message.citations && message.citations.length > 0 && (
             <div className="mt-4">
               <h4 className="text-sm font-semibold text-gray-800 mb-2">References</h4>
               <div className="space-y-1">
