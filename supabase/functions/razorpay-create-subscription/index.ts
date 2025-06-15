@@ -52,16 +52,23 @@ serve(async (req) => {
       throw new Error('Invalid plan selected')
     }
 
+    const razorpayKeyId = 'rzp_test_hDWzj3XChB3yxM'
     const razorpayKeySecret = Deno.env.get('RAZORPAY_KEY_SECRET')
+    
     if (!razorpayKeySecret) {
       throw new Error('Razorpay key secret not configured')
     }
 
+    console.log('Using Razorpay Key ID:', razorpayKeyId)
+
     // Create Razorpay subscription
+    const authHeader = btoa(`${razorpayKeyId}:${razorpayKeySecret}`)
+    console.log('Making request to Razorpay API...')
+
     const subscriptionResponse = await fetch('https://api.razorpay.com/v1/subscriptions', {
       method: 'POST',
       headers: {
-        'Authorization': `Basic ${btoa(razorpayKeySecret + ':')}`,
+        'Authorization': `Basic ${authHeader}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -80,7 +87,7 @@ serve(async (req) => {
     if (!subscriptionResponse.ok) {
       const errorData = await subscriptionResponse.text()
       console.error('Razorpay subscription creation failed:', errorData)
-      throw new Error('Failed to create subscription')
+      throw new Error('Failed to create subscription with Razorpay')
     }
 
     const subscription = await subscriptionResponse.json()
