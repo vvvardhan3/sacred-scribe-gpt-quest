@@ -16,6 +16,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Send, Mail, User, MessageSquare, FileText } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const contactFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -37,10 +39,35 @@ const ContactSection = () => {
     },
   });
 
-  const onSubmit = (values: ContactFormValues) => {
-    console.log('Contact form submitted:', values);
-    // Handle form submission here
-    form.reset();
+  const onSubmit = async (values: ContactFormValues) => {
+    try {
+      // Get current user if authenticated
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      // Insert the contact submission into the database
+      const { error } = await supabase
+        .from('contact_submissions')
+        .insert({
+          name: values.name,
+          email: values.email,
+          subject: values.subject,
+          message: values.message,
+          user_id: user?.id || null
+        });
+
+      if (error) {
+        console.error('Error submitting contact form:', error);
+        toast.error('Failed to send message. Please try again.');
+        return;
+      }
+
+      console.log('Contact form submitted successfully:', values);
+      toast.success('Message sent successfully! We\'ll get back to you soon.');
+      form.reset();
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast.error('An unexpected error occurred. Please try again.');
+    }
   };
 
   return (
@@ -155,10 +182,11 @@ const ContactSection = () => {
                 <div className="pt-4">
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2"
+                    disabled={form.formState.isSubmitting}
+                    className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Send className="w-5 h-5" />
-                    Send Message
+                    {form.formState.isSubmitting ? 'Sending...' : 'Send Message'}
                   </Button>
                 </div>
               </form>
