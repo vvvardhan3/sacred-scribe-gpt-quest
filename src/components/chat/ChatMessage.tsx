@@ -123,8 +123,11 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
       <div>
         <p className="text-base leading-relaxed whitespace-pre-wrap">{processedContent}</p>
         {citationElements.length > 0 && (
-          <div className="mt-3 space-y-1">
-            {citationElements}
+          <div className="mt-4">
+            <h4 className="text-sm font-semibold text-gray-800 mb-2">References</h4>
+            <div className="space-y-1">
+              {citationElements}
+            </div>
           </div>
         )}
       </div>
