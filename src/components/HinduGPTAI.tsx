@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Brain, MessageCircle, BookOpen, Star, Zap, Globe } from 'lucide-react';
@@ -50,11 +49,8 @@ const HinduGPTAI = () => {
         
         {/* Header Section */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center space-x-3 bg-white/80 backdrop-blur-sm px-6 py-3 rounded-full border border-orange-200 mb-6">
-            <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
-              <Brain className="w-4 h-4 text-white" />
-            </div>
-            <span className="text-sm font-medium text-orange-700">Specialized Hindu Knowledge AI</span>
+          <div className="inline-flex items-center bg-white/80 backdrop-blur-sm px-6 py-3 rounded-full border border-orange-200 mb-6">
+            <span className="text-sm font-medium text-orange-700">AI Trained on Ancient Hindu Wisdom</span>
           </div>
           
           <h2 className="text-5xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent mb-6">
