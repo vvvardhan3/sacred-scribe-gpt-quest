@@ -47,7 +47,6 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
     const newX = e.clientX - rect.left - dragStart.x;
     const newY = e.clientY - rect.top - dragStart.y;
 
-    // Constrain the crop area within the container
     const cropSize = 200;
     const maxX = rect.width - cropSize;
     const maxY = rect.height - cropSize;
@@ -77,30 +76,56 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
   const getCroppedImage = async () => {
     if (!imageRef.current || !canvasRef.current || !containerRef.current) return;
 
-    const image = imageRef.current;
+    const img = imageRef.current;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
 
     if (!ctx) return;
 
-    // Set canvas size to the desired output size (circular)
+    // Wait for image to load completely
+    if (!img.complete) {
+      img.onload = () => getCroppedImage();
+      return;
+    }
+
     const outputSize = 300;
     canvas.width = outputSize;
     canvas.height = outputSize;
 
-    // Calculate the source rectangle based on the crop position and scale
     const containerRect = containerRef.current.getBoundingClientRect();
-    const imageRect = image.getBoundingClientRect();
     
-    // Calculate scale factors
-    const scaleX = image.naturalWidth / imageRect.width;
-    const scaleY = image.naturalHeight / imageRect.height;
+    // Calculate the actual displayed image dimensions
+    const imgAspectRatio = img.naturalWidth / img.naturalHeight;
+    const containerAspectRatio = containerRect.width / containerRect.height;
+    
+    let displayedWidth, displayedHeight, offsetX = 0, offsetY = 0;
+    
+    if (imgAspectRatio > containerAspectRatio) {
+      // Image is wider than container
+      displayedHeight = containerRect.height * scale;
+      displayedWidth = displayedHeight * imgAspectRatio;
+      offsetX = (containerRect.width - displayedWidth) / 2;
+    } else {
+      // Image is taller than container
+      displayedWidth = containerRect.width * scale;
+      displayedHeight = displayedWidth / imgAspectRatio;
+      offsetY = (containerRect.height - displayedHeight) / 2;
+    }
 
-    // Calculate crop area in image coordinates
+    // Calculate scale factors from displayed size to natural size
+    const scaleX = img.naturalWidth / displayedWidth;
+    const scaleY = img.naturalHeight / displayedHeight;
+
+    // Calculate the crop area in natural image coordinates
     const cropSize = 200;
-    const sourceX = crop.x * scaleX;
-    const sourceY = crop.y * scaleY;
-    const sourceSize = cropSize * Math.max(scaleX, scaleY);
+    const naturalCropX = (crop.x - offsetX) * scaleX;
+    const naturalCropY = (crop.y - offsetY) * scaleY;
+    const naturalCropSize = cropSize * Math.max(scaleX, scaleY);
+
+    // Ensure crop area is within image bounds
+    const clampedX = Math.max(0, Math.min(naturalCropX, img.naturalWidth - naturalCropSize));
+    const clampedY = Math.max(0, Math.min(naturalCropY, img.naturalHeight - naturalCropSize));
+    const clampedSize = Math.min(naturalCropSize, img.naturalWidth - clampedX, img.naturalHeight - clampedY);
 
     // Create circular clip path
     ctx.save();
@@ -110,11 +135,11 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
 
     // Draw the cropped image
     ctx.drawImage(
-      image,
-      sourceX,
-      sourceY,
-      sourceSize,
-      sourceSize,
+      img,
+      clampedX,
+      clampedY,
+      clampedSize,
+      clampedSize,
       0,
       0,
       outputSize,
@@ -123,7 +148,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
 
     ctx.restore();
 
-    // Convert canvas to blob
+    // Convert to blob
     canvas.toBlob((blob) => {
       if (blob) {
         onCrop(blob);
@@ -133,15 +158,15 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
 
   return (
     <Dialog open={true} onOpenChange={onCancel}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl bg-gray-800 border-gray-700">
         <DialogHeader>
-          <DialogTitle>Crop Profile Picture</DialogTitle>
+          <DialogTitle className="text-white">Crop Profile Picture</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <div
             ref={containerRef}
-            className="relative w-full h-96 bg-gray-100 rounded-lg overflow-hidden select-none"
+            className="relative w-full h-96 bg-gray-900 rounded-lg overflow-hidden select-none"
             style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
           >
             {imageSrc && (
@@ -159,7 +184,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
                 />
                 {/* Crop overlay */}
                 <div
-                  className="absolute border-4 border-white rounded-full shadow-lg pointer-events-none"
+                  className="absolute border-4 border-orange-500 rounded-full shadow-lg pointer-events-none"
                   style={{
                     width: '200px',
                     height: '200px',
@@ -167,7 +192,6 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
                     top: `${crop.y}px`,
                     boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.5)',
                   }}
-                  onMouseDown={handleMouseDown}
                 />
                 {/* Draggable area */}
                 <div
@@ -185,7 +209,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
           </div>
 
           <div className="flex items-center space-x-4">
-            <label className="text-sm font-medium">Zoom:</label>
+            <label className="text-sm font-medium text-white">Zoom:</label>
             <input
               type="range"
               min="0.5"
@@ -195,11 +219,11 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
               onChange={(e) => setScale(parseFloat(e.target.value))}
               className="flex-1"
             />
-            <span className="text-sm text-gray-600">{Math.round(scale * 100)}%</span>
+            <span className="text-sm text-gray-300">{Math.round(scale * 100)}%</span>
           </div>
 
           <div className="flex justify-end space-x-4">
-            <Button variant="outline" onClick={onCancel}>
+            <Button variant="outline" onClick={onCancel} className="border-gray-600 text-white hover:bg-gray-700">
               <X className="w-4 h-4 mr-2" />
               Cancel
             </Button>

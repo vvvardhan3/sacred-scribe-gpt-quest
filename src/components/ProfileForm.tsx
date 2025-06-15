@@ -146,7 +146,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
       {/* Profile Picture Section */}
       <div className="flex flex-col items-center space-y-4">
         <div className="relative">
-          <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+          <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-orange-600 to-orange-800 flex items-center justify-center shadow-lg border-4 border-white">
             {profile.profile_picture_url ? (
               <img
                 src={profile.profile_picture_url}
@@ -160,7 +160,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
           <Button
             type="button"
             size="sm"
-            className="absolute bottom-0 right-0 rounded-full w-10 h-10 p-0 bg-blue-600 hover:bg-blue-700"
+            className="absolute bottom-0 right-0 rounded-full w-10 h-10 p-0 bg-orange-600 hover:bg-orange-700 border-2 border-white"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
           >
@@ -177,80 +177,82 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
       </div>
 
       {/* Form Section */}
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="display_name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-white">Display Name</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    disabled={!isEditing}
-                    className={!isEditing ? "bg-gray-700 text-white border-gray-600" : "bg-white text-gray-900"}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+      <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="display_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Display Name</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      disabled={!isEditing}
+                      className={!isEditing ? "bg-white/5 text-white border-white/20" : "bg-white text-gray-900"}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-white">Email</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    type="email"
-                    disabled={!isEditing}
-                    className={!isEditing ? "bg-gray-700 text-white border-gray-600" : "bg-white text-gray-900"}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="email"
+                      disabled={!isEditing}
+                      className={!isEditing ? "bg-white/5 text-white border-white/20" : "bg-white text-gray-900"}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <div className="flex justify-end space-x-4">
-            {!isEditing ? (
-              <Button
-                type="button"
-                onClick={() => setIsEditing(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                <User className="w-4 h-4 mr-2" />
-                Edit Profile
-              </Button>
-            ) : (
-              <>
+            <div className="flex justify-end space-x-4">
+              {!isEditing ? (
                 <Button
                   type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setIsEditing(false);
-                    form.reset();
-                  }}
-                  className="border-gray-500 text-white hover:bg-gray-700"
+                  onClick={() => setIsEditing(true)}
+                  className="bg-orange-600 hover:bg-orange-700 text-white"
                 >
-                  Cancel
+                  <User className="w-4 h-4 mr-2" />
+                  Edit Profile
                 </Button>
-                <Button
-                  type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  Save Changes
-                </Button>
-              </>
-            )}
-          </div>
-        </form>
-      </Form>
+              ) : (
+                <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setIsEditing(false);
+                      form.reset();
+                    }}
+                    className="border-white/30 text-white hover:bg-white/10"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="bg-orange-600 hover:bg-orange-700 text-white"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    Save Changes
+                  </Button>
+                </>
+              )}
+            </div>
+          </form>
+        </Form>
+      </div>
 
       {/* Image Cropper Modal */}
       {showImageCropper && selectedImage && (
