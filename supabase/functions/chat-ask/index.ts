@@ -339,9 +339,8 @@ serve(async (req) => {
       });
     }
 
-    /* Dynamic max_tokens: 4× prompt length, capped at 1200 */
-    const estPromptTokens = Math.ceil(message.length / 4);
-    const maxTokens = Math.min(1200, 4 * estPromptTokens);
+    /* Fixed max_tokens: Set to a reasonable minimum to ensure complete JSON responses */
+    const maxTokens = Math.max(300, Math.min(1200, message.length * 2));
 
     const chatReq = {
       model: "gpt-4o-mini",
@@ -360,7 +359,7 @@ serve(async (req) => {
       ],
     };
 
-    console.log('Sending request to OpenAI:', JSON.stringify(chatReq, null, 2));
+    console.log('Sending request to OpenAI with max_tokens:', maxTokens);
 
     const openaiRes = await fetch(
       "https://api.openai.com/v1/chat/completions",
@@ -381,13 +380,26 @@ serve(async (req) => {
     }
 
     const data = await openaiRes.json();
-    console.log('OpenAI response:', JSON.stringify(data, null, 2));
+    console.log('OpenAI response received, content length:', data.choices[0].message.content.length);
     
     const content = data.choices[0].message.content;
-    let parsed = JSON.parse(content) as {
-      answer: string;
-      citations: string[];
-    };
+    
+    // Validate JSON before parsing
+    let parsed;
+    try {
+      parsed = JSON.parse(content) as {
+        answer: string;
+        citations: string[];
+      };
+    } catch (parseError) {
+      console.error('JSON parsing failed:', parseError);
+      console.error('Content that failed to parse:', content);
+      // Fallback response
+      parsed = {
+        answer: "I apologize, but I'm unable to process your request at the moment. Please try again.",
+        citations: [],
+      };
+    }
 
     /* On-topic guardrail */
     if (
