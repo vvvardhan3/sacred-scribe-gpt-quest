@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -10,37 +9,37 @@ import Footer from '@/components/Footer';
 import ScriptureCard from '@/components/ScriptureCard';
 
 const Index = () => {
-  // Define scripture categories - all unlocked on landing page
+  // Define scripture categories with orange-themed gradients
   const scriptureCategories = [
     {
       name: 'Vedas',
       description: 'Ancient sacred texts - Rigveda, Samaveda, Yajurveda, and Atharvaveda',
-      color: 'from-blue-500 to-indigo-600'
+      color: 'from-orange-400 to-amber-500'
     },
     {
       name: 'Puranas',
       description: 'Stories and legends of gods, goddesses, and ancient heroes',
-      color: 'from-purple-500 to-pink-600'
+      color: 'from-red-400 to-orange-500'
     },
     {
       name: 'Upanishads',
       description: 'Philosophical texts exploring the nature of reality and consciousness',
-      color: 'from-green-500 to-emerald-600'
+      color: 'from-amber-400 to-orange-600'
     },
     {
       name: 'Bhagavad Gita',
       description: 'Divine discourse between Krishna and Arjuna on dharma and yoga',
-      color: 'from-orange-500 to-red-600'
+      color: 'from-orange-500 to-red-500'
     },
     {
       name: 'Mahabharata',
       description: 'Epic tale of the Kurukshetra war and dharmic principles',
-      color: 'from-red-500 to-rose-600'
+      color: 'from-yellow-500 to-orange-500'
     },
     {
       name: 'Ramayana',
       description: 'Epic journey of Rama, Sita, and the triumph of good over evil',
-      color: 'from-amber-500 to-orange-600'
+      color: 'from-orange-600 to-red-600'
     }
   ];
 
