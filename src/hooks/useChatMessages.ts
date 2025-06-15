@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Message } from '@/types/chat';
 import { useMessageState } from './useMessageState';
@@ -33,13 +33,13 @@ export const useChatMessages = (
     isLoadingMessages
   } = useMessageState(activeConversationId);
 
-  // Save messages to database whenever messages change
+  // Save messages to database when they change (debounced)
   useEffect(() => {
-    const saveMessages = async () => {
-      if (!activeConversationId || messages.length === 0) return;
+    if (!activeConversationId || messages.length === 0) return;
 
+    const timeoutId = setTimeout(async () => {
       try {
-        console.log('Saving messages to database:', activeConversationId, messages);
+        console.log('Auto-saving messages to database');
         await conversationDb.saveMessages(activeConversationId, messages);
 
         // Generate title for first message if needed
@@ -59,16 +59,14 @@ export const useChatMessages = (
           }
         }
       } catch (error) {
-        console.error('Error saving messages:', error);
+        console.error('Error auto-saving messages:', error);
       }
-    };
+    }, 500);
 
-    // Debounce the save operation
-    const timeoutId = setTimeout(saveMessages, 500);
     return () => clearTimeout(timeoutId);
   }, [messages, activeConversationId, titleGenerated, getActiveConversation, updateConversation, setTitleGenerated]);
 
-  const sendMessage = useCallback(async () => {
+  const sendMessage = async () => {
     const trimmedInput = input.trim();
     if (!trimmedInput || loading) return;
 
@@ -97,6 +95,13 @@ export const useChatMessages = (
     setInput('');
     setLoading(true);
 
+    // Save user message immediately to database
+    try {
+      await conversationDb.saveMessage(currentConvId, userMessage);
+    } catch (error) {
+      console.error('Error saving user message:', error);
+    }
+
     try {
       const data = await sendMessageToAPI(trimmedInput);
       const assistantMessage = createAssistantMessage(data.answer, data.citations);
@@ -106,6 +111,13 @@ export const useChatMessages = (
       // Set this message as streaming
       setStreamingMessageId(assistantMessage.id);
       addMessage(assistantMessage);
+
+      // Save assistant message to database
+      try {
+        await conversationDb.saveMessage(currentConvId, assistantMessage);
+      } catch (error) {
+        console.error('Error saving assistant message:', error);
+      }
 
       // Stop streaming after a delay
       setTimeout(() => {
@@ -125,27 +137,27 @@ export const useChatMessages = (
     } finally {
       setLoading(false);
     }
-  }, [input, loading, activeConversationId, addMessage, createNewConversation, toast]);
+  };
 
-  const toggleCitations = useCallback((messageId: string) => {
+  const toggleCitations = (messageId: string) => {
     setExpandedCitations(prev => ({
       ...prev,
       [messageId]: !prev[messageId]
     }));
-  }, []);
+  };
 
-  const handleSuggestionClick = useCallback((suggestion: string) => {
+  const handleSuggestionClick = (suggestion: string) => {
     console.log('Setting input from suggestion:', suggestion);
     setInput(suggestion);
-  }, []);
+  };
 
-  const resetChat = useCallback(() => {
+  const resetChat = () => {
     console.log('Resetting chat');
     resetMessages();
     setInput('');
     setExpandedCitations({});
     setStreamingMessageId(undefined);
-  }, [resetMessages]);
+  };
 
   return {
     messages,

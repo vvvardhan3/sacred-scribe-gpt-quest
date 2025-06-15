@@ -45,7 +45,7 @@ const Chat = () => {
   };
 
   const handleCreateNew = () => {
-    console.log('Creating new conversation');
+    console.log('Creating new conversation from sidebar');
     resetChat();
     setActiveConversationId(null);
   };

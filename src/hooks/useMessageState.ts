@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Message } from '@/types/chat';
 import { conversationDb } from '@/utils/conversationDatabase';
 
@@ -52,16 +52,17 @@ export const useMessageState = (activeConversationId: string | null) => {
     loadMessages();
   }, [activeConversationId]);
 
-  const addMessage = useCallback((message: Message) => {
+  // Define stable functions without useCallback to avoid hook ordering issues
+  const addMessage = (message: Message) => {
     console.log('Adding message to state:', message);
     setMessages(prev => [...prev, message]);
-  }, []);
+  };
 
-  const resetMessages = useCallback(() => {
+  const resetMessages = () => {
     console.log('Resetting messages');
     setMessages([]);
     setTitleGenerated(false);
-  }, []);
+  };
 
   return {
     messages,

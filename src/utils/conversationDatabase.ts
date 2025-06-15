@@ -121,6 +121,48 @@ export const conversationDb = {
     }));
   },
 
+  // Save a single message to the database
+  async saveMessage(conversationId: string, message: any): Promise<void> {
+    console.log('Saving single message to database:', conversationId, message);
+    
+    // Check if message already exists
+    const { data: existingMessage } = await supabase
+      .from('messages')
+      .select('id')
+      .eq('id', message.id)
+      .single();
+
+    if (existingMessage) {
+      console.log('Message already exists, skipping insert');
+      return;
+    }
+
+    const messageToInsert = {
+      id: message.id,
+      conversation_id: conversationId,
+      role: message.role,
+      content: message.content,
+      citations: message.citations || null,
+      created_at: message.timestamp?.toISOString() || new Date().toISOString()
+    };
+
+    console.log('Inserting message:', messageToInsert);
+
+    const { error } = await supabase
+      .from('messages')
+      .insert(messageToInsert);
+
+    if (error) {
+      console.error('Error saving message:', error);
+      throw error;
+    }
+
+    console.log('Message saved successfully');
+
+    // Update conversation timestamp
+    await this.updateConversation(conversationId, {});
+  },
+
   // Save messages for a conversation (replace all existing messages)
   async saveMessages(conversationId: string, messages: any[]): Promise<void> {
     console.log('Saving messages to database:', conversationId, messages);

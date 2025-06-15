@@ -18,15 +18,20 @@ export const sendMessageToAPI = async (message: string): Promise<{ answer: strin
   return data;
 };
 
+// Generate proper UUIDs for message IDs
+const generateMessageId = (): string => {
+  return crypto.randomUUID();
+};
+
 export const createUserMessage = (content: string): Message => ({
-  id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+  id: generateMessageId(),
   role: 'user',
   content,
   timestamp: new Date()
 });
 
 export const createAssistantMessage = (content: string, citations?: string[]): Message => ({
-  id: `assistant-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+  id: generateMessageId(),
   role: 'assistant',
   content,
   citations: citations || [],
@@ -34,7 +39,7 @@ export const createAssistantMessage = (content: string, citations?: string[]): M
 });
 
 export const createErrorMessage = (): Message => ({
-  id: `error-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+  id: generateMessageId(),
   role: 'assistant',
   content: "I apologize, but I'm unable to process your request at the moment. Please try again later.",
   timestamp: new Date()
