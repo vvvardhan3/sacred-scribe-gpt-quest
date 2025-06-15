@@ -12,10 +12,11 @@ interface ImageCropperProps {
 
 const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) => {
   const [imageSrc, setImageSrc] = useState<string>('');
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [crop, setCrop] = useState({ x: 50, y: 50 });
   const [scale, setScale] = useState(1);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [imageLoaded, setImageLoaded] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -28,6 +29,11 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
     reader.readAsDataURL(image);
   }, [image]);
 
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+    console.log('Image loaded successfully');
+  };
+
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsDragging(true);
@@ -38,6 +44,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
         y: e.clientY - rect.top - crop.y 
       });
     }
+    console.log('Started dragging');
   };
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
@@ -59,6 +66,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
+    console.log('Stopped dragging');
   }, []);
 
   React.useEffect(() => {
@@ -74,17 +82,19 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
   }, [isDragging, handleMouseMove, handleMouseUp]);
 
   const getCroppedImage = async () => {
-    if (!imageRef.current || !canvasRef.current || !containerRef.current) return;
+    console.log('Starting crop process...');
+    
+    if (!imageRef.current || !canvasRef.current || !containerRef.current || !imageLoaded) {
+      console.error('Missing required elements or image not loaded');
+      return;
+    }
 
     const img = imageRef.current;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
 
-    if (!ctx) return;
-
-    // Wait for image to load completely
-    if (!img.complete) {
-      img.onload = () => getCroppedImage();
+    if (!ctx) {
+      console.error('Could not get canvas context');
       return;
     }
 
@@ -101,31 +111,28 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
     let displayedWidth, displayedHeight, offsetX = 0, offsetY = 0;
     
     if (imgAspectRatio > containerAspectRatio) {
-      // Image is wider than container
       displayedHeight = containerRect.height * scale;
       displayedWidth = displayedHeight * imgAspectRatio;
       offsetX = (containerRect.width - displayedWidth) / 2;
     } else {
-      // Image is taller than container
       displayedWidth = containerRect.width * scale;
       displayedHeight = displayedWidth / imgAspectRatio;
       offsetY = (containerRect.height - displayedHeight) / 2;
     }
 
-    // Calculate scale factors from displayed size to natural size
     const scaleX = img.naturalWidth / displayedWidth;
     const scaleY = img.naturalHeight / displayedHeight;
 
-    // Calculate the crop area in natural image coordinates
     const cropSize = 200;
-    const naturalCropX = (crop.x - offsetX) * scaleX;
-    const naturalCropY = (crop.y - offsetY) * scaleY;
-    const naturalCropSize = cropSize * Math.max(scaleX, scaleY);
+    const naturalCropX = Math.max(0, (crop.x - offsetX) * scaleX);
+    const naturalCropY = Math.max(0, (crop.y - offsetY) * scaleY);
+    const naturalCropSize = Math.min(
+      cropSize * Math.max(scaleX, scaleY),
+      img.naturalWidth - naturalCropX,
+      img.naturalHeight - naturalCropY
+    );
 
-    // Ensure crop area is within image bounds
-    const clampedX = Math.max(0, Math.min(naturalCropX, img.naturalWidth - naturalCropSize));
-    const clampedY = Math.max(0, Math.min(naturalCropY, img.naturalHeight - naturalCropSize));
-    const clampedSize = Math.min(naturalCropSize, img.naturalWidth - clampedX, img.naturalHeight - clampedY);
+    console.log('Crop dimensions:', { naturalCropX, naturalCropY, naturalCropSize });
 
     // Create circular clip path
     ctx.save();
@@ -136,10 +143,10 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
     // Draw the cropped image
     ctx.drawImage(
       img,
-      clampedX,
-      clampedY,
-      clampedSize,
-      clampedSize,
+      naturalCropX,
+      naturalCropY,
+      naturalCropSize,
+      naturalCropSize,
       0,
       0,
       outputSize,
@@ -151,22 +158,25 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
     // Convert to blob
     canvas.toBlob((blob) => {
       if (blob) {
+        console.log('Successfully created cropped image blob');
         onCrop(blob);
+      } else {
+        console.error('Failed to create blob from canvas');
       }
     }, 'image/jpeg', 0.9);
   };
 
   return (
     <Dialog open={true} onOpenChange={onCancel}>
-      <DialogContent className="max-w-2xl bg-gray-800 border-gray-700">
+      <DialogContent className="max-w-2xl bg-white border-gray-300">
         <DialogHeader>
-          <DialogTitle className="text-white">Crop Profile Picture</DialogTitle>
+          <DialogTitle className="text-gray-900">Crop Profile Picture</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <div
             ref={containerRef}
-            className="relative w-full h-96 bg-gray-900 rounded-lg overflow-hidden select-none"
+            className="relative w-full h-96 bg-gray-100 rounded-lg overflow-hidden select-none border"
             style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
           >
             {imageSrc && (
@@ -181,35 +191,41 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
                     transformOrigin: 'center center',
                   }}
                   draggable={false}
+                  onLoad={handleImageLoad}
+                  onError={() => console.error('Image failed to load')}
                 />
-                {/* Crop overlay */}
-                <div
-                  className="absolute border-4 border-orange-500 rounded-full shadow-lg pointer-events-none"
-                  style={{
-                    width: '200px',
-                    height: '200px',
-                    left: `${crop.x}px`,
-                    top: `${crop.y}px`,
-                    boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.5)',
-                  }}
-                />
-                {/* Draggable area */}
-                <div
-                  className="absolute cursor-move"
-                  style={{
-                    width: '200px',
-                    height: '200px',
-                    left: `${crop.x}px`,
-                    top: `${crop.y}px`,
-                  }}
-                  onMouseDown={handleMouseDown}
-                />
+                {imageLoaded && (
+                  <>
+                    {/* Crop overlay */}
+                    <div
+                      className="absolute border-4 border-blue-500 rounded-full shadow-lg pointer-events-none"
+                      style={{
+                        width: '200px',
+                        height: '200px',
+                        left: `${crop.x}px`,
+                        top: `${crop.y}px`,
+                        boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.5)',
+                      }}
+                    />
+                    {/* Draggable area */}
+                    <div
+                      className="absolute cursor-move"
+                      style={{
+                        width: '200px',
+                        height: '200px',
+                        left: `${crop.x}px`,
+                        top: `${crop.y}px`,
+                      }}
+                      onMouseDown={handleMouseDown}
+                    />
+                  </>
+                )}
               </>
             )}
           </div>
 
           <div className="flex items-center space-x-4">
-            <label className="text-sm font-medium text-white">Zoom:</label>
+            <label className="text-sm font-medium text-gray-700">Zoom:</label>
             <input
               type="range"
               min="0.5"
@@ -219,15 +235,19 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
               onChange={(e) => setScale(parseFloat(e.target.value))}
               className="flex-1"
             />
-            <span className="text-sm text-gray-300">{Math.round(scale * 100)}%</span>
+            <span className="text-sm text-gray-600">{Math.round(scale * 100)}%</span>
           </div>
 
           <div className="flex justify-end space-x-4">
-            <Button variant="outline" onClick={onCancel} className="border-gray-600 text-white hover:bg-gray-700">
+            <Button variant="outline" onClick={onCancel} className="border-gray-300 text-gray-700 hover:bg-gray-50">
               <X className="w-4 h-4 mr-2" />
               Cancel
             </Button>
-            <Button onClick={getCroppedImage} className="bg-orange-500 hover:bg-orange-600">
+            <Button 
+              onClick={getCroppedImage} 
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+              disabled={!imageLoaded}
+            >
               <Crop className="w-4 h-4 mr-2" />
               Crop & Save
             </Button>

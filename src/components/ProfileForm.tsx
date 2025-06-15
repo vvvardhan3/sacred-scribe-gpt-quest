@@ -65,7 +65,28 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    console.log('Image selected:', file);
     if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Error",
+          description: "Please select a valid image file",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Validate file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Error",
+          description: "Image size must be less than 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       setSelectedImage(file);
       setShowImageCropper(true);
     }
@@ -76,6 +97,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
 
     setUploading(true);
     try {
+      console.log('Uploading cropped image...');
       const fileExt = selectedImage?.name.split('.').pop() || 'jpg';
       const fileName = `${user.id}/profile.${fileExt}`;
 
@@ -87,12 +109,17 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
           contentType: `image/${fileExt}`,
         });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
 
       // Get the public URL
       const { data: { publicUrl } } = supabase.storage
         .from('profile-pictures')
         .getPublicUrl(fileName);
+
+      console.log('Image uploaded successfully, URL:', publicUrl);
 
       // Update the profile with the new image URL
       await onUpdateProfile({ profile_picture_url: publicUrl });
@@ -146,7 +173,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
       {/* Profile Picture Section */}
       <div className="flex flex-col items-center space-y-4">
         <div className="relative">
-          <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-orange-600 to-orange-800 flex items-center justify-center shadow-lg border-4 border-white">
+          <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center shadow-lg border-4 border-white">
             {profile.profile_picture_url ? (
               <img
                 src={profile.profile_picture_url}
@@ -160,7 +187,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
           <Button
             type="button"
             size="sm"
-            className="absolute bottom-0 right-0 rounded-full w-10 h-10 p-0 bg-orange-600 hover:bg-orange-700 border-2 border-white"
+            className="absolute bottom-0 right-0 rounded-full w-10 h-10 p-0 bg-blue-600 hover:bg-blue-700 border-2 border-white"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
           >
@@ -177,7 +204,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
       </div>
 
       {/* Form Section */}
-      <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
+      <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
@@ -185,12 +212,12 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
               name="display_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white">Display Name</FormLabel>
+                  <FormLabel className="text-gray-700">Display Name</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       disabled={!isEditing}
-                      className={!isEditing ? "bg-white/5 text-white border-white/20" : "bg-white text-gray-900"}
+                      className={!isEditing ? "bg-gray-50 text-gray-700 border-gray-200" : "bg-white text-gray-900"}
                     />
                   </FormControl>
                   <FormMessage />
@@ -203,13 +230,13 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white">Email</FormLabel>
+                  <FormLabel className="text-gray-700">Email</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       type="email"
                       disabled={!isEditing}
-                      className={!isEditing ? "bg-white/5 text-white border-white/20" : "bg-white text-gray-900"}
+                      className={!isEditing ? "bg-gray-50 text-gray-700 border-gray-200" : "bg-white text-gray-900"}
                     />
                   </FormControl>
                   <FormMessage />
@@ -222,7 +249,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
                 <Button
                   type="button"
                   onClick={() => setIsEditing(true)}
-                  className="bg-orange-600 hover:bg-orange-700 text-white"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   <User className="w-4 h-4 mr-2" />
                   Edit Profile
@@ -236,13 +263,13 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
                       setIsEditing(false);
                       form.reset();
                     }}
-                    className="border-white/30 text-white hover:bg-white/10"
+                    className="border-gray-300 text-gray-700 hover:bg-gray-50"
                   >
                     Cancel
                   </Button>
                   <Button
                     type="submit"
-                    className="bg-orange-600 hover:bg-orange-700 text-white"
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
                   >
                     <Save className="w-4 h-4 mr-2" />
                     Save Changes
@@ -260,6 +287,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
           image={selectedImage}
           onCrop={handleImageCrop}
           onCancel={() => {
+            console.log('Cropping cancelled');
             setShowImageCropper(false);
             setSelectedImage(null);
           }}

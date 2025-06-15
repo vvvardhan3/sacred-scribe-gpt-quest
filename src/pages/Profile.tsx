@@ -78,21 +78,21 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-400 to-orange-600">
+      <div className="min-h-screen bg-gray-50">
         <Navigation />
         <div className="flex items-center justify-center h-96">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-600"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-400 to-orange-600">
+    <div className="min-h-screen bg-gray-50">
       <Navigation />
       <div className="min-h-screen px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold text-white mb-8 text-center">Profile Settings</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-8 text-center">Profile Settings</h1>
           {profile && user && (
             <ProfileForm 
               profile={profile} 
