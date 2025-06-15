@@ -5,7 +5,6 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { useUserLimits } from "@/hooks/useUserLimits";
 import { useNavigate } from "react-router-dom";
 import { PricingCard } from './pricing/PricingCard';
-import { UsageDisplay } from './pricing/UsageDisplay';
 import { createPricingPlans } from './pricing/pricingPlans';
 
 export const PricingSection = () => {
@@ -14,7 +13,8 @@ export const PricingSection = () => {
   const { limits, usage } = useUserLimits();
   const navigate = useNavigate();
 
-  const plans = createPricingPlans(subscription);
+  // For landing page, don't show current plan status - create plans without subscription data
+  const plans = createPricingPlans(null);
 
   const handlePlanClick = (planId: string | null) => {
     if (user) {
