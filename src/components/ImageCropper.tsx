@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -124,7 +125,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
     const scaleX = img.naturalWidth / imgRect.width;
     const scaleY = img.naturalHeight / imgRect.height;
     
-    // Calculate crop area in natural image coordinates
+    // Calculate crop area in natural image coordinates - using the exact crop area without modification
     const cropXInImg = Math.max(0, (crop.x - imgX) * scaleX);
     const cropYInImg = Math.max(0, (crop.y - imgY) * scaleY);
     const cropSizeXInImg = Math.min(cropSize * scaleX, img.naturalWidth - cropXInImg);
@@ -134,10 +135,11 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
       natural: { width: img.naturalWidth, height: img.naturalHeight },
       displayed: { width: imgRect.width, height: imgRect.height },
       crop: { x: cropXInImg, y: cropYInImg, sizeX: cropSizeXInImg, sizeY: cropSizeYInImg },
-      scale: { x: scaleX, y: scaleY }
+      scale: { x: scaleX, y: scaleY },
+      zoom: scale
     });
 
-    // Clear canvas with white background instead of transparent
+    // Clear canvas with white background
     ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, outputSize, outputSize);
     
@@ -147,17 +149,14 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
     ctx.arc(outputSize / 2, outputSize / 2, outputSize / 2, 0, 2 * Math.PI);
     ctx.clip();
 
-    // Draw the cropped image to fill the circle perfectly
-    const minCropSize = Math.min(cropSizeXInImg, cropSizeYInImg);
-    const cropCenterX = cropXInImg + cropSizeXInImg / 2;
-    const cropCenterY = cropYInImg + cropSizeYInImg / 2;
-    
+    // Draw the cropped image - use the rectangular crop area directly without forcing square
+    // This preserves the user's intended crop area better
     ctx.drawImage(
       img,
-      cropCenterX - minCropSize / 2,
-      cropCenterY - minCropSize / 2,
-      minCropSize,
-      minCropSize,
+      cropXInImg,
+      cropYInImg,
+      cropSizeXInImg,
+      cropSizeYInImg,
       0,
       0,
       outputSize,
