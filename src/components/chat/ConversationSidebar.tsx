@@ -29,7 +29,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Plus, Edit2, Trash2, MessageSquare, MoreHorizontal, X, LogOut, Bot } from 'lucide-react';
+import { Plus, Edit2, Trash2, MessageSquare, MoreHorizontal, X, LogOut } from 'lucide-react';
 import { Conversation } from '@/hooks/useConversations';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSidebar } from '@/components/ui/sidebar';
@@ -103,10 +103,10 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
         <SidebarHeader className="p-4 border-b border-gray-100">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-                <Bot className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-sm">हिं</span>
               </div>
-              <span className="font-semibold text-xl text-gray-900">HinduGPT</span>
+              <span className="font-semibold text-xl bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">HinduGPT</span>
             </div>
             <Button
               variant="ghost"
