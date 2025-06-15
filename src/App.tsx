@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile";
 import QuizCategory from "./pages/QuizCategory";
 import QuizPlay from "./pages/QuizPlay";
 import QuizResults from "./pages/QuizResults";
@@ -32,6 +33,11 @@ const App = () => (
             <Route path="/dashboard" element={
               <AuthGuard>
                 <Dashboard />
+              </AuthGuard>
+            } />
+            <Route path="/profile" element={
+              <AuthGuard>
+                <Profile />
               </AuthGuard>
             } />
             <Route path="/quiz/category/:category" element={

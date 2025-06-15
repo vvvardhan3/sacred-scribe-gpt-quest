@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useAuth } from '@/contexts/AuthContext';
 import { LogOut, Settings, Bell, Palette, CreditCard, User } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,10 +41,12 @@ const Navigation = () => {
                 <DropdownMenuContent className="w-56 bg-white border border-gray-200 shadow-lg" align="end">
                   <DropdownMenuLabel className="text-gray-700">Settings</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="hover:bg-orange-50 cursor-pointer">
-                    <User className="w-4 h-4 mr-2" />
-                    Profile
-                  </DropdownMenuItem>
+                  <Link to="/profile">
+                    <DropdownMenuItem className="hover:bg-orange-50 cursor-pointer">
+                      <User className="w-4 h-4 mr-2" />
+                      Profile
+                    </DropdownMenuItem>
+                  </Link>
                   <DropdownMenuItem className="hover:bg-orange-50 cursor-pointer">
                     <Bell className="w-4 h-4 mr-2" />
                     Notifications
