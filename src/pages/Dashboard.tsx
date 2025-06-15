@@ -1,12 +1,13 @@
-
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { 
   MessageCircle, 
   ArrowRight,
   Crown,
-  Star
+  Star,
+  SquareLibrary
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ScriptureCard from '@/components/ScriptureCard';
@@ -71,7 +72,13 @@ const Dashboard = () => {
       {/* Scripture Categories Grid */}
       <section className="max-w-6xl mx-auto px-6 py-12">
         <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+          <div className="flex justify-center mb-4">
+            <Badge variant="secondary" className="bg-orange-100 text-orange-700 hover:bg-orange-200 px-4 py-2 text-sm font-medium">
+              <SquareLibrary className="w-4 h-4 mr-2" />
+              Spiritual Knowledge
+            </Badge>
+          </div>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-600 via-red-500 to-pink-600 bg-clip-text text-transparent mb-4">
             Sacred Scripture Library
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
