@@ -70,15 +70,13 @@ serve(async (req) => {
         name: 'Devotee Plan',
         amount: 99900, // ₹999 in paise
         period: 'monthly',
-        interval: 1,
-        razorpay_plan_id: 'plan_devotee_monthly_999'
+        interval: 1
       },
       'guru': {
         name: 'Guru Plan', 
         amount: 299900, // ₹2999 in paise
         period: 'monthly',
-        interval: 1,
-        razorpay_plan_id: 'plan_guru_monthly_2999'
+        interval: 1
       }
     }
 
@@ -101,10 +99,47 @@ serve(async (req) => {
     console.log('Razorpay credentials configured')
     const authBasic = btoa(`${razorpayKeyId}:${razorpayKeySecret}`)
 
-    // Create subscription directly (plans are created on Razorpay dashboard)
+    // Step 1: Create a plan first
+    console.log('Creating plan with Razorpay...')
+    const planPayload = {
+      period: selectedPlan.period,
+      interval: selectedPlan.interval,
+      item: {
+        name: selectedPlan.name,
+        amount: selectedPlan.amount,
+        currency: 'INR'
+      },
+      notes: {
+        plan_type: planId
+      }
+    }
+
+    console.log('Plan payload:', JSON.stringify(planPayload, null, 2))
+
+    const planResponse = await fetch('https://api.razorpay.com/v1/plans', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${authBasic}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(planPayload)
+    })
+
+    console.log('Razorpay plan response status:', planResponse.status)
+
+    if (!planResponse.ok) {
+      const errorData = await planResponse.text()
+      console.error('Razorpay plan creation failed:', errorData)
+      throw new Error(`Failed to create plan with Razorpay (${planResponse.status}): ${errorData}`)
+    }
+
+    const plan = await planResponse.json()
+    console.log('Razorpay plan created successfully:', plan.id)
+
+    // Step 2: Create subscription using the created plan
     console.log('Creating subscription with Razorpay...')
     const subscriptionPayload = {
-      plan_id: selectedPlan.razorpay_plan_id,
+      plan_id: plan.id,
       customer_notify: 1,
       quantity: 1,
       total_count: 12, // 12 months
@@ -127,13 +162,11 @@ serve(async (req) => {
       body: JSON.stringify(subscriptionPayload)
     })
 
-    console.log('Razorpay response status:', subscriptionResponse.status)
+    console.log('Razorpay subscription response status:', subscriptionResponse.status)
 
     if (!subscriptionResponse.ok) {
       const errorData = await subscriptionResponse.text()
       console.error('Razorpay subscription creation failed:', errorData)
-      console.error('Response status:', subscriptionResponse.status)
-      console.error('Response headers:', Object.fromEntries(subscriptionResponse.headers.entries()))
       throw new Error(`Failed to create subscription with Razorpay (${subscriptionResponse.status}): ${errorData}`)
     }
 
