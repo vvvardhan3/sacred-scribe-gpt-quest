@@ -55,12 +55,12 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, isCurrentPlan, onPayme
       </CardHeader>
       <CardContent className="flex-grow flex flex-col">
         <div className="flex-grow space-y-4">
-          <div className="text-center">
+          <div className="text-center mx-auto">
             <h4 className="font-semibold text-green-700 mb-3 flex items-center justify-center">
               <Check className="w-4 h-4 mr-2" />
               What's Included:
             </h4>
-            <ul className="space-y-3">
+            <ul className="space-y-3 mx-auto">
               {plan.features.map((feature, featureIndex) => (
                 <li key={featureIndex} className="flex items-start text-sm text-gray-700">
                   <Check className="w-4 h-4 text-green-500 mr-3 flex-shrink-0 mt-0.5" />
