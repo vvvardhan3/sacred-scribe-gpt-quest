@@ -1,11 +1,11 @@
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -27,6 +27,7 @@ interface Quiz {
 const QuizPlay = () => {
   const { quizId } = useParams<{ quizId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
   
@@ -36,20 +37,82 @@ const QuizPlay = () => {
   const [selectedAnswers, setSelectedAnswers] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [generating, setGenerating] = useState(false);
+
+  // Get state from navigation
+  const state = location.state as { category?: string; mode?: 'generate' | 'play'; quizId?: string } | null;
 
   useEffect(() => {
-    if (quizId) {
-      fetchQuizData();
+    if (state?.mode === 'generate' && state.category) {
+      generateNewQuiz(state.category);
+    } else if (quizId || state?.quizId) {
+      fetchQuizData(quizId || state?.quizId);
+    } else {
+      setLoading(false);
+      toast({
+        title: "Error",
+        description: "No quiz specified",
+        variant: "destructive"
+      });
     }
-  }, [quizId]);
+  }, [quizId, state]);
 
-  const fetchQuizData = async () => {
+  const generateNewQuiz = async (category: string) => {
+    if (!user) return;
+
+    setGenerating(true);
+    setLoading(true);
+
+    try {
+      console.log('Generating quiz for category:', category);
+      
+      const { data, error } = await supabase.functions.invoke('quiz-generate', {
+        body: { category },
+        headers: {
+          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+        },
+      });
+
+      if (error) {
+        console.error('Quiz generation error:', error);
+        throw new Error(error.message || 'Failed to generate quiz');
+      }
+
+      if (!data.success || !data.quiz) {
+        throw new Error('Failed to generate quiz');
+      }
+
+      console.log('Quiz generated successfully:', data.quiz);
+      
+      // Fetch the generated quiz
+      await fetchQuizData(data.quiz.id);
+      
+      toast({
+        title: "Quiz Generated!",
+        description: `Your ${category} quiz has been created successfully.`,
+      });
+    } catch (error: any) {
+      console.error('Error generating quiz:', error);
+      toast({
+        title: "Generation Failed",
+        description: error.message || "Failed to generate quiz. Please try again.",
+        variant: "destructive"
+      });
+      navigate('/dashboard');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const fetchQuizData = async (id?: string) => {
+    if (!id) return;
+
     try {
       // Fetch quiz details
       const { data: quizData, error: quizError } = await supabase
         .from('quizzes')
         .select('*')
-        .eq('id', quizId)
+        .eq('id', id)
         .single();
 
       if (quizError) throw quizError;
@@ -59,7 +122,7 @@ const QuizPlay = () => {
       const { data: questionsData, error: questionsError } = await supabase
         .from('questions')
         .select('*')
-        .eq('quiz_id', quizId)
+        .eq('quiz_id', id)
         .order('created_at', { ascending: true });
 
       if (questionsError) throw questionsError;
@@ -152,17 +215,27 @@ const QuizPlay = () => {
     }
   };
 
-  if (loading) {
+  if (loading || generating) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-red-100">
+        <Card className="p-8">
+          <CardContent className="flex flex-col items-center space-y-4">
+            <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+            <p className="text-lg font-semibold">
+              {generating ? 'Generating your quiz...' : 'Loading quiz...'}
+            </p>
+            <p className="text-sm text-gray-600">
+              {generating ? 'This may take a few moments' : 'Please wait'}
+            </p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   if (!quiz || questions.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-red-100">
         <Card>
           <CardHeader>
             <CardTitle>Quiz Not Found</CardTitle>
@@ -170,6 +243,7 @@ const QuizPlay = () => {
           <CardContent>
             <p>The quiz you're looking for doesn't exist or has no questions.</p>
             <Button onClick={() => navigate('/dashboard')} className="mt-4">
+              <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Dashboard
             </Button>
           </CardContent>
@@ -257,7 +331,14 @@ const QuizPlay = () => {
               disabled={!allAnswered || submitting}
               className="bg-green-600 hover:bg-green-700"
             >
-              {submitting ? 'Submitting...' : 'Submit Quiz'}
+              {submitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                'Submit Quiz'
+              )}
             </Button>
           ) : (
             <Button onClick={handleNext}>
