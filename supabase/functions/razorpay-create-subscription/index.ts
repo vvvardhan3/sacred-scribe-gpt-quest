@@ -15,6 +15,8 @@ serve(async (req) => {
 
   try {
     console.log('=== Razorpay Create Subscription Function Started ===')
+    console.log('Request method:', req.method)
+    console.log('Request headers:', Object.fromEntries(req.headers.entries()))
     
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -24,8 +26,10 @@ serve(async (req) => {
     // Parse request body
     let requestBody
     try {
-      requestBody = await req.json()
-      console.log('Request body received:', requestBody)
+      const bodyText = await req.text()
+      console.log('Raw request body:', bodyText)
+      requestBody = JSON.parse(bodyText)
+      console.log('Parsed request body:', requestBody)
     } catch (error) {
       console.error('Failed to parse request body:', error)
       return new Response(
@@ -78,14 +82,46 @@ serve(async (req) => {
     const token = authHeader.replace('Bearer ', '')
     console.log('Token extracted, length:', token.length)
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    let user
+    try {
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token)
+      
+      if (authError) {
+        console.error('Auth error:', authError)
+        return new Response(
+          JSON.stringify({ 
+            error: `Authentication failed: ${authError.message}`,
+            details: 'Invalid or expired authentication token'
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 401 
+          }
+        )
+      }
 
-    if (authError) {
-      console.error('Auth error:', authError)
+      if (!authUser) {
+        console.error('No user found after auth')
+        return new Response(
+          JSON.stringify({ 
+            error: 'User not authenticated',
+            details: 'No user found with the provided token'
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 401 
+          }
+        )
+      }
+
+      user = authUser
+      console.log('User authenticated successfully:', user.id)
+    } catch (error) {
+      console.error('Authentication exception:', error)
       return new Response(
         JSON.stringify({ 
-          error: `Authentication failed: ${authError.message}`,
-          details: 'Invalid or expired authentication token'
+          error: 'Authentication failed',
+          details: error.message
         }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -93,22 +129,6 @@ serve(async (req) => {
         }
       )
     }
-
-    if (!user) {
-      console.error('No user found after auth')
-      return new Response(
-        JSON.stringify({ 
-          error: 'User not authenticated',
-          details: 'No user found with the provided token'
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 401 
-        }
-      )
-    }
-
-    console.log('User authenticated successfully:', user.id)
 
     const razorpayKeyId = 'rzp_test_hDWzj3XChB3yxM'
     const razorpayKeySecret = Deno.env.get('RAZORPAY_KEY_SECRET')
@@ -177,25 +197,45 @@ serve(async (req) => {
 
     console.log('Order payload:', JSON.stringify(orderPayload, null, 2))
 
-    const orderResponse = await fetch('https://api.razorpay.com/v1/orders', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${authBasic}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(orderPayload)
-    })
+    let orderResponse
+    try {
+      orderResponse = await fetch('https://api.razorpay.com/v1/orders', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${authBasic}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderPayload)
+      })
 
-    console.log('Razorpay order response status:', orderResponse.status)
+      console.log('Razorpay order response status:', orderResponse.status)
+      console.log('Razorpay order response headers:', Object.fromEntries(orderResponse.headers.entries()))
+    } catch (error) {
+      console.error('Network error calling Razorpay:', error)
+      return new Response(
+        JSON.stringify({ 
+          error: 'Network error calling Razorpay',
+          details: error.message
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500 
+        }
+      )
+    }
 
     if (!orderResponse.ok) {
       const errorData = await orderResponse.text()
       console.error('Razorpay order creation failed:', errorData)
+      console.error('Status:', orderResponse.status)
+      console.error('Status text:', orderResponse.statusText)
+      
       return new Response(
         JSON.stringify({ 
           error: `Failed to create order with Razorpay`,
           details: errorData,
-          status: orderResponse.status
+          status: orderResponse.status,
+          statusText: orderResponse.statusText
         }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -204,8 +244,24 @@ serve(async (req) => {
       )
     }
 
-    const order = await orderResponse.json()
-    console.log('Razorpay order created successfully:', order.id)
+    let order
+    try {
+      order = await orderResponse.json()
+      console.log('Razorpay order created successfully:', order.id)
+      console.log('Order details:', JSON.stringify(order, null, 2))
+    } catch (error) {
+      console.error('Failed to parse Razorpay response:', error)
+      return new Response(
+        JSON.stringify({ 
+          error: 'Failed to parse Razorpay response',
+          details: error.message
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500 
+        }
+      )
+    }
 
     // Store subscription info in database (as pending until payment is verified)
     const dbPayload = {
@@ -220,16 +276,32 @@ serve(async (req) => {
 
     console.log('Storing subscription in database:', dbPayload)
 
-    const { error: insertError } = await supabase
-      .from('subscribers')
-      .upsert(dbPayload, { onConflict: 'email' })
+    try {
+      const { error: insertError } = await supabase
+        .from('subscribers')
+        .upsert(dbPayload, { onConflict: 'email' })
 
-    if (insertError) {
-      console.error('Database insert error:', insertError)
+      if (insertError) {
+        console.error('Database insert error:', insertError)
+        return new Response(
+          JSON.stringify({ 
+            error: `Failed to store subscription data: ${insertError.message}`,
+            details: insertError
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 500 
+          }
+        )
+      }
+
+      console.log('Subscription stored in database successfully')
+    } catch (error) {
+      console.error('Database operation failed:', error)
       return new Response(
         JSON.stringify({ 
-          error: `Failed to store subscription data: ${insertError.message}`,
-          details: insertError
+          error: 'Database operation failed',
+          details: error.message
         }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -237,8 +309,6 @@ serve(async (req) => {
         }
       )
     }
-
-    console.log('Subscription stored in database successfully')
 
     const responseData = { 
       subscription_id: order.id,
@@ -258,15 +328,17 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('=== Error in razorpay-create-subscription ===')
+    console.error('=== Unexpected Error in razorpay-create-subscription ===')
     console.error('Error message:', error.message)
     console.error('Error stack:', error.stack)
+    console.error('Error name:', error.name)
     
     return new Response(
       JSON.stringify({ 
         error: error.message || 'Internal server error',
         details: 'Check edge function logs for more details',
-        stack: error.stack
+        stack: error.stack,
+        name: error.name
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
