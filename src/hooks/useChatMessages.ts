@@ -15,7 +15,7 @@ export const useChatMessages = (
   activeConversationId: string | null,
   getActiveConversation: () => any,
   updateConversation: (id: string, updates: any) => void,
-  createNewConversation: () => string
+  createNewConversation: () => Promise<string>
 ) => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -54,7 +54,7 @@ export const useChatMessages = (
     let currentConvId = activeConversationId;
     if (!currentConvId) {
       console.log('Creating new conversation');
-      currentConvId = createNewConversation();
+      currentConvId = await createNewConversation();
     }
 
     const userMessage = createUserMessage(input);

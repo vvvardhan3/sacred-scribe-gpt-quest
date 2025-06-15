@@ -41,8 +41,8 @@ const Chat = () => {
     setActiveConversationId(id);
   };
 
-  const handleCreateNew = () => {
-    const newId = createNewConversation();
+  const handleCreateNew = async () => {
+    const newId = await createNewConversation();
     resetChat();
   };
 

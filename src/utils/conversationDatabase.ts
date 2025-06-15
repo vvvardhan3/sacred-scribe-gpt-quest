@@ -89,7 +89,12 @@ export const conversationDb = {
       throw error;
     }
 
-    return data || [];
+    // Type cast the role field to ensure it matches our expected type
+    return (data || []).map(msg => ({
+      ...msg,
+      role: msg.role as 'user' | 'assistant',
+      citations: msg.citations as string[] | null
+    }));
   },
 
   // Save messages for a conversation
