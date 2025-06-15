@@ -96,51 +96,36 @@ const StreamingMessage: React.FC<StreamingMessageProps> = ({ message, isStreamin
     return 'https://www.sacred-texts.com/hin/index.htm';
   };
 
-  // Function to format message content with inline citations
-  const formatMessageWithCitations = (content: string, citations?: string[]) => {
-    if (!citations || citations.length === 0) {
-      return <p className="text-base leading-relaxed whitespace-pre-wrap">{content}</p>;
-    }
-
-    const citationElements: JSX.Element[] = [];
-
-    citations.forEach((citation, index) => {
-      const citationNumber = index + 1;
-      citationElements.push(
-        <div key={index} className="text-sm text-gray-600 mt-2">
-          <span className="font-medium">#{citationNumber}</span> {citation}{' '}
-          <a 
-            href={getCitationLink(citation)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:text-blue-800 font-medium underline"
-          >
-            Read online
-          </a>
-        </div>
-      );
-    });
-
-    return (
-      <div>
-        <p className="text-base leading-relaxed whitespace-pre-wrap">{content}</p>
-        {citationElements.length > 0 && (
-          <div className="mt-4">
-            <h4 className="text-sm font-semibold text-gray-800 mb-2">References</h4>
-            <div className="space-y-1">
-              {citationElements}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
+  // Check if streaming is complete
+  const isStreamingComplete = !isStreaming || currentIndex >= message.content.length;
 
   return (
     <div className="rounded-2xl px-5 py-4 shadow-sm bg-white border border-gray-200 text-gray-900">
       <div className="flex items-start">
         <div className="flex-1">
-          {formatMessageWithCitations(displayedContent, message.citations)}
+          <p className="text-base leading-relaxed whitespace-pre-wrap">{displayedContent}</p>
+          
+          {/* Only show references after streaming is complete */}
+          {isStreamingComplete && message.citations && message.citations.length > 0 && (
+            <div className="mt-4">
+              <h4 className="text-sm font-semibold text-gray-800 mb-2">References</h4>
+              <div className="space-y-1">
+                {message.citations.map((citation, index) => (
+                  <div key={index} className="text-sm text-gray-600">
+                    <span className="font-medium">#{index + 1}</span> {citation}{' '}
+                    <a 
+                      href={getCitationLink(citation)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 font-medium underline"
+                    >
+                      Read online
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
         {isStreaming && currentIndex < message.content.length && (
           <div className="ml-1 mt-1">
