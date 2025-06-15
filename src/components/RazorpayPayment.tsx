@@ -58,7 +58,7 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
       const subscriptionData = await createSubscription(planId);
       
       const options = {
-        key: 'rzp_test_9xhJ8F7ZLiYGK3', // Replace with your Razorpay Key ID
+        key: 'rzp_test_hDWzj3XChB3yxM',
         subscription_id: subscriptionData.subscription_id,
         name: 'HinduGPT',
         description: `Subscription to ${planName}`,
