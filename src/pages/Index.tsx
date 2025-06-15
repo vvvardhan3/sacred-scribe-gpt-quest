@@ -98,16 +98,11 @@ const Index = () => {
             Learn from the Bhagavad Gita, Upanishads, Ramayana, and more with personalized spiritual guidance.
           </p>
           
-          <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
+          <div className="flex justify-center">
             <Link to="/signup">
               <Button size="lg" className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200">
                 Start Your Journey
                 <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </Link>
-            <Link to="/login">
-              <Button size="lg" variant="outline" className="border-2 border-orange-200 hover:border-orange-300 hover:bg-orange-50 px-8 py-4 text-lg font-semibold rounded-xl">
-                Sign In
               </Button>
             </Link>
           </div>
