@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -60,16 +61,6 @@ const ContactSection = () => {
         <div className="absolute inset-0 bg-gradient-to-tl from-red-50 to-orange-50 rounded-3xl transform -rotate-1"></div>
         
         <Card className="relative bg-white/80 backdrop-blur-sm border-0 shadow-2xl rounded-3xl overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-8">
-            <CardTitle className="text-2xl font-bold text-center flex items-center justify-center gap-3">
-              <Mail className="w-7 h-7" />
-              Send us a message
-            </CardTitle>
-            <p className="text-center text-orange-100 mt-2">
-              We'll get back to you within 24 hours
-            </p>
-          </CardHeader>
-          
           <CardContent className="p-8">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
