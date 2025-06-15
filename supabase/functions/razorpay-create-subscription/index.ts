@@ -64,30 +64,6 @@ serve(async (req) => {
 
     console.log('User authenticated successfully:', user.id)
 
-    // Plan configurations
-    const plans = {
-      'devotee': {
-        name: 'Devotee Plan',
-        amount: 99900, // ₹999 in paise
-        period: 'monthly',
-        interval: 1
-      },
-      'guru': {
-        name: 'Guru Plan', 
-        amount: 299900, // ₹2999 in paise
-        period: 'monthly',
-        interval: 1
-      }
-    }
-
-    const selectedPlan = plans[planId as keyof typeof plans]
-    if (!selectedPlan) {
-      console.error('Invalid plan selected:', planId)
-      throw new Error('Invalid plan selected')
-    }
-
-    console.log('Selected plan:', selectedPlan)
-
     const razorpayKeyId = 'rzp_test_hDWzj3XChB3yxM'
     const razorpayKeySecret = Deno.env.get('RAZORPAY_KEY_SECRET')
     
@@ -99,85 +75,69 @@ serve(async (req) => {
     console.log('Razorpay credentials configured')
     const authBasic = btoa(`${razorpayKeyId}:${razorpayKeySecret}`)
 
-    // Step 1: Create a plan first
-    console.log('Creating plan with Razorpay...')
-    const planPayload = {
-      period: selectedPlan.period,
-      interval: selectedPlan.interval,
-      item: {
-        name: selectedPlan.name,
-        amount: selectedPlan.amount,
+    // Plan configurations with amounts for order creation
+    const plans = {
+      'devotee': {
+        name: 'Devotee Plan',
+        amount: 99900, // ₹999 in paise
         currency: 'INR'
       },
-      notes: {
-        plan_type: planId
+      'guru': {
+        name: 'Guru Plan', 
+        amount: 299900, // ₹2999 in paise
+        currency: 'INR'
       }
     }
 
-    console.log('Plan payload:', JSON.stringify(planPayload, null, 2))
-
-    const planResponse = await fetch('https://api.razorpay.com/v1/plans', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${authBasic}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(planPayload)
-    })
-
-    console.log('Razorpay plan response status:', planResponse.status)
-
-    if (!planResponse.ok) {
-      const errorData = await planResponse.text()
-      console.error('Razorpay plan creation failed:', errorData)
-      throw new Error(`Failed to create plan with Razorpay (${planResponse.status}): ${errorData}`)
+    const selectedPlan = plans[planId as keyof typeof plans]
+    if (!selectedPlan) {
+      console.error('Invalid plan selected:', planId)
+      throw new Error('Invalid plan selected')
     }
 
-    const plan = await planResponse.json()
-    console.log('Razorpay plan created successfully:', plan.id)
+    console.log('Selected plan:', selectedPlan)
 
-    // Step 2: Create subscription using the created plan
-    console.log('Creating subscription with Razorpay...')
-    const subscriptionPayload = {
-      plan_id: plan.id,
-      customer_notify: 1,
-      quantity: 1,
-      total_count: 12, // 12 months
-      start_at: Math.floor(Date.now() / 1000) + 300, // Start 5 minutes from now
+    // Create a simple order instead of subscription for now
+    console.log('Creating order with Razorpay...')
+    const orderPayload = {
+      amount: selectedPlan.amount,
+      currency: selectedPlan.currency,
+      receipt: `receipt_${Date.now()}`,
       notes: {
         user_id: user.id,
         user_email: user.email,
-        plan_type: planId
+        plan_type: planId,
+        plan_name: selectedPlan.name
       }
     }
 
-    console.log('Subscription payload:', JSON.stringify(subscriptionPayload, null, 2))
+    console.log('Order payload:', JSON.stringify(orderPayload, null, 2))
 
-    const subscriptionResponse = await fetch('https://api.razorpay.com/v1/subscriptions', {
+    const orderResponse = await fetch('https://api.razorpay.com/v1/orders', {
       method: 'POST',
       headers: {
         'Authorization': `Basic ${authBasic}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(subscriptionPayload)
+      body: JSON.stringify(orderPayload)
     })
 
-    console.log('Razorpay subscription response status:', subscriptionResponse.status)
+    console.log('Razorpay order response status:', orderResponse.status)
 
-    if (!subscriptionResponse.ok) {
-      const errorData = await subscriptionResponse.text()
-      console.error('Razorpay subscription creation failed:', errorData)
-      throw new Error(`Failed to create subscription with Razorpay (${subscriptionResponse.status}): ${errorData}`)
+    if (!orderResponse.ok) {
+      const errorData = await orderResponse.text()
+      console.error('Razorpay order creation failed:', errorData)
+      throw new Error(`Failed to create order with Razorpay (${orderResponse.status}): ${errorData}`)
     }
 
-    const subscription = await subscriptionResponse.json()
-    console.log('Razorpay subscription created successfully:', subscription.id)
+    const order = await orderResponse.json()
+    console.log('Razorpay order created successfully:', order.id)
 
     // Store subscription info in database
     const dbPayload = {
       user_id: user.id,
       email: user.email!,
-      razorpay_subscription_id: subscription.id,
+      razorpay_subscription_id: order.id, // Using order ID for now
       plan_id: planId,
       subscription_tier: selectedPlan.name,
       subscribed: false, // Will be true after payment confirmation
@@ -198,9 +158,10 @@ serve(async (req) => {
     console.log('Subscription stored in database successfully')
 
     const responseData = { 
-      subscription_id: subscription.id,
+      subscription_id: order.id,
       amount: selectedPlan.amount,
-      plan_name: selectedPlan.name
+      plan_name: selectedPlan.name,
+      currency: selectedPlan.currency
     }
 
     console.log('Returning success response:', responseData)

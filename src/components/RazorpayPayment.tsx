@@ -54,19 +54,24 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
         return;
       }
 
-      // Create subscription
-      const subscriptionData = await createSubscription(planId);
+      // Create order
+      const orderData = await createSubscription(planId);
+      console.log('Order created:', orderData);
       
       const options = {
         key: 'rzp_test_hDWzj3XChB3yxM',
-        subscription_id: subscriptionData.subscription_id,
+        amount: orderData.amount,
+        currency: orderData.currency || 'INR',
+        order_id: orderData.subscription_id,
         name: 'HinduGPT',
         description: `Subscription to ${planName}`,
         handler: async (response: any) => {
           try {
+            console.log('Payment successful:', response);
+            
             await verifyPayment({
               razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_subscription_id: response.razorpay_subscription_id,
+              razorpay_order_id: response.razorpay_order_id,
               razorpay_signature: response.razorpay_signature,
             });
 
@@ -99,6 +104,7 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
         }
       };
 
+      console.log('Opening Razorpay with options:', options);
       const razorpay = new window.Razorpay(options);
       razorpay.open();
 
