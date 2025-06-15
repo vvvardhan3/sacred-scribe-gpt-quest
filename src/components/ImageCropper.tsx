@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -138,22 +137,27 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
       scale: { x: scaleX, y: scaleY }
     });
 
-    // Clear canvas with transparent background
-    ctx.clearRect(0, 0, outputSize, outputSize);
+    // Clear canvas with white background instead of transparent
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, outputSize, outputSize);
     
-    // Create circular clipping path - ensuring perfect circle
+    // Create circular clipping path
     ctx.save();
     ctx.beginPath();
     ctx.arc(outputSize / 2, outputSize / 2, outputSize / 2, 0, 2 * Math.PI);
     ctx.clip();
 
-    // Draw the cropped image to perfectly fill the circle
+    // Draw the cropped image to fill the circle perfectly
+    const minCropSize = Math.min(cropSizeXInImg, cropSizeYInImg);
+    const cropCenterX = cropXInImg + cropSizeXInImg / 2;
+    const cropCenterY = cropYInImg + cropSizeYInImg / 2;
+    
     ctx.drawImage(
       img,
-      cropXInImg,
-      cropYInImg,
-      cropSizeXInImg,
-      cropSizeYInImg,
+      cropCenterX - minCropSize / 2,
+      cropCenterY - minCropSize / 2,
+      minCropSize,
+      minCropSize,
       0,
       0,
       outputSize,
@@ -165,12 +169,12 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
     // Convert to blob with high quality
     canvas.toBlob((blob) => {
       if (blob) {
-        console.log('Successfully created cropped image blob');
+        console.log('Successfully created cropped circular image blob');
         onCrop(blob);
       } else {
         console.error('Failed to create blob from canvas');
       }
-    }, 'image/jpeg', 0.95);
+    }, 'image/png', 1.0);
   };
 
   return (

@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,7 +36,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [currentProfilePicture, setCurrentProfilePicture] = useState(profile.profile_picture_url);
-  const [imageKey, setImageKey] = useState(0); // Force re-render of image
+  const [imageKey, setImageKey] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Update local profile picture when profile prop changes
@@ -105,8 +104,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
 
     setUploading(true);
     try {
-      console.log('Uploading cropped image...');
-      const fileExt = 'jpg';
+      console.log('Uploading cropped circular image...');
+      const fileExt = 'png'; // Changed to PNG to preserve transparency
       const fileName = `${user.id}/profile-${Date.now()}.${fileExt}`;
 
       // Upload the cropped image
@@ -114,7 +113,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
         .from('profile-pictures')
         .upload(fileName, croppedImageBlob, {
           upsert: true,
-          contentType: 'image/jpeg',
+          contentType: 'image/png',
         });
 
       if (uploadError) {
@@ -128,12 +127,12 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
         .getPublicUrl(fileName);
 
       const finalUrl = `${publicUrl}?t=${Date.now()}`;
-      console.log('Image uploaded successfully, URL:', finalUrl);
+      console.log('Circular image uploaded successfully, URL:', finalUrl);
 
       // Update the profile with the new image URL
       await onUpdateProfile({ profile_picture_url: finalUrl });
       
-      // Update local state with cache-busting
+      // Update local state immediately
       setCurrentProfilePicture(finalUrl);
       setImageKey(prev => prev + 1);
 
@@ -152,7 +151,6 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
       setUploading(false);
       setShowImageCropper(false);
       setSelectedImage(null);
-      // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -196,7 +194,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
                 key={`${imageKey}-${currentProfilePicture}`}
                 src={`${currentProfilePicture}${currentProfilePicture.includes('?') ? '&' : '?'}cache=${imageKey}`}
                 alt="Profile"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover rounded-full"
                 style={{ 
                   objectFit: 'cover',
                   objectPosition: 'center center'
