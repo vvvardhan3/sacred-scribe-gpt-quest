@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -69,9 +68,6 @@ const Index = () => {
               <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">HinduGPT</h1>
             </div>
             <div className="space-x-4">
-              <Link to="/login">
-                <Button variant="ghost" className="hover:bg-orange-50">Sign In</Button>
-              </Link>
               <Link to="/signup">
                 <Button className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600">Get Started</Button>
               </Link>
@@ -85,7 +81,7 @@ const Index = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-orange-100/20 to-red-100/20"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
           <div className="mb-8">
-            <div className="inline-flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border border-orange-200 mb-6">
+            <div className="inline-flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border border-orange-200">
               <span className="text-sm font-medium text-orange-700">AI-Powered Hindu Scripture Learning</span>
             </div>
           </div>
