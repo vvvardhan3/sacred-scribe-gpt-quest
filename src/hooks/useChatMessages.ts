@@ -19,7 +19,7 @@ export const useChatMessages = (
   createNewConversation: () => Promise<string>
 ) => {
   const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // This should only be for sending messages
   const [streamingMessageId, setStreamingMessageId] = useState<string | undefined>();
   const [expandedCitations, setExpandedCitations] = useState<{ [key: string]: boolean }>({});
   const { toast } = useToast();
@@ -93,7 +93,7 @@ export const useChatMessages = (
     // Add user message immediately
     addMessage(userMessage);
     setInput('');
-    setLoading(true);
+    setLoading(true); // Only set loading when actually sending
 
     // Save user message immediately to database
     try {
@@ -135,7 +135,7 @@ export const useChatMessages = (
       const errorMessage = createErrorMessage();
       addMessage(errorMessage);
     } finally {
-      setLoading(false);
+      setLoading(false); // Clear loading after sending is complete
     }
   };
 
@@ -162,7 +162,7 @@ export const useChatMessages = (
   return {
     messages,
     input,
-    loading: loading || isLoadingMessages,
+    loading, // Only return the sending loading state, not database loading
     streamingMessageId,
     expandedCitations,
     setInput,
