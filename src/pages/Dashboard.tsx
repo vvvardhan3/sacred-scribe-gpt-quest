@@ -9,9 +9,6 @@ import {
 import { Button } from '@/components/ui/button';
 import ScriptureCard from '@/components/ScriptureCard';
 import Navigation from '@/components/Navigation';
-import PricingSection from '@/components/PricingSection';
-import ContactSection from '@/components/ContactSection';
-import Footer from '@/components/Footer';
 
 const Dashboard = () => {
   const categories = [
@@ -64,8 +61,20 @@ const Dashboard = () => {
       {/* Header */}
       <Navigation />
 
-      {/* Scripture Categories Grid */}
+      {/* Welcome Section */}
       <section className="max-w-6xl mx-auto px-6 py-12">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Welcome to Your Spiritual Learning Dashboard
+          </h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Continue your journey through Hindu scriptures. Choose a category below to start learning or chat with our AI assistant.
+          </p>
+        </div>
+      </section>
+
+      {/* Scripture Categories Grid */}
+      <section className="max-w-6xl mx-auto px-6 pb-12">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Choose Your Path</h2>
@@ -81,7 +90,7 @@ const Dashboard = () => {
       </section>
 
       {/* AI Chat CTA */}
-      <section className="max-w-6xl mx-auto px-6 pb-12">
+      <section className="max-w-6xl mx-auto px-6 pb-16">
         <Card className="bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 border-0 text-white overflow-hidden">
           <CardContent className="p-8 text-center">
             <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
@@ -89,10 +98,10 @@ const Dashboard = () => {
             </div>
             <h3 className="text-2xl font-bold mb-4">Ask HinduGPT Assistant</h3>
             <p className="text-lg text-white/90 mb-6 max-w-2xl mx-auto">
-              Get instant answers with proper citations from Hindu scriptures
+              Get instant answers with proper citations from Hindu scriptures. Start a meaningful conversation about philosophy, spirituality, and ancient wisdom.
             </p>
             <Link to="/chat">
-              <Button className="bg-white text-orange-600 hover:bg-white/90 font-semibold px-8 py-3 rounded-xl">
+              <Button className="bg-white text-orange-600 hover:bg-white/90 font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200">
                 Start Conversation
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
@@ -100,15 +109,6 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </section>
-
-      {/* Pricing Section */}
-      <PricingSection />
-
-      {/* Contact Section */}
-      <ContactSection />
-
-      {/* Footer */}
-      <Footer />
     </div>
   );
 };
