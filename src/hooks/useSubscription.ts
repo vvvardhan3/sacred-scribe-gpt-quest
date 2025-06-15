@@ -70,7 +70,7 @@ export const useSubscription = () => {
       }
 
       const { data, error } = await supabase.functions.invoke('razorpay-create-subscription', {
-        body: { planId, userId: user.id },
+        body: JSON.stringify({ planId, userId: user.id }),
         headers: {
           Authorization: `Bearer ${session.data.session.access_token}`,
           'Content-Type': 'application/json',
