@@ -1,9 +1,7 @@
-
 import React from 'react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import ChatContainer from '@/components/chat/ChatContainer';
 import ConversationSidebar from '@/components/chat/ConversationSidebar';
-import Navigation from '@/components/Navigation';
 import { useConversations } from '@/hooks/useConversations';
 import { useChatMessages } from '@/hooks/useChatMessages';
 
@@ -47,10 +45,8 @@ const Chat = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <Navigation />
-      
       <SidebarProvider>
-        <div className="flex w-full h-[calc(100vh-64px)]">
+        <div className="flex w-full h-screen">
           <ConversationSidebar
             conversations={conversations}
             activeConversationId={activeConversationId}
