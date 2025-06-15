@@ -9,16 +9,13 @@ import {
   MessageCircle, 
   Settings, 
   LogOut, 
-  Sparkles, 
-  Trophy, 
-  Brain, 
-  Quote, 
-  Star, 
   ArrowRight, 
-  Zap, 
   Target, 
   Users, 
-  TrendingUp 
+  TrendingUp,
+  Play,
+  Sparkles,
+  Brain
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -28,7 +25,7 @@ const Dashboard = () => {
     { 
       name: 'Bhagavad Gita', 
       description: 'Test your knowledge of Krishna\'s teachings',
-      icon: Quote,
+      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop&crop=center',
       color: 'from-amber-400 to-orange-500',
       questions: '150+ Questions',
       difficulty: 'Beginner to Advanced'
@@ -36,7 +33,7 @@ const Dashboard = () => {
     { 
       name: 'Upanishads', 
       description: 'Explore the philosophical foundations',
-      icon: Brain,
+      image: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=300&fit=crop&crop=center',
       color: 'from-purple-400 to-violet-500',
       questions: '120+ Questions',
       difficulty: 'Intermediate'
@@ -44,7 +41,7 @@ const Dashboard = () => {
     { 
       name: 'Ramayana', 
       description: 'Journey through Rama\'s epic story',
-      icon: BookOpen,
+      image: 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=400&h=300&fit=crop&crop=center',
       color: 'from-emerald-400 to-teal-500',
       questions: '200+ Questions',
       difficulty: 'All Levels'
@@ -52,7 +49,7 @@ const Dashboard = () => {
     { 
       name: 'Mahabharata', 
       description: 'Dive into the great epic',
-      icon: Trophy,
+      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop&crop=center',
       color: 'from-red-400 to-pink-500',
       questions: '180+ Questions',
       difficulty: 'Intermediate to Advanced'
@@ -60,7 +57,7 @@ const Dashboard = () => {
     { 
       name: 'Puranas', 
       description: 'Ancient stories and wisdom',
-      icon: Star,
+      image: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=300&fit=crop&crop=center',
       color: 'from-yellow-400 to-amber-500',
       questions: '100+ Questions',
       difficulty: 'Beginner'
@@ -68,7 +65,7 @@ const Dashboard = () => {
     { 
       name: 'Vedas', 
       description: 'Sacred hymns and rituals',
-      icon: Sparkles,
+      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop&crop=center',
       color: 'from-cyan-400 to-blue-500',
       questions: '80+ Questions',
       difficulty: 'Advanced'
@@ -139,10 +136,6 @@ const Dashboard = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-100 to-red-100 rounded-full mb-6">
-            <Zap className="w-4 h-4 text-orange-600 mr-2" />
-            <span className="text-sm font-semibold text-orange-800">Welcome to Your Spiritual Journey</span>
-          </div>
           <h1 className="text-5xl font-bold text-gray-900 mb-6 leading-tight">
             Discover Ancient
             <span className="bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent"> Wisdom</span>
@@ -210,44 +203,47 @@ const Dashboard = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {categories.map((category) => {
-              const IconComponent = category.icon;
-              return (
-                <Link
-                  key={category.name}
-                  to={`/quiz/category/${encodeURIComponent(category.name)}`}
-                  className="group block"
-                >
-                  <Card className="h-full transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
-                    <div className={`h-2 bg-gradient-to-r ${category.color}`} />
-                    <CardHeader className="pb-4">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className={`w-14 h-14 bg-gradient-to-br ${category.color} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
-                          <IconComponent className="w-7 h-7 text-white" />
-                        </div>
-                        <div className="text-right">
-                          <div className="inline-flex items-center px-2 py-1 bg-gray-100 rounded-full">
-                            <span className="text-xs font-medium text-gray-700">{category.difficulty}</span>
-                          </div>
-                        </div>
+            {categories.map((category) => (
+              <Link
+                key={category.name}
+                to={`/quiz/category/${encodeURIComponent(category.name)}`}
+                className="group block"
+              >
+                <Card className="h-full transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
+                  <div className={`h-2 bg-gradient-to-r ${category.color}`} />
+                  <div className="relative h-48 overflow-hidden">
+                    <img 
+                      src={category.image} 
+                      alt={category.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                    <div className="absolute top-4 right-4">
+                      <div className="inline-flex items-center px-2 py-1 bg-white/90 backdrop-blur-sm rounded-full">
+                        <span className="text-xs font-medium text-gray-700">{category.difficulty}</span>
                       </div>
-                      <CardTitle className="text-xl font-bold text-gray-900 group-hover:text-orange-600 transition-colors mb-2">
-                        {category.name}
-                      </CardTitle>
-                      <CardDescription className="text-gray-600 leading-relaxed">
-                        {category.description}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-500 font-medium">{category.questions}</span>
-                        <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-orange-500 group-hover:translate-x-1 transition-all duration-300" />
+                    </div>
+                  </div>
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-xl font-bold text-gray-900 group-hover:text-orange-600 transition-colors mb-2">
+                      {category.name}
+                    </CardTitle>
+                    <CardDescription className="text-gray-600 leading-relaxed">
+                      {category.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-500 font-medium">{category.questions}</span>
+                      <div className="flex items-center text-orange-600">
+                        <Play className="w-4 h-4 mr-1" />
+                        <span className="font-medium">Start Quiz</span>
+                        <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-all duration-300" />
                       </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              );
-            })}
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
           </div>
         </div>
 
