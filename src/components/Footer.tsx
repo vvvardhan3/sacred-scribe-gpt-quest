@@ -91,30 +91,6 @@ const Footer = () => {
           ))}
         </div>
 
-        {/* Contact Info */}
-        <div className="border-t border-gray-700 pt-8 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-orange-500/20 rounded-full flex items-center justify-center">
-                <Mail className="w-4 h-4 text-orange-400" />
-              </div>
-              <div>
-                <p className="text-gray-400 text-xs">Email us at</p>
-                <p className="text-white text-sm">support@hindugpt.com</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-orange-500/20 rounded-full flex items-center justify-center">
-                <Phone className="w-4 h-4 text-orange-400" />
-              </div>
-              <div>
-                <p className="text-gray-400 text-xs">Call us at</p>
-                <p className="text-white text-sm">+1 (555) 123-4567</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Bottom Section */}
         <div className="border-t border-gray-700 pt-6 flex flex-col md:flex-row justify-between items-center">
           <div className="text-gray-400 text-sm mb-4 md:mb-0">
