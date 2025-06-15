@@ -46,7 +46,7 @@ const Chat = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-red-50">
+    <div className="min-h-screen bg-white">
       <Navigation />
       
       <SidebarProvider>
@@ -61,18 +61,16 @@ const Chat = () => {
           />
           
           <SidebarInset className="flex-1 flex flex-col">
-            <div className="flex-1 p-6">
-              <ChatContainer
-                messages={messages}
-                input={input}
-                loading={loading}
-                expandedCitations={expandedCitations}
-                onInputChange={setInput}
-                onSendMessage={sendMessage}
-                onToggleCitations={toggleCitations}
-                onSuggestionClick={handleSuggestionClick}
-              />
-            </div>
+            <ChatContainer
+              messages={messages}
+              input={input}
+              loading={loading}
+              expandedCitations={expandedCitations}
+              onInputChange={setInput}
+              onSendMessage={sendMessage}
+              onToggleCitations={toggleCitations}
+              onSuggestionClick={handleSuggestionClick}
+            />
           </SidebarInset>
         </div>
       </SidebarProvider>

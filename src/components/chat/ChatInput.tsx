@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Send } from 'lucide-react';
 
 interface ChatInputProps {
   input: string;
@@ -24,25 +25,28 @@ const ChatInput: React.FC<ChatInputProps> = ({
   };
 
   return (
-    <div className="p-6 border-t border-gray-100 bg-gray-50/50 rounded-b-2xl">
-      <div className="flex space-x-3">
-        <div className="flex-1 relative">
-          <Input
-            value={input}
-            onChange={(e) => onInputChange(e.target.value)}
-            placeholder="Ask about Hindu scriptures..."
-            onKeyDown={handleKeyDown}
-            disabled={loading}
-            className="pr-12 border-orange-200 focus:border-orange-400 focus:ring-orange-400 bg-white"
-          />
-        </div>
+    <div className="p-6 border-t border-gray-100">
+      <div className="relative">
+        <Textarea
+          value={input}
+          onChange={(e) => onInputChange(e.target.value)}
+          placeholder="Ask about Hindu scriptures..."
+          onKeyDown={handleKeyDown}
+          disabled={loading}
+          className="min-h-[60px] pr-12 resize-none border-gray-300 focus:border-gray-400 focus:ring-gray-400 rounded-xl"
+          rows={1}
+        />
         <Button 
           onClick={onSendMessage} 
           disabled={loading || !input.trim()}
-          className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-lg"
+          size="sm"
+          className="absolute bottom-2 right-2 h-8 w-8 p-0 bg-gray-900 hover:bg-gray-800"
         >
-          Send
+          <Send className="h-4 w-4" />
         </Button>
+      </div>
+      <div className="text-xs text-gray-500 text-center mt-2">
+        HinduGPT can make mistakes. Consider checking important information.
       </div>
     </div>
   );

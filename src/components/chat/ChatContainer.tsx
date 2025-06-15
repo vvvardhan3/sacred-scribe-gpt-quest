@@ -1,6 +1,5 @@
 
 import React from 'react';
-import ChatHeader from './ChatHeader';
 import MessageList from './MessageList';
 import ChatInput from './ChatInput';
 import { Message } from '@/types/chat';
@@ -27,10 +26,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   onSuggestionClick
 }) => {
   return (
-    <div className="flex flex-col h-full bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-orange-100">
-      <ChatHeader />
-
-      <div className="flex-1 min-h-0">
+    <div className="flex flex-col h-full bg-white">
+      <div className="flex-1 min-h-0 flex flex-col max-w-3xl mx-auto w-full">
         <MessageList
           messages={messages}
           loading={loading}
@@ -40,12 +37,14 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         />
       </div>
 
-      <ChatInput
-        input={input}
-        loading={loading}
-        onInputChange={onInputChange}
-        onSendMessage={onSendMessage}
-      />
+      <div className="max-w-3xl mx-auto w-full">
+        <ChatInput
+          input={input}
+          loading={loading}
+          onInputChange={onInputChange}
+          onSendMessage={onSendMessage}
+        />
+      </div>
     </div>
   );
 };
