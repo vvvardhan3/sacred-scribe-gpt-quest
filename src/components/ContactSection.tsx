@@ -2,66 +2,17 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Mail, MessageCircle, Phone, MapPin } from 'lucide-react';
+import { Mail, Phone } from 'lucide-react';
 
 const ContactSection = () => {
-  const contactMethods = [
-    {
-      icon: Mail,
-      title: 'Email Support',
-      description: 'Get help from our support team',
-      contact: 'support@hindugpt.com',
-      action: 'Send Email'
-    },
-    {
-      icon: MessageCircle,
-      title: 'Live Chat',
-      description: 'Chat with us in real-time',
-      contact: 'Available 24/7',
-      action: 'Start Chat'
-    },
-    {
-      icon: Phone,
-      title: 'Phone Support',
-      description: 'Speak directly with our team',
-      contact: '+1 (555) 123-4567',
-      action: 'Call Now'
-    },
-    {
-      icon: MapPin,
-      title: 'Office Location',
-      description: 'Visit our spiritual center',
-      contact: 'New Delhi, India',
-      action: 'Get Directions'
-    }
-  ];
-
   return (
     <section className="max-w-6xl mx-auto px-6 py-16 bg-gradient-to-br from-orange-50 to-red-50 rounded-3xl">
       <div className="text-center mb-12">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">Get in Touch</h2>
+        <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Contact Us?</h2>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
           Have questions about Hindu scriptures or need help with our platform? 
           We're here to guide you on your spiritual journey.
         </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        {contactMethods.map((method, index) => (
-          <Card key={index} className="text-center hover:shadow-lg transition-shadow duration-300 bg-white/80 backdrop-blur-sm">
-            <CardContent className="p-6">
-              <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <method.icon className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="font-semibold text-gray-900 mb-2">{method.title}</h3>
-              <p className="text-gray-600 text-sm mb-3">{method.description}</p>
-              <p className="text-orange-600 font-medium mb-4">{method.contact}</p>
-              <Button variant="outline" size="sm" className="hover:bg-orange-50 hover:text-orange-600 hover:border-orange-300">
-                {method.action}
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
       </div>
 
       <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8">
@@ -97,8 +48,28 @@ const ContactSection = () => {
             </form>
           </div>
           
-          <div className="flex flex-col justify-center">
-            <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-6 text-white">
+          <div className="flex flex-col justify-center space-y-6">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
+                <Mail className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-gray-900">Email us at</h4>
+                <p className="text-orange-600 font-medium">support@hindugpt.com</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
+                <Phone className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-gray-900">Call us at</h4>
+                <p className="text-orange-600 font-medium">+1 (555) 123-4567</p>
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-6 text-white mt-6">
               <h4 className="text-lg font-semibold mb-4">Why Contact Us?</h4>
               <ul className="space-y-3 text-sm">
                 <li className="flex items-center space-x-2">
