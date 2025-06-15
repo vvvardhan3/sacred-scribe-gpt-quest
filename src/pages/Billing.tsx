@@ -165,15 +165,15 @@ const Billing = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      <div>
-                        <h4 className="font-semibold text-green-700 mb-3 flex items-center">
+                      <div className="text-center">
+                        <h4 className="font-semibold text-green-700 mb-3 flex items-center justify-center">
                           <Check className="w-4 h-4 mr-2" />
                           What's Included:
                         </h4>
                         <ul className="space-y-2">
                           {plan.features.map((feature, featureIndex) => (
-                            <li key={featureIndex} className="flex items-start text-sm text-gray-700">
-                              <Check className="w-4 h-4 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
+                            <li key={featureIndex} className="flex items-center justify-center text-sm text-gray-700">
+                              <Check className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
                               <span>{feature}</span>
                             </li>
                           ))}
