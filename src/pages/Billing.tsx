@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -13,8 +13,13 @@ import { PaymentHistoryCard } from '@/components/billing/PaymentHistoryCard';
 import { SupportCard } from '@/components/billing/SupportCard';
 
 const Billing = () => {
-  const { subscription, loading: subscriptionLoading } = useSubscription();
+  const { subscription, loading: subscriptionLoading, refetch } = useSubscription();
   const { payments, loading: paymentsLoading } = usePayments();
+
+  // Refresh subscription data when component mounts or when returning from payment
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   const plans = [
     {
@@ -73,6 +78,12 @@ const Billing = () => {
     return subscription?.subscribed && subscription?.plan_id === planId;
   };
 
+  const handlePaymentSuccess = () => {
+    // Refresh subscription and payment data after successful payment
+    console.log('Payment successful, refreshing data...');
+    refetch();
+  };
+
   if (subscriptionLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50">
@@ -126,6 +137,7 @@ const Billing = () => {
                   key={plan.id}
                   plan={plan}
                   isCurrentPlan={isCurrentPlan(plan.id)}
+                  onPaymentSuccess={handlePaymentSuccess}
                 />
               ))}
             </div>

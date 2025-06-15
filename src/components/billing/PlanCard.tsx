@@ -21,9 +21,10 @@ interface Plan {
 interface PlanCardProps {
   plan: Plan;
   isCurrentPlan: boolean;
+  onPaymentSuccess?: () => void;
 }
 
-export const PlanCard: React.FC<PlanCardProps> = ({ plan, isCurrentPlan }) => {
+export const PlanCard: React.FC<PlanCardProps> = ({ plan, isCurrentPlan, onPaymentSuccess }) => {
   return (
     <Card className={`relative bg-white border-2 ${plan.popular ? 'border-orange-500 shadow-lg' : 'border-gray-200'} hover:shadow-md transition-shadow`}>
       {plan.popular && (
@@ -85,6 +86,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, isCurrentPlan }) => {
               price={plan.price}
               buttonText={`Choose ${plan.name}`}
               className="w-full"
+              onSuccess={onPaymentSuccess}
             />
           )}
         </div>

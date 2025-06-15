@@ -28,7 +28,7 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
   className
 }) => {
   const { toast } = useToast();
-  const { createSubscription, verifyPayment } = useSubscription();
+  const { createSubscription, verifyPayment, refetch } = useSubscription();
   const [isLoading, setIsLoading] = useState(false);
 
   const loadRazorpayScript = () => {
@@ -87,12 +87,23 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
               razorpay_signature: response.razorpay_signature,
             });
 
+            // Force refresh subscription data
+            console.log('Refreshing subscription data...');
+            await refetch();
+
             toast({
               title: "Success!",
               description: `Welcome to ${planName}! Your subscription is now active.`,
             });
 
+            // Call onSuccess callback if provided
             if (onSuccess) onSuccess();
+            
+            // Additional refresh after a short delay to ensure UI updates
+            setTimeout(() => {
+              refetch();
+            }, 1000);
+
           } catch (error) {
             console.error('Payment verification failed:', error);
             toast({
@@ -100,6 +111,8 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
               description: "Please contact support if your payment was deducted.",
               variant: "destructive",
             });
+          } finally {
+            setIsLoading(false);
           }
         },
         modal: {
