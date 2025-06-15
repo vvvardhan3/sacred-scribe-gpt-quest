@@ -78,108 +78,119 @@ const Index = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-orange-100/30 to-purple-100/30"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="text-center mb-16">
-            <h3 className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-purple-600 bg-clip-text text-transparent mb-4">
-              Learn Through Modern Technology
-            </h3>
+            <div className="inline-block p-6 rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 mb-6">
+              <h3 className="text-4xl font-bold text-white">
+                Learn Through Modern Technology
+              </h3>
+            </div>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Combine ancient wisdom with cutting-edge AI for a personalized learning experience
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card className="group hover:shadow-2xl transition-all duration-500 border-0 shadow-lg hover:-translate-y-4 bg-white/80 backdrop-blur-sm hover:bg-white/90 transform hover:scale-105">
-              <CardHeader className="text-center pb-4">
-                <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:rotate-12 transition-transform duration-300 group-hover:scale-110">
-                  <BookOpen className="w-8 h-8 text-white" />
+            <Card className="group relative overflow-hidden bg-gradient-to-br from-white to-orange-50 border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-6 hover:scale-105">
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="text-center pb-4 relative z-10">
+                <div className="w-20 h-20 bg-gradient-to-r from-orange-500 to-red-500 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:rotate-12 transition-all duration-500 group-hover:scale-110 shadow-lg">
+                  <BookOpen className="w-10 h-10 text-white" />
                 </div>
-                <CardTitle className="text-xl font-bold group-hover:text-orange-600 transition-colors duration-300">Interactive Quizzes</CardTitle>
-                <CardDescription className="text-gray-600">
+                <CardTitle className="text-2xl font-bold group-hover:bg-gradient-to-r group-hover:from-orange-600 group-hover:to-red-600 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300">
+                  Interactive Quizzes
+                </CardTitle>
+                <CardDescription className="text-gray-600 text-lg">
                   Test your knowledge with AI-generated quizzes on Hindu scriptures
                 </CardDescription>
               </CardHeader>
-              <CardContent className="pt-0">
-                <ul className="space-y-3 text-gray-600">
-                  <li className="flex items-center space-x-2 group-hover:translate-x-2 transition-transform duration-300">
-                    <div className="w-2 h-2 bg-orange-500 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
-                    <span>Personalized difficulty levels</span>
-                  </li>
-                  <li className="flex items-center space-x-2 group-hover:translate-x-2 transition-transform duration-300 delay-75">
-                    <div className="w-2 h-2 bg-orange-500 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
-                    <span>Multiple scripture categories</span>
-                  </li>
-                  <li className="flex items-center space-x-2 group-hover:translate-x-2 transition-transform duration-300 delay-150">
-                    <div className="w-2 h-2 bg-orange-500 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
-                    <span>Detailed explanations</span>
-                  </li>
-                  <li className="flex items-center space-x-2 group-hover:translate-x-2 transition-transform duration-300 delay-225">
-                    <div className="w-2 h-2 bg-orange-500 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
-                    <span>Progress tracking</span>
-                  </li>
-                </ul>
+              <CardContent className="pt-0 relative z-10">
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3 group-hover:translate-x-2 transition-transform duration-300 p-3 rounded-lg bg-orange-50/50">
+                    <div className="w-3 h-3 bg-gradient-to-r from-orange-500 to-red-500 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
+                    <span className="text-gray-700 font-medium">Personalized difficulty levels</span>
+                  </div>
+                  <div className="flex items-center space-x-3 group-hover:translate-x-2 transition-transform duration-300 delay-75 p-3 rounded-lg bg-orange-50/50">
+                    <div className="w-3 h-3 bg-gradient-to-r from-orange-500 to-red-500 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
+                    <span className="text-gray-700 font-medium">Multiple scripture categories</span>
+                  </div>
+                  <div className="flex items-center space-x-3 group-hover:translate-x-2 transition-transform duration-300 delay-150 p-3 rounded-lg bg-orange-50/50">
+                    <div className="w-3 h-3 bg-gradient-to-r from-orange-500 to-red-500 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
+                    <span className="text-gray-700 font-medium">Detailed explanations</span>
+                  </div>
+                  <div className="flex items-center space-x-3 group-hover:translate-x-2 transition-transform duration-300 delay-225 p-3 rounded-lg bg-orange-50/50">
+                    <div className="w-3 h-3 bg-gradient-to-r from-orange-500 to-red-500 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
+                    <span className="text-gray-700 font-medium">Progress tracking</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
-            <Card className="group hover:shadow-2xl transition-all duration-500 border-0 shadow-lg hover:-translate-y-4 bg-white/80 backdrop-blur-sm hover:bg-white/90 transform hover:scale-105">
-              <CardHeader className="text-center pb-4">
-                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:rotate-12 transition-transform duration-300 group-hover:scale-110">
-                  <MessageCircle className="w-8 h-8 text-white" />
+            <Card className="group relative overflow-hidden bg-gradient-to-br from-white to-blue-50 border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-6 hover:scale-105">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="text-center pb-4 relative z-10">
+                <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:rotate-12 transition-all duration-500 group-hover:scale-110 shadow-lg">
+                  <MessageCircle className="w-10 h-10 text-white" />
                 </div>
-                <CardTitle className="text-xl font-bold group-hover:text-blue-600 transition-colors duration-300">AI Scripture Chat</CardTitle>
-                <CardDescription className="text-gray-600">
+                <CardTitle className="text-2xl font-bold group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300">
+                  AI Scripture Chat
+                </CardTitle>
+                <CardDescription className="text-gray-600 text-lg">
                   Ask questions and get answers based on authentic Hindu texts
                 </CardDescription>
               </CardHeader>
-              <CardContent className="pt-0">
-                <ul className="space-y-3 text-gray-600">
-                  <li className="flex items-center space-x-2 group-hover:translate-x-2 transition-transform duration-300">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
-                    <span>Instant answers with citations</span>
-                  </li>
-                  <li className="flex items-center space-x-2 group-hover:translate-x-2 transition-transform duration-300 delay-75">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
-                    <span>Deep philosophical discussions</span>
-                  </li>
-                  <li className="flex items-center space-x-2 group-hover:translate-x-2 transition-transform duration-300 delay-150">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
-                    <span>Multilingual support</span>
-                  </li>
-                  <li className="flex items-center space-x-2 group-hover:translate-x-2 transition-transform duration-300 delay-225">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
-                    <span>Context-aware responses</span>
-                  </li>
-                </ul>
+              <CardContent className="pt-0 relative z-10">
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3 group-hover:translate-x-2 transition-transform duration-300 p-3 rounded-lg bg-blue-50/50">
+                    <div className="w-3 h-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
+                    <span className="text-gray-700 font-medium">Instant answers with citations</span>
+                  </div>
+                  <div className="flex items-center space-x-3 group-hover:translate-x-2 transition-transform duration-300 delay-75 p-3 rounded-lg bg-blue-50/50">
+                    <div className="w-3 h-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
+                    <span className="text-gray-700 font-medium">Deep philosophical discussions</span>
+                  </div>
+                  <div className="flex items-center space-x-3 group-hover:translate-x-2 transition-transform duration-300 delay-150 p-3 rounded-lg bg-blue-50/50">
+                    <div className="w-3 h-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
+                    <span className="text-gray-700 font-medium">Multilingual support</span>
+                  </div>
+                  <div className="flex items-center space-x-3 group-hover:translate-x-2 transition-transform duration-300 delay-225 p-3 rounded-lg bg-blue-50/50">
+                    <div className="w-3 h-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
+                    <span className="text-gray-700 font-medium">Context-aware responses</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
-            <Card className="group hover:shadow-2xl transition-all duration-500 border-0 shadow-lg hover:-translate-y-4 bg-white/80 backdrop-blur-sm hover:bg-white/90 transform hover:scale-105 md:col-span-2 lg:col-span-1">
-              <CardHeader className="text-center pb-4">
-                <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:rotate-12 transition-transform duration-300 group-hover:scale-110">
-                  <Zap className="w-8 h-8 text-white" />
+            <Card className="group relative overflow-hidden bg-gradient-to-br from-white to-green-50 border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-6 hover:scale-105 md:col-span-2 lg:col-span-1">
+              <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardHeader className="text-center pb-4 relative z-10">
+                <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-emerald-500 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:rotate-12 transition-all duration-500 group-hover:scale-110 shadow-lg">
+                  <Zap className="w-10 h-10 text-white" />
                 </div>
-                <CardTitle className="text-xl font-bold group-hover:text-green-600 transition-colors duration-300">Personalized Learning</CardTitle>
-                <CardDescription className="text-gray-600">
+                <CardTitle className="text-2xl font-bold group-hover:bg-gradient-to-r group-hover:from-green-600 group-hover:to-emerald-600 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300">
+                  Personalized Learning
+                </CardTitle>
+                <CardDescription className="text-gray-600 text-lg">
                   Adaptive learning paths tailored to your spiritual journey
                 </CardDescription>
               </CardHeader>
-              <CardContent className="pt-0">
-                <ul className="space-y-3 text-gray-600">
-                  <li className="flex items-center space-x-2 group-hover:translate-x-2 transition-transform duration-300">
-                    <div className="w-2 h-2 bg-green-500 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
-                    <span>Custom study plans</span>
-                  </li>
-                  <li className="flex items-center space-x-2 group-hover:translate-x-2 transition-transform duration-300 delay-75">
-                    <div className="w-2 h-2 bg-green-500 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
-                    <span>Performance analytics</span>
-                  </li>
-                  <li className="flex items-center space-x-2 group-hover:translate-x-2 transition-transform duration-300 delay-150">
-                    <div className="w-2 h-2 bg-green-500 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
-                    <span>Spiritual milestones</span>
-                  </li>
-                  <li className="flex items-center space-x-2 group-hover:translate-x-2 transition-transform duration-300 delay-225">
-                    <div className="w-2 h-2 bg-green-500 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
-                    <span>Community support</span>
-                  </li>
-                </ul>
+              <CardContent className="pt-0 relative z-10">
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3 group-hover:translate-x-2 transition-transform duration-300 p-3 rounded-lg bg-green-50/50">
+                    <div className="w-3 h-3 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
+                    <span className="text-gray-700 font-medium">Custom study plans</span>
+                  </div>
+                  <div className="flex items-center space-x-3 group-hover:translate-x-2 transition-transform duration-300 delay-75 p-3 rounded-lg bg-green-50/50">
+                    <div className="w-3 h-3 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
+                    <span className="text-gray-700 font-medium">Performance analytics</span>
+                  </div>
+                  <div className="flex items-center space-x-3 group-hover:translate-x-2 transition-transform duration-300 delay-150 p-3 rounded-lg bg-green-50/50">
+                    <div className="w-3 h-3 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
+                    <span className="text-gray-700 font-medium">Spiritual milestones</span>
+                  </div>
+                  <div className="flex items-center space-x-3 group-hover:translate-x-2 transition-transform duration-300 delay-225 p-3 rounded-lg bg-green-50/50">
+                    <div className="w-3 h-3 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full group-hover:scale-150 transition-transform duration-300"></div>
+                    <span className="text-gray-700 font-medium">Community support</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
