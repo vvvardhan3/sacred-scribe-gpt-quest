@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -71,25 +70,15 @@ const Dashboard = () => {
       {/* Header */}
       <Navigation />
 
-      {/* Welcome Section */}
+      {/* Scripture Categories Grid */}
       <section className="max-w-6xl mx-auto px-6 py-12">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Welcome to Your Spiritual Learning Dashboard
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+            Sacred Scripture Library
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Continue your journey through Hindu scriptures. Choose a category below to start learning or chat with our AI assistant.
+            Explore the timeless wisdom of Hindu scriptures through interactive quizzes and deepen your spiritual understanding
           </p>
-        </div>
-      </section>
-
-      {/* Scripture Categories Grid */}
-      <section className="max-w-6xl mx-auto px-6 pb-12">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Choose Your Path</h2>
-            <p className="text-gray-600">Select a scripture category to begin your journey</p>
-          </div>
         </div>
         
         {/* Available Categories */}
