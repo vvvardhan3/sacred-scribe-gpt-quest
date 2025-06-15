@@ -35,8 +35,8 @@ export const PricingSection = () => {
             Unlock the profound wisdom of Hindu scriptures with AI-powered learning designed for every seeker
           </p>
           
-          {/* Current Usage Display */}
-          {user && usage && (
+          {/* Current Usage Display - Only show for authenticated users and when usage data is available */}
+          {user && usage && limits && (
             <UsageDisplay usage={usage} limits={limits} />
           )}
         </div>
