@@ -27,13 +27,7 @@ export const PricingSection = () => {
         "Basic scripture guidance",
         "Community support"
       ],
-      limitations: [
-        "No Mahabharata access",
-        "No Bhagavad Gita access", 
-        "No Ramayana access",
-        "Limited daily interactions",
-        "No advanced AI insights"
-      ],
+      limitations: [], // Removed limitations for Free Trial
       buttonText: "Current Plan",
       popular: false,
       planId: null,
