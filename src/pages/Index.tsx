@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -123,26 +124,6 @@ const Index = () => {
 
       {/* HinduGPT AI Section - Replacing the Features Section */}
       <HinduGPTAI />
-
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-orange-500 to-red-500 relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/10"></div>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
-          <h3 className="text-4xl font-bold text-white mb-6">
-            Ready to Begin Your Spiritual Journey?
-          </h3>
-          <p className="text-xl text-orange-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of learners exploring Hindu wisdom through modern AI technology. 
-            Start your personalized learning experience today.
-          </p>
-          <Link to="/signup">
-            <Button size="lg" className="bg-white text-orange-600 hover:bg-gray-100 px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200">
-              Create Your Free Account
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
-          </Link>
-        </div>
-      </section>
 
       {/* Pricing Section */}
       <PricingSection />
