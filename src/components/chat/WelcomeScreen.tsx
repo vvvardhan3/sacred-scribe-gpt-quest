@@ -42,8 +42,11 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSuggestionClick }) => {
         </p>
       </div>
 
-      {/* Suggestions Grid */}
+      {/* Suggestions Section */}
       <div className="w-full max-w-4xl">
+        <h2 className="text-xl font-semibold text-gray-800 mb-6">
+          Popular Questions
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {suggestions.map((suggestion, index) => {
             const IconComponent = suggestion.icon;
