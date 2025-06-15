@@ -5,13 +5,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from '@/components/ui/carousel';
-import { 
   BookOpen, 
   MessageCircle, 
   LogOut, 
@@ -21,6 +14,7 @@ import { useLazyLoading } from '@/hooks/useLazyLoading';
 import { useScrollObserver } from '@/hooks/useScrollObserver';
 import ScriptureCard from '@/components/ScriptureCard';
 import LoadingSkeleton from '@/components/LoadingSkeleton';
+import Navigation from '@/components/Navigation';
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
@@ -29,7 +23,6 @@ const Dashboard = () => {
     { 
       name: 'Bhagavad Gita', 
       description: 'Test your knowledge of Krishna\'s teachings and divine wisdom',
-      image: '',
       color: 'from-amber-400 to-orange-500',
       questions: '150+ Questions',
       difficulty: 'Beginner'
@@ -37,7 +30,6 @@ const Dashboard = () => {
     { 
       name: 'Upanishads', 
       description: 'Explore the philosophical foundations of Vedantic thought',
-      image: '',
       color: 'from-purple-400 to-violet-500',
       questions: '120+ Questions',
       difficulty: 'Advanced'
@@ -45,7 +37,6 @@ const Dashboard = () => {
     { 
       name: 'Ramayana', 
       description: 'Journey through Rama\'s epic story of dharma and devotion',
-      image: '',
       color: 'from-emerald-400 to-teal-500',
       questions: '200+ Questions',
       difficulty: 'Intermediate'
@@ -53,7 +44,6 @@ const Dashboard = () => {
     { 
       name: 'Mahabharata', 
       description: 'Dive into the great epic of duty, war, and righteousness',
-      image: '',
       color: 'from-red-400 to-pink-500',
       questions: '180+ Questions',
       difficulty: 'Advanced'
@@ -61,7 +51,6 @@ const Dashboard = () => {
     { 
       name: 'Puranas', 
       description: 'Ancient stories of gods, creation, and cosmic cycles',
-      image: '',
       color: 'from-yellow-400 to-amber-500',
       questions: '100+ Questions',
       difficulty: 'Beginner'
@@ -69,7 +58,6 @@ const Dashboard = () => {
     { 
       name: 'Vedas', 
       description: 'Sacred hymns, rituals, and the foundation of Hindu knowledge',
-      image: '',
       color: 'from-cyan-400 to-blue-500',
       questions: '80+ Questions',
       difficulty: 'Advanced'
@@ -89,42 +77,32 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-orange-100 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-6 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-lg">H</span>
-              </div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-                HinduGPT
-              </h1>
-            </div>
+      <Navigation />
 
-            <div className="flex items-center space-x-4">
-              <div className="hidden md:flex items-center space-x-6">
-                <Link to="/dashboard" className="flex items-center space-x-2 text-orange-600 font-medium">
-                  <BookOpen className="w-5 h-5" />
-                  <span>Quizzes</span>
-                </Link>
-                <Link to="/chat" className="flex items-center space-x-2 text-gray-600 hover:text-orange-600 font-medium transition-colors">
-                  <MessageCircle className="w-5 h-5" />
-                  <span>Chat</span>
-                </Link>
-              </div>
-              
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center">
-                  <span className="text-xs font-bold text-white">{user?.email?.charAt(0).toUpperCase()}</span>
-                </div>
-                <Button variant="ghost" size="sm" onClick={signOut} className="text-gray-600 hover:text-red-600">
-                  <LogOut className="w-4 h-4" />
-                </Button>
-              </div>
+      {/* User Actions */}
+      <div className="max-w-6xl mx-auto px-6 py-4">
+        <div className="flex justify-end items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-6">
+            <Link to="/dashboard" className="flex items-center space-x-2 text-orange-600 font-medium">
+              <BookOpen className="w-5 h-5" />
+              <span>Quizzes</span>
+            </Link>
+            <Link to="/chat" className="flex items-center space-x-2 text-gray-600 hover:text-orange-600 font-medium transition-colors">
+              <MessageCircle className="w-5 h-5" />
+              <span>Chat</span>
+            </Link>
+          </div>
+          
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center">
+              <span className="text-xs font-bold text-white">{user?.email?.charAt(0).toUpperCase()}</span>
             </div>
+            <Button variant="ghost" size="sm" onClick={signOut} className="text-gray-600 hover:text-red-600">
+              <LogOut className="w-4 h-4" />
+            </Button>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Hero Section */}
       <section className="max-w-6xl mx-auto px-6 py-12 text-center">
@@ -157,7 +135,7 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Scripture Categories Carousel */}
+      {/* Scripture Categories Grid */}
       <section className="max-w-6xl mx-auto px-6 pb-12">
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -166,34 +144,18 @@ const Dashboard = () => {
           </div>
         </div>
         
-        <Carousel
-          opts={{
-            align: "start",
-            loop: true,
-          }}
-          className="w-full"
-        >
-          <CarouselContent className="-ml-2 md:-ml-4">
-            {displayedItems.map((category, index) => (
-              <CarouselItem key={`${category.name}-${index}`} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
-                <ScriptureCard category={category} />
-              </CarouselItem>
-            ))}
-            
-            {isLoading && (
-              <>
-                <CarouselItem className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
-                  <LoadingSkeleton />
-                </CarouselItem>
-                <CarouselItem className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
-                  <LoadingSkeleton />
-                </CarouselItem>
-              </>
-            )}
-          </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {displayedItems.map((category, index) => (
+            <ScriptureCard key={`${category.name}-${index}`} category={category} />
+          ))}
+          
+          {isLoading && (
+            <>
+              <LoadingSkeleton />
+              <LoadingSkeleton />
+            </>
+          )}
+        </div>
         
         {hasMore && (
           <div ref={observerRef} className="h-10 flex items-center justify-center mt-8">
