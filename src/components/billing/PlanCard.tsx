@@ -26,7 +26,7 @@ interface PlanCardProps {
 
 export const PlanCard: React.FC<PlanCardProps> = ({ plan, isCurrentPlan, onPaymentSuccess }) => {
   return (
-    <Card className={`relative bg-white border-2 ${plan.popular ? 'border-orange-500 shadow-lg' : 'border-gray-200'} hover:shadow-md transition-shadow`}>
+    <Card className={`relative bg-white border-2 ${plan.popular ? 'border-orange-500 shadow-lg' : 'border-gray-200'} hover:shadow-md transition-shadow h-full flex flex-col`}>
       {plan.popular && (
         <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
           <Badge className="bg-gradient-to-r from-orange-500 to-red-600 text-white px-4 py-1">
@@ -34,7 +34,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, isCurrentPlan, onPayme
           </Badge>
         </div>
       )}
-      <CardHeader className="text-center">
+      <CardHeader className="text-center flex-shrink-0">
         <div className={`w-16 h-16 mx-auto rounded-full bg-gradient-to-r ${plan.color} flex items-center justify-center mb-4`}>
           {plan.name === 'Devotee Plan' && <Crown className="w-8 h-8 text-white" />}
           {plan.name === 'Guru Plan' && <Infinity className="w-8 h-8 text-white" />}
@@ -53,25 +53,25 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, isCurrentPlan, onPayme
         </div>
         <p className="text-gray-600 mt-2">{plan.description}</p>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
+      <CardContent className="flex-grow flex flex-col">
+        <div className="flex-grow space-y-4">
           <div className="text-center">
             <h4 className="font-semibold text-green-700 mb-3 flex items-center justify-center">
               <Check className="w-4 h-4 mr-2" />
               What's Included:
             </h4>
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               {plan.features.map((feature, featureIndex) => (
-                <li key={featureIndex} className="flex items-center justify-center text-sm text-gray-700">
-                  <Check className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
-                  <span>{feature}</span>
+                <li key={featureIndex} className="flex items-start text-sm text-gray-700">
+                  <Check className="w-4 h-4 text-green-500 mr-3 flex-shrink-0 mt-0.5" />
+                  <span className="text-left">{feature}</span>
                 </li>
               ))}
             </ul>
           </div>
         </div>
         
-        <div className="mt-6">
+        <div className="mt-6 pt-4">
           {isCurrentPlan ? (
             <Button 
               className="w-full bg-gray-200 text-gray-700"
