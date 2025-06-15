@@ -1,16 +1,23 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookOpen, MessageCircle, ArrowRight, Zap, Star } from 'lucide-react';
+import { BookOpen, MessageCircle, ArrowRight, Zap, Star, Menu, X } from 'lucide-react';
 import { PricingSection } from '@/components/PricingSection';
 import ContactSection from '@/components/ContactSection';
 import Footer from '@/components/Footer';
 import ScriptureCard from '@/components/ScriptureCard';
 import HinduGPTAI from '@/components/HinduGPTAI';
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 const Index = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   // Define scripture categories with orange-themed gradients
   const scriptureCategories = [
     {
@@ -57,13 +64,40 @@ const Index = () => {
               </div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">HinduGPT</h1>
             </div>
-            <div className="space-x-4">
+            
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex space-x-4">
               <Link to="/login">
                 <Button variant="outline" className="border-orange-200 hover:border-orange-300 hover:bg-orange-50">Sign In</Button>
               </Link>
               <Link to="/signup">
                 <Button className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600">Get Started</Button>
               </Link>
+            </div>
+
+            {/* Mobile Navigation */}
+            <div className="md:hidden">
+              <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="text-gray-600 hover:text-orange-600">
+                    <Menu className="h-6 w-6" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-64 bg-white">
+                  <div className="flex flex-col space-y-4 mt-8">
+                    <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+                      <Button variant="outline" className="w-full border-orange-200 hover:border-orange-300 hover:bg-orange-50">
+                        Sign In
+                      </Button>
+                    </Link>
+                    <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
+                      <Button className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600">
+                        Get Started
+                      </Button>
+                    </Link>
+                  </div>
+                </SheetContent>
+              </Sheet>
             </div>
           </div>
         </div>
