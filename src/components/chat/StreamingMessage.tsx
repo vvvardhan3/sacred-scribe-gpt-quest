@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Message } from '@/types/chat';
 
@@ -127,11 +126,6 @@ const StreamingMessage: React.FC<StreamingMessageProps> = ({ message, isStreamin
             </div>
           )}
         </div>
-        {isStreaming && currentIndex < message.content.length && (
-          <div className="ml-1 mt-1">
-            <div className="w-0.5 h-4 bg-orange-500 animate-pulse"></div>
-          </div>
-        )}
       </div>
     </div>
   );
