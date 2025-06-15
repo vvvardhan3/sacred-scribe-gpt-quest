@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useAuth } from '@/contexts/AuthContext';
-import { LogOut, Settings, Bell, Palette, CreditCard, User } from 'lucide-react';
+import { LogOut, Settings, Bell, CreditCard, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
   DropdownMenu,
@@ -53,10 +53,6 @@ const Navigation = () => {
                       Notifications
                     </DropdownMenuItem>
                   </Link>
-                  <DropdownMenuItem className="hover:bg-orange-50 cursor-pointer">
-                    <Palette className="w-4 h-4 mr-2" />
-                    Theme
-                  </DropdownMenuItem>
                   <Link to="/billing">
                     <DropdownMenuItem className="hover:bg-orange-50 cursor-pointer">
                       <CreditCard className="w-4 h-4 mr-2" />

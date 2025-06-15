@@ -20,44 +20,32 @@ const Dashboard = () => {
     { 
       name: 'Bhagavad Gita', 
       description: 'Test your knowledge of Krishna\'s teachings and divine wisdom',
-      color: 'from-amber-400 to-orange-500',
-      questions: '150+ Questions',
-      difficulty: 'Beginner'
+      color: 'from-amber-400 to-orange-500'
     },
     { 
       name: 'Upanishads', 
       description: 'Explore the philosophical foundations of Vedantic thought',
-      color: 'from-purple-400 to-violet-500',
-      questions: '120+ Questions',
-      difficulty: 'Advanced'
+      color: 'from-purple-400 to-violet-500'
     },
     { 
       name: 'Ramayana', 
       description: 'Journey through Rama\'s epic story of dharma and devotion',
-      color: 'from-emerald-400 to-teal-500',
-      questions: '200+ Questions',
-      difficulty: 'Intermediate'
+      color: 'from-emerald-400 to-teal-500'
     },
     { 
       name: 'Mahabharata', 
       description: 'Dive into the great epic of duty, war, and righteousness',
-      color: 'from-red-400 to-pink-500',
-      questions: '180+ Questions',
-      difficulty: 'Advanced'
+      color: 'from-red-400 to-pink-500'
     },
     { 
       name: 'Puranas', 
       description: 'Ancient stories of gods, creation, and cosmic cycles',
-      color: 'from-yellow-400 to-amber-500',
-      questions: '100+ Questions',
-      difficulty: 'Beginner'
+      color: 'from-yellow-400 to-amber-500'
     },
     { 
       name: 'Vedas', 
       description: 'Sacred hymns, rituals, and the foundation of Hindu knowledge',
-      color: 'from-cyan-400 to-blue-500',
-      questions: '80+ Questions',
-      difficulty: 'Advanced'
+      color: 'from-cyan-400 to-blue-500'
     }
   ];
 
@@ -108,9 +96,6 @@ const Dashboard = () => {
                       <h3 className="text-xl font-bold text-gray-600">
                         {category.name}
                       </h3>
-                      <div className="px-3 py-1 rounded-full text-xs font-medium border bg-gray-100 text-gray-600 border-gray-200">
-                        {category.difficulty}
-                      </div>
                     </div>
                     <p className="text-gray-500 text-sm leading-relaxed mb-4">
                       {category.description}

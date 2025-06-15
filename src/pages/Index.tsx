@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -15,44 +14,32 @@ const Index = () => {
     {
       name: 'Vedas',
       description: 'Ancient sacred texts - Rigveda, Samaveda, Yajurveda, and Atharvaveda',
-      color: 'from-blue-500 to-indigo-600',
-      questions: '10+ questions',
-      difficulty: 'Intermediate'
+      color: 'from-blue-500 to-indigo-600'
     },
     {
       name: 'Puranas',
       description: 'Stories and legends of gods, goddesses, and ancient heroes',
-      color: 'from-purple-500 to-pink-600',
-      questions: '15+ questions',
-      difficulty: 'Beginner'
+      color: 'from-purple-500 to-pink-600'
     },
     {
       name: 'Upanishads',
       description: 'Philosophical texts exploring the nature of reality and consciousness',
-      color: 'from-green-500 to-emerald-600',
-      questions: '12+ questions',
-      difficulty: 'Advanced'
+      color: 'from-green-500 to-emerald-600'
     },
     {
       name: 'Bhagavad Gita',
       description: 'Divine discourse between Krishna and Arjuna on dharma and yoga',
-      color: 'from-orange-500 to-red-600',
-      questions: '20+ questions',
-      difficulty: 'Intermediate'
+      color: 'from-orange-500 to-red-600'
     },
     {
       name: 'Mahabharata',
       description: 'Epic tale of the Kurukshetra war and dharmic principles',
-      color: 'from-red-500 to-rose-600',
-      questions: '25+ questions',
-      difficulty: 'Intermediate'
+      color: 'from-red-500 to-rose-600'
     },
     {
       name: 'Ramayana',
       description: 'Epic journey of Rama, Sita, and the triumph of good over evil',
-      color: 'from-amber-500 to-orange-600',
-      questions: '18+ questions',
-      difficulty: 'Beginner'
+      color: 'from-amber-500 to-orange-600'
     }
   ];
 
