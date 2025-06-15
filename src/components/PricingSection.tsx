@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,7 +5,7 @@ import { Check, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useUserLimits } from "@/hooks/useUserLimits";
-import { RazorpayPayment } from "./RazorpayPayment";
+import RazorpayPayment from "./RazorpayPayment";
 
 export const PricingSection = () => {
   const { user } = useAuth();
@@ -180,7 +179,7 @@ export const PricingSection = () => {
                   <RazorpayPayment 
                     planId={plan.planId}
                     planName={plan.name}
-                    amount={parseInt(plan.price.replace('₹', '').replace(',', ''))}
+                    price={parseInt(plan.price.replace('₹', '').replace(',', ''))}
                     buttonText={plan.buttonText}
                     className="w-full"
                   />

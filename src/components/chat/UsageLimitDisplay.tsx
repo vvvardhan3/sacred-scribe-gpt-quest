@@ -1,10 +1,9 @@
-
 import { useUserLimits } from '@/hooks/useUserLimits';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { MessageCircle, BookOpen, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { RazorpayPayment } from '../RazorpayPayment';
+import RazorpayPayment from '../RazorpayPayment';
 
 export const UsageLimitDisplay = () => {
   const { usage, limits, loading } = useUserLimits();
@@ -39,24 +38,24 @@ export const UsageLimitDisplay = () => {
                   <RazorpayPayment 
                     planId="devotee"
                     planName="Devotee Plan"
-                    amount={999}
+                    price={999}
                     buttonText="Upgrade"
                     className="text-xs px-2 py-1 h-auto"
                   />
                   <RazorpayPayment 
                     planId="guru"
                     planName="Guru Plan"
-                    amount={2999}
+                    price={2999}
                     buttonText="Go Pro"
                     className="text-xs px-2 py-1 h-auto"
                   />
                 </>
               )}
-              {limits.subscriptionTier === 'Devotee' && (
+              {limits.subscriptionTier === 'Devotee Plan' && (
                 <RazorpayPayment 
                   planId="guru"
                   planName="Guru Plan"
-                  amount={2999}
+                  price={2999}
                   buttonText="Go Pro"
                   className="text-xs px-2 py-1 h-auto"
                 />

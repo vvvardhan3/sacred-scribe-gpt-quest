@@ -1,4 +1,3 @@
-
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { BookOpen, Lock, Crown } from 'lucide-react';
 import { useUserLimits } from '@/hooks/useUserLimits';
 import { useToast } from '@/hooks/use-toast';
-import { RazorpayPayment } from '@/components/RazorpayPayment';
+import RazorpayPayment from '@/components/RazorpayPayment';
 
 const QuizCategory = () => {
   const navigate = useNavigate();
@@ -193,14 +192,14 @@ const QuizCategory = () => {
                           <RazorpayPayment 
                             planId="devotee"
                             planName="Devotee Plan"
-                            amount={999}
+                            price={999}
                             buttonText="Upgrade"
                             className="flex-1 text-xs py-1 h-auto"
                           />
                           <RazorpayPayment 
                             planId="guru"
                             planName="Guru Plan"
-                            amount={2999}
+                            price={2999}
                             buttonText="Go Pro"
                             className="flex-1 text-xs py-1 h-auto"
                           />
@@ -233,14 +232,14 @@ const QuizCategory = () => {
                       <RazorpayPayment 
                         planId="devotee"
                         planName="Devotee Plan"
-                        amount={999}
+                        price={999}
                         buttonText="Upgrade to Devotee - ₹999/month"
                         className="px-6 py-2"
                       />
                       <RazorpayPayment 
                         planId="guru"
                         planName="Guru Plan"
-                        amount={2999}
+                        price={2999}
                         buttonText="Go Pro - ₹2999/month"
                         className="px-6 py-2"
                       />
@@ -250,7 +249,7 @@ const QuizCategory = () => {
                     <RazorpayPayment 
                       planId="guru"
                       planName="Guru Plan"
-                      amount={2999}
+                      price={2999}
                       buttonText="Upgrade to Guru - ₹2999/month"
                       className="px-6 py-2"
                     />

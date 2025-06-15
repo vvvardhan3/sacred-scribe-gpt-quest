@@ -9,6 +9,8 @@ interface RazorpayPaymentProps {
   planName: string;
   price: number;
   onSuccess?: () => void;
+  buttonText?: string;
+  className?: string;
 }
 
 declare global {
@@ -21,7 +23,9 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
   planId,
   planName,
   price,
-  onSuccess
+  onSuccess,
+  buttonText,
+  className
 }) => {
   const { toast } = useToast();
   const { createSubscription, verifyPayment } = useSubscription();
@@ -121,11 +125,12 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
   return (
     <Button 
       onClick={handlePayment}
-      className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+      className={className || "w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"}
     >
-      Subscribe to {planName} - ₹{price}
+      {buttonText || `Subscribe to ${planName} - ₹${price}`}
     </Button>
   );
 };
 
 export default RazorpayPayment;
+
