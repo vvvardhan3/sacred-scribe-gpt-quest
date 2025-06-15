@@ -58,10 +58,10 @@ const ContactSection = () => {
       <div className="relative">
         {/* Background decoration */}
         <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-red-50 rounded-3xl transform rotate-1"></div>
-        <div className="absolute inset-0 bg-gradient-to-tl from-amber-50 to-orange-50 rounded-3xl transform -rotate-1"></div>
+        <div className="absolute inset-0 bg-gradient-to-tl from-red-50 to-orange-50 rounded-3xl transform -rotate-1"></div>
         
         <Card className="relative bg-white/80 backdrop-blur-sm border-0 shadow-2xl rounded-3xl overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 text-white p-8">
+          <CardHeader className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-8">
             <CardTitle className="text-2xl font-bold text-center flex items-center justify-center gap-3">
               <Mail className="w-7 h-7" />
               Send us a message
@@ -164,7 +164,7 @@ const ContactSection = () => {
                 <div className="pt-4">
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 hover:from-orange-600 hover:via-red-600 hover:to-pink-600 text-white font-semibold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2"
+                    className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2"
                   >
                     <Send className="w-5 h-5" />
                     Send Message
