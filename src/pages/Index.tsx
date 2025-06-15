@@ -1,70 +1,58 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookOpen, MessageCircle, ArrowRight, Zap, Lock, Crown, Star } from 'lucide-react';
+import { BookOpen, MessageCircle, ArrowRight, Zap, Star } from 'lucide-react';
 import { PricingSection } from '@/components/PricingSection';
 import ContactSection from '@/components/ContactSection';
 import Footer from '@/components/Footer';
 import ScriptureCard from '@/components/ScriptureCard';
-import RazorpayPayment from '@/components/RazorpayPayment';
 
 const Index = () => {
-  // Define scripture categories with access levels
+  // Define scripture categories - all unlocked on landing page
   const scriptureCategories = [
     {
       name: 'Vedas',
       description: 'Ancient sacred texts - Rigveda, Samaveda, Yajurveda, and Atharvaveda',
       color: 'from-blue-500 to-indigo-600',
       questions: '10+ questions',
-      difficulty: 'Intermediate',
-      isLocked: false,
-      requiredPlan: 'Free Trial'
+      difficulty: 'Intermediate'
     },
     {
       name: 'Puranas',
       description: 'Stories and legends of gods, goddesses, and ancient heroes',
       color: 'from-purple-500 to-pink-600',
       questions: '15+ questions',
-      difficulty: 'Beginner',
-      isLocked: false,
-      requiredPlan: 'Free Trial'
+      difficulty: 'Beginner'
     },
     {
       name: 'Upanishads',
       description: 'Philosophical texts exploring the nature of reality and consciousness',
       color: 'from-green-500 to-emerald-600',
       questions: '12+ questions',
-      difficulty: 'Advanced',
-      isLocked: false,
-      requiredPlan: 'Free Trial'
+      difficulty: 'Advanced'
     },
     {
       name: 'Bhagavad Gita',
       description: 'Divine discourse between Krishna and Arjuna on dharma and yoga',
       color: 'from-orange-500 to-red-600',
       questions: '20+ questions',
-      difficulty: 'Intermediate',
-      isLocked: true,
-      requiredPlan: 'Devotee Plan'
+      difficulty: 'Intermediate'
     },
     {
       name: 'Mahabharata',
       description: 'Epic tale of the Kurukshetra war and dharmic principles',
       color: 'from-red-500 to-rose-600',
       questions: '25+ questions',
-      difficulty: 'Intermediate',
-      isLocked: true,
-      requiredPlan: 'Devotee Plan'
+      difficulty: 'Intermediate'
     },
     {
       name: 'Ramayana',
       description: 'Epic journey of Rama, Sita, and the triumph of good over evil',
       color: 'from-amber-500 to-orange-600',
       questions: '18+ questions',
-      difficulty: 'Beginner',
-      isLocked: true,
-      requiredPlan: 'Devotee Plan'
+      difficulty: 'Beginner'
     }
   ];
 
@@ -144,94 +132,8 @@ const Index = () => {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {scriptureCategories.map((category, index) => (
-              <div key={index} className="relative">
-                {category.isLocked ? (
-                  <Card className="h-full transition-all duration-300 border-0 bg-white/60 opacity-75 relative overflow-hidden">
-                    <div className="absolute top-4 right-4 z-10">
-                      <Lock className="w-6 h-6 text-gray-500" />
-                    </div>
-                    <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${category.color} opacity-50`} />
-                    
-                    <CardHeader className="text-center pb-4">
-                      <div className="flex justify-between items-start mb-4">
-                        <h3 className="text-xl font-bold text-gray-600">
-                          {category.name}
-                        </h3>
-                        <div className="px-3 py-1 rounded-full text-xs font-medium border bg-gray-100 text-gray-600 border-gray-200">
-                          {category.difficulty}
-                        </div>
-                      </div>
-                      <p className="text-gray-500 text-sm leading-relaxed mb-4">
-                        {category.description}
-                      </p>
-                    </CardHeader>
-                    
-                    <CardContent className="px-6 pb-6 pt-0">
-                      <div className="text-center space-y-4">
-                        <div className="flex items-center justify-center gap-2 text-gray-500">
-                          <Crown className="w-4 h-4" />
-                          <span className="text-sm">Requires {category.requiredPlan}</span>
-                        </div>
-                        <div className="space-y-2">
-                          <div className="text-xs text-gray-500 mb-3">
-                            Upgrade to unlock this scripture
-                          </div>
-                          <div className="flex gap-2">
-                            <RazorpayPayment 
-                              planId="devotee"
-                              planName="Devotee Plan"
-                              price={999}
-                              buttonText="Devotee ₹999"
-                              className="flex-1 text-xs py-2 h-auto bg-orange-500 hover:bg-orange-600"
-                            />
-                            <RazorpayPayment 
-                              planId="guru"
-                              planName="Guru Plan"
-                              price={2999}
-                              buttonText="Guru ₹2999"
-                              className="flex-1 text-xs py-2 h-auto bg-purple-500 hover:bg-purple-600"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <ScriptureCard category={category} />
-                )}
-              </div>
+              <ScriptureCard key={index} category={category} />
             ))}
-          </div>
-
-          {/* Upgrade CTA for Free Users */}
-          <div className="mt-16 text-center">
-            <Card className="max-w-4xl mx-auto border-orange-200 bg-gradient-to-r from-orange-50 to-red-50">
-              <CardContent className="p-8">
-                <div className="flex items-center justify-center mb-4">
-                  <Star className="w-8 h-8 text-orange-500 mr-2" />
-                  <h3 className="text-2xl font-bold text-gray-900">Unlock All Sacred Scriptures</h3>
-                </div>
-                <p className="text-gray-600 mb-6 text-lg">
-                  Get access to Bhagavad Gita, Mahabharata, Ramayana and create unlimited quizzes with our premium plans
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <RazorpayPayment 
-                    planId="devotee"
-                    planName="Devotee Plan"
-                    price={999}
-                    buttonText="Upgrade to Devotee - ₹999/month"
-                    className="px-8 py-3 text-lg bg-orange-500 hover:bg-orange-600"
-                  />
-                  <RazorpayPayment 
-                    planId="guru"
-                    planName="Guru Plan"
-                    price={2999}
-                    buttonText="Go Pro with Guru - ₹2999/month"
-                    className="px-8 py-3 text-lg bg-purple-500 hover:bg-purple-600"
-                  />
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </section>
