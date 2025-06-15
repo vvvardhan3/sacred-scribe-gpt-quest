@@ -1,9 +1,12 @@
 
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useAuth } from '@/contexts/AuthContext';
+import { LogOut } from 'lucide-react';
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, signOut } = useAuth();
 
   return (
     <nav className="bg-white/80 backdrop-blur-md border-b border-orange-100 sticky top-0 z-50">
@@ -18,20 +21,16 @@ const Navigation = () => {
             </span>
           </div>
           
-          {/* <div className="hidden md:flex space-x-8">
-            <a href="#features" className="text-gray-700 hover:text-orange-600 transition-colors">Features</a>
-            <a href="#pricing" className="text-gray-700 hover:text-orange-600 transition-colors">Pricing</a>
-            <a href="#about" className="text-gray-700 hover:text-orange-600 transition-colors">About</a>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" className="text-gray-700 hover:text-orange-600">
-              Sign In
-            </Button>
-            <Button className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white">
-              Get Started
-            </Button>
-          </div> */}
+          {user && (
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center">
+                <span className="text-xs font-bold text-white">{user?.email?.charAt(0).toUpperCase()}</span>
+              </div>
+              <Button variant="ghost" size="sm" onClick={signOut} className="text-gray-600 hover:text-red-600">
+                <LogOut className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </nav>

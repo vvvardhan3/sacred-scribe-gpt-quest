@@ -8,7 +8,6 @@ interface ScriptureCardProps {
   category: {
     name: string;
     description: string;
-    image: string;
     color: string;
     questions: string;
     difficulty: string;
