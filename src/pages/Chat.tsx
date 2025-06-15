@@ -38,12 +38,14 @@ const Chat = () => {
   );
 
   const handleSelectConversation = (id: string) => {
+    console.log('Selecting conversation:', id);
     setActiveConversationId(id);
   };
 
   const handleCreateNew = async () => {
-    const newId = await createNewConversation();
+    console.log('Creating new conversation');
     resetChat();
+    setActiveConversationId(null);
   };
 
   if (loading) {

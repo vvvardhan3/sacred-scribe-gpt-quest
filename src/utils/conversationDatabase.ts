@@ -36,9 +36,17 @@ export const conversationDb = {
 
   // Create a new conversation
   async createConversation(title: string = 'New Conversation'): Promise<DatabaseConversation> {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) {
+      throw new Error('User not authenticated');
+    }
+
     const { data, error } = await supabase
       .from('conversations')
-      .insert({ title, user_id: (await supabase.auth.getUser()).data.user?.id })
+      .insert({ 
+        title, 
+        user_id: userData.user.id 
+      })
       .select()
       .single();
 
@@ -47,6 +55,7 @@ export const conversationDb = {
       throw error;
     }
 
+    console.log('Created conversation:', data);
     return data;
   },
 
@@ -78,6 +87,8 @@ export const conversationDb = {
 
   // Get messages for a conversation
   async getMessages(conversationId: string): Promise<DatabaseMessage[]> {
+    console.log('Fetching messages for conversation:', conversationId);
+    
     const { data, error } = await supabase
       .from('messages')
       .select('*')
@@ -89,6 +100,8 @@ export const conversationDb = {
       throw error;
     }
 
+    console.log('Retrieved messages from database:', data);
+    
     // Type cast the role field to ensure it matches our expected type
     return (data || []).map(msg => ({
       ...msg,
@@ -97,13 +110,20 @@ export const conversationDb = {
     }));
   },
 
-  // Save messages for a conversation
+  // Save messages for a conversation (replace all existing messages)
   async saveMessages(conversationId: string, messages: any[]): Promise<void> {
+    console.log('Saving messages to database:', conversationId, messages);
+    
     // Delete existing messages for this conversation
-    await supabase
+    const { error: deleteError } = await supabase
       .from('messages')
       .delete()
       .eq('conversation_id', conversationId);
+
+    if (deleteError) {
+      console.error('Error deleting existing messages:', deleteError);
+      throw deleteError;
+    }
 
     // Insert new messages
     if (messages.length > 0) {
@@ -115,14 +135,18 @@ export const conversationDb = {
         created_at: msg.timestamp?.toISOString() || new Date().toISOString()
       }));
 
-      const { error } = await supabase
+      console.log('Inserting messages:', messagesToInsert);
+
+      const { error: insertError } = await supabase
         .from('messages')
         .insert(messagesToInsert);
 
-      if (error) {
-        console.error('Error saving messages:', error);
-        throw error;
+      if (insertError) {
+        console.error('Error saving messages:', insertError);
+        throw insertError;
       }
+
+      console.log('Messages saved successfully');
     }
 
     // Update conversation timestamp

@@ -20,14 +20,14 @@ export const sendMessageToAPI = async (message: string): Promise<{ answer: strin
 };
 
 export const createUserMessage = (content: string): Message => ({
-  id: Date.now().toString(),
+  id: `user-${Date.now()}`,
   role: 'user',
   content,
   timestamp: new Date()
 });
 
 export const createAssistantMessage = (content: string, citations?: string[]): Message => ({
-  id: (Date.now() + 1).toString(),
+  id: `assistant-${Date.now()}`,
   role: 'assistant',
   content,
   citations: citations || [],
@@ -35,7 +35,7 @@ export const createAssistantMessage = (content: string, citations?: string[]): M
 });
 
 export const createErrorMessage = (): Message => ({
-  id: (Date.now() + 1).toString(),
+  id: `error-${Date.now()}`,
   role: 'assistant',
   content: "I apologize, but I'm unable to process your request at the moment. Please try again later.",
   timestamp: new Date()
@@ -49,41 +49,47 @@ export const handleTitleGeneration = async (
   updateConversation: (id: string, updates: any) => void,
   getActiveConversation: () => any
 ) => {
-  if (activeConversationId && messages.length > 0) {
-    console.log('Saving messages to conversation:', activeConversationId, messages);
-    
-    // Filter only user messages for sidebar display
-    const userMessages = messages.filter(msg => msg.role === 'user');
-    const lastUserMessage = userMessages[userMessages.length - 1];
-    
-    const currentConv = getActiveConversation();
-    let title = currentConv?.title || 'New Conversation';
-    
-    // Generate AI title only for the first user message and only once
-    if (messages.length >= 1 && messages[0].role === 'user' && !titleGenerated) {
-      setTitleGenerated(true);
-      try {
-        const generatedTitle = await generateTitle(messages[0].content);
-        updateConversation(activeConversationId, {
-          messages,
-          lastMessage: lastUserMessage ? lastUserMessage.content.slice(0, 100) : 'No messages yet',
-          title: generatedTitle
-        });
-      } catch (error) {
-        console.error('Error generating title:', error);
-        updateConversation(activeConversationId, {
-          messages,
-          lastMessage: lastUserMessage ? lastUserMessage.content.slice(0, 100) : 'No messages yet',
-          title
-        });
-      }
-      return;
-    }
-    
-    updateConversation(activeConversationId, {
-      messages,
-      lastMessage: lastUserMessage ? lastUserMessage.content.slice(0, 100) : 'No messages yet',
-      title
-    });
+  if (!activeConversationId || messages.length === 0) {
+    console.log('No conversation ID or messages for title generation');
+    return;
   }
+
+  console.log('Saving messages to conversation:', activeConversationId, messages);
+  
+  // Filter only user messages for sidebar display
+  const userMessages = messages.filter(msg => msg.role === 'user');
+  const lastUserMessage = userMessages[userMessages.length - 1];
+  
+  const currentConv = getActiveConversation();
+  let title = currentConv?.title || 'New Conversation';
+  
+  // Generate AI title only for the first user message and only once
+  if (messages.length >= 1 && messages[0].role === 'user' && !titleGenerated && title === 'New Conversation') {
+    console.log('Generating title for first message');
+    setTitleGenerated(true);
+    try {
+      const generatedTitle = await generateTitle(messages[0].content);
+      console.log('Generated title:', generatedTitle);
+      updateConversation(activeConversationId, {
+        messages,
+        lastMessage: lastUserMessage ? lastUserMessage.content.slice(0, 100) : 'No messages yet',
+        title: generatedTitle
+      });
+    } catch (error) {
+      console.error('Error generating title:', error);
+      updateConversation(activeConversationId, {
+        messages,
+        lastMessage: lastUserMessage ? lastUserMessage.content.slice(0, 100) : 'No messages yet',
+        title
+      });
+    }
+    return;
+  }
+  
+  // Always save messages to database
+  updateConversation(activeConversationId, {
+    messages,
+    lastMessage: lastUserMessage ? lastUserMessage.content.slice(0, 100) : 'No messages yet',
+    title
+  });
 };

@@ -25,15 +25,18 @@ export const useChatMessages = (
 
   const {
     messages,
-    setMessages,
+    addMessage,
     titleGenerated,
     setTitleGenerated,
-    resetMessages
+    resetMessages,
+    isLoadingMessages
   } = useMessageState(activeConversationId, getActiveConversation);
 
-  // Save messages to active conversation
+  // Save messages to active conversation whenever messages change
   useEffect(() => {
     if (activeConversationId && messages.length > 0) {
+      console.log('Saving messages to conversation:', activeConversationId, messages);
+      
       handleTitleGeneration(
         messages,
         activeConversationId,
@@ -46,33 +49,37 @@ export const useChatMessages = (
   }, [messages, activeConversationId]);
 
   const sendMessage = async () => {
-    if (!input.trim()) return;
+    const trimmedInput = input.trim();
+    if (!trimmedInput) return;
 
-    console.log('Sending message:', input);
+    console.log('Sending message:', trimmedInput);
 
     // Create new conversation if none is active
     let currentConvId = activeConversationId;
     if (!currentConvId) {
       console.log('Creating new conversation');
       currentConvId = await createNewConversation();
+      if (!currentConvId) {
+        toast({
+          title: "Error",
+          description: "Failed to create new conversation. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
     }
 
-    const userMessage = createUserMessage(input);
+    const userMessage = createUserMessage(trimmedInput);
     console.log('Adding user message:', userMessage);
     
     // Add user message immediately
-    setMessages(prev => {
-      const newMessages = [...prev, userMessage];
-      console.log('Updated messages after user message:', newMessages);
-      return newMessages;
-    });
+    addMessage(userMessage);
     
-    const currentInput = input;
     setInput('');
     setLoading(true);
 
     try {
-      const data = await sendMessageToAPI(currentInput);
+      const data = await sendMessageToAPI(trimmedInput);
       const assistantMessage = createAssistantMessage(data.answer, data.citations);
 
       console.log('Adding assistant message:', assistantMessage);
@@ -80,16 +87,12 @@ export const useChatMessages = (
       // Set this message as streaming
       setStreamingMessageId(assistantMessage.id);
       
-      setMessages(prev => {
-        const newMessages = [...prev, assistantMessage];
-        console.log('Updated messages after assistant message:', newMessages);
-        return newMessages;
-      });
+      addMessage(assistantMessage);
 
       // Stop streaming after a delay (simulating the time it takes to stream)
       setTimeout(() => {
         setStreamingMessageId(undefined);
-      }, data.answer.length * 20 + 1000); // Adjust timing based on content length
+      }, data.answer.length * 20 + 1000);
 
     } catch (error) {
       console.error('Error sending message:', error);
@@ -100,14 +103,13 @@ export const useChatMessages = (
       });
       
       const errorMessage = createErrorMessage();
-      setMessages(prev => [...prev, errorMessage]);
+      addMessage(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   const toggleCitations = (messageId: string) => {
-    // This function is kept for compatibility but not used with inline citations
     setExpandedCitations(prev => ({
       ...prev,
       [messageId]: !prev[messageId]
@@ -115,6 +117,7 @@ export const useChatMessages = (
   };
 
   const handleSuggestionClick = (suggestion: string) => {
+    console.log('Setting input from suggestion:', suggestion);
     setInput(suggestion);
   };
 
@@ -129,7 +132,7 @@ export const useChatMessages = (
   return {
     messages,
     input,
-    loading,
+    loading: loading || isLoadingMessages,
     streamingMessageId,
     expandedCitations,
     setInput,
