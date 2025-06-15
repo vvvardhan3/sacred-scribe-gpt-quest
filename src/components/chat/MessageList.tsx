@@ -32,6 +32,16 @@ const MessageList: React.FC<MessageListProps> = ({
     scrollToBottom();
   }, [messages]);
 
+  // Scroll to bottom when messages are first loaded (when opening a conversation)
+  useEffect(() => {
+    if (messages.length > 0) {
+      // Small delay to ensure DOM is updated
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+    }
+  }, [messages.length]);
+
   return (
     <div 
       className="flex-1 overflow-y-auto" 
