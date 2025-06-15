@@ -1,5 +1,8 @@
 
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { conversationDb, DatabaseConversation } from '@/utils/conversationDatabase';
+import { migrationUtils } from '@/utils/migrationUtils';
 
 export interface Conversation {
   id: string;
@@ -12,57 +15,130 @@ export interface Conversation {
 export const useConversations = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
-  // Load conversations from localStorage
+  // Load conversations from database when user is authenticated
   useEffect(() => {
-    const saved = localStorage.getItem('chat-conversations');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      const conversationsWithDates = parsed.map((conv: any) => ({
-        ...conv,
-        timestamp: new Date(conv.timestamp)
-      }));
-      setConversations(conversationsWithDates);
-    }
-  }, []);
+    const loadConversations = async () => {
+      if (!user) {
+        setConversations([]);
+        setLoading(false);
+        return;
+      }
 
-  // Save conversations to localStorage
-  const saveConversations = (convs: Conversation[]) => {
-    localStorage.setItem('chat-conversations', JSON.stringify(convs));
-    setConversations(convs);
-  };
+      try {
+        // Check if migration is needed
+        const hasMigrated = await migrationUtils.hasMigrated();
+        if (!hasMigrated) {
+          await migrationUtils.migrateToDatabase();
+        }
 
-  const createNewConversation = () => {
-    const newConv: Conversation = {
-      id: Date.now().toString(),
-      title: 'New Conversation',
-      lastMessage: '',
-      timestamp: new Date(),
-      messages: []
+        // Load conversations from database
+        const dbConversations = await conversationDb.getConversations();
+        
+        // Convert to local format
+        const convertedConversations = await Promise.all(
+          dbConversations.map(async (dbConv: DatabaseConversation) => {
+            const messages = await conversationDb.getMessages(dbConv.id);
+            
+            // Convert messages to local format
+            const localMessages = messages.map(msg => ({
+              id: msg.id,
+              role: msg.role,
+              content: msg.content,
+              citations: msg.citations || [],
+              timestamp: new Date(msg.created_at)
+            }));
+
+            // Get last user message for preview
+            const userMessages = localMessages.filter(msg => msg.role === 'user');
+            const lastUserMessage = userMessages[userMessages.length - 1];
+
+            return {
+              id: dbConv.id,
+              title: dbConv.title,
+              lastMessage: lastUserMessage ? lastUserMessage.content.slice(0, 100) : 'No messages yet',
+              timestamp: new Date(dbConv.updated_at),
+              messages: localMessages
+            };
+          })
+        );
+
+        setConversations(convertedConversations);
+      } catch (error) {
+        console.error('Error loading conversations:', error);
+      } finally {
+        setLoading(false);
+      }
     };
-    const updated = [newConv, ...conversations];
-    saveConversations(updated);
-    setActiveConversationId(newConv.id);
-    return newConv.id;
-  };
 
-  const updateConversation = (id: string, updates: Partial<Conversation>) => {
-    const updated = conversations.map(conv => 
-      conv.id === id ? { ...conv, ...updates, timestamp: new Date() } : conv
-    );
-    saveConversations(updated);
-  };
+    loadConversations();
+  }, [user]);
 
-  const deleteConversation = (id: string) => {
-    const updated = conversations.filter(conv => conv.id !== id);
-    saveConversations(updated);
-    if (activeConversationId === id) {
-      setActiveConversationId(null);
+  const createNewConversation = async () => {
+    if (!user) return '';
+
+    try {
+      const dbConversation = await conversationDb.createConversation();
+      
+      const newConv: Conversation = {
+        id: dbConversation.id,
+        title: dbConversation.title,
+        lastMessage: '',
+        timestamp: new Date(dbConversation.created_at),
+        messages: []
+      };
+
+      setConversations(prev => [newConv, ...prev]);
+      setActiveConversationId(dbConversation.id);
+      return dbConversation.id;
+    } catch (error) {
+      console.error('Error creating new conversation:', error);
+      return '';
     }
   };
 
-  const renameConversation = (id: string, newTitle: string) => {
-    updateConversation(id, { title: newTitle });
+  const updateConversation = async (id: string, updates: Partial<Conversation>) => {
+    try {
+      // Update in database
+      if (updates.title) {
+        await conversationDb.updateConversation(id, { title: updates.title });
+      }
+
+      if (updates.messages) {
+        await conversationDb.saveMessages(id, updates.messages);
+      }
+
+      // Update local state
+      setConversations(prev => 
+        prev.map(conv => 
+          conv.id === id 
+            ? { ...conv, ...updates, timestamp: new Date() }
+            : conv
+        )
+      );
+    } catch (error) {
+      console.error('Error updating conversation:', error);
+    }
+  };
+
+  const deleteConversation = async (id: string) => {
+    try {
+      await conversationDb.deleteConversation(id);
+      
+      setConversations(prev => prev.filter(conv => conv.id !== id));
+      
+      if (activeConversationId === id) {
+        setActiveConversationId(null);
+      }
+    } catch (error) {
+      console.error('Error deleting conversation:', error);
+    }
+  };
+
+  const renameConversation = async (id: string, newTitle: string) => {
+    await updateConversation(id, { title: newTitle });
   };
 
   const getActiveConversation = () => {
@@ -77,6 +153,7 @@ export const useConversations = () => {
     updateConversation,
     deleteConversation,
     renameConversation,
-    getActiveConversation
+    getActiveConversation,
+    loading
   };
 };

@@ -15,13 +15,14 @@ const Chat = () => {
     updateConversation,
     deleteConversation,
     renameConversation,
-    getActiveConversation
+    getActiveConversation,
+    loading
   } = useConversations();
 
   const {
     messages,
     input,
-    loading,
+    loading: messagesLoading,
     streamingMessageId,
     expandedCitations,
     setInput,
@@ -45,6 +46,19 @@ const Chat = () => {
     resetChat();
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-white font-bold text-sm">हिं</span>
+          </div>
+          <p className="text-gray-600">Loading your conversations...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white">
       <SidebarProvider>
@@ -62,7 +76,7 @@ const Chat = () => {
             <ChatContainer
               messages={messages}
               input={input}
-              loading={loading}
+              loading={messagesLoading}
               streamingMessageId={streamingMessageId}
               expandedCitations={expandedCitations}
               onInputChange={setInput}
