@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,20 +19,23 @@ export const PricingSection = () => {
       name: "Free Trial",
       price: "₹0",
       period: "forever",
-      description: "Perfect for getting started with Hindu scriptures",
+      description: "Perfect for exploring Hindu scriptures and getting started",
       features: [
-        "10 AI chat messages per day",
-        "Create 1 quiz",
-        "Access to Vedas, Puranas, Upanishads",
+        "10 AI chat messages daily",
+        "Create 1 quiz total",
+        "Access to Vedas, Puranas & Upanishads",
         "Basic scripture guidance",
-        "Community support"
+        "Community support",
+        "Sanskrit translations",
+        "Daily spiritual quotes"
       ],
       limitations: [
-        "No access to Mahabharata",
-        "No access to Bhagavad Gita", 
-        "No access to Ramayana",
-        "Limited daily messages",
-        "Limited quiz creation"
+        "No Mahabharata access",
+        "No Bhagavad Gita access", 
+        "No Ramayana access",
+        "Limited daily interactions",
+        "No advanced AI insights",
+        "No custom learning paths"
       ],
       buttonText: "Current Plan",
       popular: false,
@@ -42,44 +46,53 @@ export const PricingSection = () => {
       name: "Devotee Plan",
       price: "₹999",
       period: "month",
-      description: "Ideal for serious students of Hindu philosophy",
+      originalPrice: "₹1,499",
+      description: "Comprehensive access for dedicated learners of Hindu philosophy",
       features: [
-        "200 AI chat messages per day",
+        "200 AI chat messages daily",
         "Create up to 5 quizzes",
-        "Access to ALL scripture categories",
-        "Vedas, Puranas, Upanishads",
-        "Mahabharata, Bhagavad Gita, Ramayana", 
-        "Advanced scripture analysis",
-        "Priority support",
-        "Detailed explanations"
+        "Complete scripture library access",
+        "Vedas, Puranas & Upanishads",
+        "Mahabharata & Ramayana", 
+        "Bhagavad Gita with commentary",
+        "Advanced AI explanations",
+        "Personalized study plans",
+        "Priority email support",
+        "Progress tracking & analytics"
       ],
       limitations: [],
       buttonText: subscription?.subscription_tier === 'Devotee Plan' ? "Current Plan" : "Choose Devotee",
       popular: true,
       planId: "devotee",
-      current: subscription?.subscription_tier === 'Devotee Plan'
+      current: subscription?.subscription_tier === 'Devotee Plan',
+      savings: "Save ₹500/month"
     },
     {
       name: "Guru Plan",
-      price: "₹2999",
+      price: "₹2,999",
       period: "month", 
-      description: "For teachers, scholars, and advanced practitioners",
+      originalPrice: "₹3,999",
+      description: "Ultimate package for teachers, scholars & spiritual guides",
       features: [
-        "Unlimited AI chat messages",
+        "Unlimited AI conversations",
         "Unlimited quiz creation",
-        "Access to ALL scripture categories",
-        "Vedas, Puranas, Upanishads",
-        "Mahabharata, Bhagavad Gita, Ramayana",
-        "Advanced AI insights",
-        "Custom learning paths",
-        "Premium support",
-        "Early access to new features"
+        "Complete scripture collection",
+        "All Vedas with commentaries",
+        "Complete Mahabharata & Ramayana",
+        "Bhagavad Gita with multiple translations",
+        "Advanced AI philosophical insights",
+        "Custom learning path creation",
+        "White-glove support",
+        "Early access to new features",
+        "Export & share content",
+        "API access for integration"
       ],
       limitations: [],
       buttonText: subscription?.subscription_tier === 'Guru Plan' ? "Current Plan" : "Choose Guru",
       popular: false,
       planId: "guru",
-      current: subscription?.subscription_tier === 'Guru Plan'
+      current: subscription?.subscription_tier === 'Guru Plan',
+      savings: "Save ₹1,000/month"
     }
   ];
 
@@ -91,7 +104,7 @@ export const PricingSection = () => {
             Choose Your Spiritual Journey
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Unlock the wisdom of Hindu scriptures with our subscription plans designed for every level of spiritual seeker
+            Unlock the profound wisdom of Hindu scriptures with AI-powered learning designed for every seeker
           </p>
           
           {/* Current Usage Display */}
@@ -101,7 +114,7 @@ export const PricingSection = () => {
               <div className="text-sm text-gray-600 space-y-1">
                 <div>Messages today: {usage.messages_sent_today}/{limits.maxDailyMessages === Infinity ? '∞' : limits.maxDailyMessages}</div>
                 <div>Quizzes created: {usage.quizzes_created_total}/{limits.maxQuizzes === Infinity ? '∞' : limits.maxQuizzes}</div>
-                <div>Plan: {limits.subscriptionTier}</div>
+                <div>Current plan: {limits.subscriptionTier}</div>
               </div>
             </div>
           )}
@@ -118,14 +131,27 @@ export const PricingSection = () => {
                   Most Popular
                 </Badge>
               )}
+
+              {plan.savings && (
+                <Badge className="absolute -top-3 right-4 bg-green-500">
+                  {plan.savings}
+                </Badge>
+              )}
               
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl font-bold text-gray-900">
                   {plan.name}
                 </CardTitle>
-                <div className="text-4xl font-bold text-orange-600">
-                  {plan.price}
-                  {plan.period && <span className="text-lg text-gray-500">/{plan.period}</span>}
+                <div className="space-y-2">
+                  <div className="text-4xl font-bold text-orange-600">
+                    {plan.price}
+                    {plan.period && <span className="text-lg text-gray-500">/{plan.period}</span>}
+                  </div>
+                  {plan.originalPrice && (
+                    <div className="text-lg text-gray-400 line-through">
+                      {plan.originalPrice}/{plan.period}
+                    </div>
+                  )}
                 </div>
                 <CardDescription className="text-gray-600">
                   {plan.description}
@@ -134,15 +160,15 @@ export const PricingSection = () => {
 
               <CardContent className="space-y-4">
                 <div>
-                  <h4 className="font-semibold text-green-700 mb-2 flex items-center">
+                  <h4 className="font-semibold text-green-700 mb-3 flex items-center">
                     <Check className="w-4 h-4 mr-2" />
-                    Features Included:
+                    What's Included:
                   </h4>
                   <ul className="space-y-2">
                     {plan.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-center text-sm text-gray-700">
-                        <Check className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
-                        {feature}
+                      <li key={featureIndex} className="flex items-start text-sm text-gray-700">
+                        <Check className="w-4 h-4 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
+                        <span>{feature}</span>
                       </li>
                     ))}
                   </ul>
@@ -150,15 +176,15 @@ export const PricingSection = () => {
 
                 {plan.limitations.length > 0 && (
                   <div>
-                    <h4 className="font-semibold text-red-700 mb-2 flex items-center">
+                    <h4 className="font-semibold text-red-700 mb-3 flex items-center">
                       <X className="w-4 h-4 mr-2" />
-                      Limitations:
+                      Not Included:
                     </h4>
                     <ul className="space-y-2">
                       {plan.limitations.map((limitation, limitIndex) => (
-                        <li key={limitIndex} className="flex items-center text-sm text-gray-600">
-                          <X className="w-4 h-4 text-red-500 mr-2 flex-shrink-0" />
-                          {limitation}
+                        <li key={limitIndex} className="flex items-start text-sm text-gray-600">
+                          <X className="w-4 h-4 text-red-500 mr-2 flex-shrink-0 mt-0.5" />
+                          <span>{limitation}</span>
                         </li>
                       ))}
                     </ul>
@@ -198,11 +224,11 @@ export const PricingSection = () => {
         </div>
 
         <div className="text-center mt-12">
-          <p className="text-gray-600">
-            All plans include access to our AI-powered scripture guidance system
+          <p className="text-gray-600 mb-2">
+            All plans include access to our advanced AI-powered scripture guidance system
           </p>
-          <p className="text-sm text-gray-500 mt-2">
-            Prices in Indian Rupees. Cancel anytime. 
+          <p className="text-sm text-gray-500">
+            Prices in Indian Rupees. Cancel anytime. 30-day money-back guarantee.
           </p>
         </div>
       </div>
