@@ -57,7 +57,8 @@ const Billing = () => {
   const getCurrentPlan = () => {
     if (subscriptionLoading) return null;
     
-    if (!subscription?.subscribed) {
+    // Only return a paid plan if the user is actually subscribed
+    if (!subscription?.subscribed || !subscription?.plan_id) {
       return { id: 'free', name: 'Free Trial', price: 0, period: 'forever', description: 'Perfect for exploring Hindu scriptures and getting started' };
     }
     
@@ -65,6 +66,11 @@ const Billing = () => {
   };
 
   const currentPlan = getCurrentPlan();
+
+  // Check if user has an active subscription for a specific plan
+  const isCurrentPlan = (planId: string) => {
+    return subscription?.subscribed && subscription?.plan_id === planId;
+  };
 
   if (subscriptionLoading) {
     return (
@@ -109,7 +115,9 @@ const Billing = () => {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Current Plan</span>
-                <Badge className="bg-green-100 text-green-800">Active</Badge>
+                <Badge className={subscription?.subscribed ? "bg-green-100 text-green-800" : "bg-blue-100 text-blue-800"}>
+                  {subscription?.subscribed ? "Active" : "Free"}
+                </Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -117,7 +125,7 @@ const Billing = () => {
                 <div>
                   <h3 className="text-2xl font-bold text-gray-900">{currentPlan?.name}</h3>
                   <p className="text-gray-600">{currentPlan?.description}</p>
-                  {subscription?.subscription_end && (
+                  {subscription?.subscription_end && subscription?.subscribed && (
                     <p className="text-sm text-gray-500 mt-2">
                       Valid until: {new Date(subscription.subscription_end).toLocaleDateString('en-IN')}
                     </p>
@@ -182,7 +190,7 @@ const Billing = () => {
                     </div>
                     
                     <div className="mt-6">
-                      {subscription?.plan_id === plan.id ? (
+                      {isCurrentPlan(plan.id) ? (
                         <Button 
                           className="w-full bg-gray-200 text-gray-700"
                           disabled
