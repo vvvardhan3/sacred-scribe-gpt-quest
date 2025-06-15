@@ -97,6 +97,7 @@ export const useChatMessages = (
   };
 
   const toggleCitations = (messageId: string) => {
+    // This function is kept for compatibility but not used with inline citations
     setExpandedCitations(prev => ({
       ...prev,
       [messageId]: !prev[messageId]

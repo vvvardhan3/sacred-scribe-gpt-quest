@@ -5,15 +5,9 @@ import { Bot, User } from 'lucide-react';
 
 interface ChatMessageProps {
   message: Message;
-  expandedCitations: { [key: string]: boolean };
-  onToggleCitations: (messageId: string) => void;
 }
 
-const ChatMessage: React.FC<ChatMessageProps> = ({ 
-  message, 
-  expandedCitations, 
-  onToggleCitations 
-}) => {
+const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
   // Function to generate online links for citations
   const getCitationLink = (citation: string) => {
     const lowerCitation = citation.toLowerCase();
@@ -74,6 +68,51 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     return 'https://www.sacred-texts.com/hin/index.htm';
   };
 
+  // Function to format message content with inline citations
+  const formatMessageWithCitations = (content: string, citations?: string[]) => {
+    if (!citations || citations.length === 0) {
+      return <p className="text-base leading-relaxed whitespace-pre-wrap">{content}</p>;
+    }
+
+    // Split content into paragraphs and process each one
+    const paragraphs = content.split('\n\n');
+    
+    return (
+      <div className="space-y-4">
+        {paragraphs.map((paragraph, index) => {
+          if (!paragraph.trim()) return null;
+          
+          return (
+            <div key={index}>
+              <p className="text-base leading-relaxed whitespace-pre-wrap">{paragraph}</p>
+              
+              {/* Show relevant citations after each paragraph if this is the last paragraph or every few paragraphs */}
+              {(index === paragraphs.length - 1) && (
+                <div className="mt-3 space-y-2">
+                  <div className="text-sm font-medium text-gray-600 mb-2">References:</div>
+                  {citations.map((citation, citIndex) => (
+                    <div key={citIndex} className="text-sm text-gray-600 border-l-2 border-gray-200 pl-3 py-1">
+                      <span className="font-medium text-gray-800">#{citIndex + 1}</span> {citation}
+                      <br />
+                      <a 
+                        href={getCitationLink(citation)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-xs transition-colors mt-1"
+                      >
+                        Read online →
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <div className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} mb-6`}>
       <div className={`flex items-start space-x-4 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
@@ -97,45 +136,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
               ? 'bg-blue-600 text-white' 
               : 'bg-white border border-gray-200 text-gray-900'
           }`}>
-            <p className="text-base leading-relaxed whitespace-pre-wrap">{message.content}</p>
-            
-            {/* Citations */}
-            {message.citations && message.citations.length > 0 && (
-              <div className="mt-4 pt-3 border-t border-gray-200/20">
-                <button
-                  onClick={() => onToggleCitations(message.id)}
-                  className={`flex items-center text-sm transition-colors ${
-                    message.role === 'user' 
-                      ? 'text-blue-100 hover:text-white' 
-                      : 'text-gray-600 hover:text-gray-800'
-                  }`}
-                >
-                  <span className="mr-2 text-xs">
-                    {expandedCitations[message.id] ? '▼' : '▶'}
-                  </span>
-                  References ({message.citations.length})
-                </button>
-                
-                {expandedCitations[message.id] && (
-                  <div className="mt-3 p-4 bg-gray-50 rounded-xl border text-sm text-gray-700 space-y-3">
-                    {message.citations.map((citation, index) => (
-                      <div key={index} className="leading-relaxed">
-                        <div className="font-medium text-gray-900 mb-1">#{index + 1}</div>
-                        <div className="text-gray-700 mb-2">{citation}</div>
-                        <a 
-                          href={getCitationLink(citation)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors"
-                        >
-                          Read online →
-                        </a>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+            {formatMessageWithCitations(message.content, message.citations)}
           </div>
           
           {/* Timestamp */}

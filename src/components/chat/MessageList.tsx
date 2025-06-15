@@ -40,8 +40,6 @@ const MessageList: React.FC<MessageListProps> = ({
             <ChatMessage
               key={message.id}
               message={message}
-              expandedCitations={expandedCitations}
-              onToggleCitations={onToggleCitations}
             />
           ))}
           

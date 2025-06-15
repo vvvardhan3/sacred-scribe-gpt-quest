@@ -29,7 +29,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Plus, Edit2, Trash2, MessageSquare, MoreHorizontal, X, LogOut } from 'lucide-react';
+import { Plus, Edit2, Trash2, MessageSquare, MoreHorizontal, PanelLeft, Search, Library, LogOut } from 'lucide-react';
 import { Conversation } from '@/hooks/useConversations';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSidebar } from '@/components/ui/sidebar';
@@ -57,7 +57,7 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
   const [openPopoverId, setOpenPopoverId] = useState<string | null>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
-  const { toggleSidebar } = useSidebar();
+  const { state, toggleSidebar } = useSidebar();
 
   const startEdit = (conv: Conversation) => {
     setEditingId(conv.id);
@@ -97,6 +97,93 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
     return user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'User';
   };
 
+  // Collapsed sidebar - show only icons
+  if (state === 'collapsed') {
+    return (
+      <div className="fixed left-0 top-0 h-full w-12 bg-gray-900 z-40 flex flex-col items-center py-3 space-y-3">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={toggleSidebar}
+          className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-gray-800"
+        >
+          <PanelLeft className="h-4 w-4" />
+        </Button>
+        
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onCreateNew}
+          className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-gray-800"
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
+        
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-gray-800"
+        >
+          <Search className="h-4 w-4" />
+        </Button>
+        
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-gray-800"
+        >
+          <Library className="h-4 w-4" />
+        </Button>
+
+        <div className="flex-1" />
+        
+        <Popover open={userMenuOpen} onOpenChange={setUserMenuOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="ghost"
+              className="h-8 w-8 p-0 hover:bg-gray-800"
+            >
+              <Avatar className="h-6 w-6">
+                <AvatarFallback className="bg-gray-600 text-white text-xs">
+                  {getUserInitials()}
+                </AvatarFallback>
+              </Avatar>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 p-2" align="start" side="right">
+            <div className="flex items-center space-x-3 p-2 mb-2">
+              <Avatar className="h-10 w-10">
+                <AvatarFallback className="bg-gray-100 text-gray-700 font-medium">
+                  {getUserInitials()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium text-gray-900 truncate">
+                  {getDisplayName()}
+                </div>
+                <div className="text-xs text-gray-500 truncate">
+                  {user?.email}
+                </div>
+              </div>
+            </div>
+            <div className="border-t border-gray-100 pt-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start h-9 px-2 text-gray-700 hover:bg-gray-50"
+                onClick={handleSignOut}
+              >
+                <LogOut className="h-4 w-4 mr-3" />
+                Sign out
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+    );
+  }
+
+  // Expanded sidebar
   return (
     <>
       <Sidebar className="border-r border-gray-200 bg-white w-80">
@@ -114,13 +201,13 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
               onClick={toggleSidebar}
               className="h-8 w-8 p-0 hover:bg-gray-100"
             >
-              <X className="h-4 w-4" />
+              <PanelLeft className="h-4 w-4" />
             </Button>
           </div>
         </SidebarHeader>
         
         <SidebarContent className="p-0">
-          <div className="p-4">
+          <div className="p-4 space-y-2">
             <Button 
               onClick={onCreateNew}
               className="w-full justify-start text-left bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 shadow-none h-11 rounded-lg"
@@ -129,10 +216,26 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
               <Plus className="h-4 w-4 mr-3" />
               New chat
             </Button>
+            
+            <Button 
+              className="w-full justify-start text-left bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 shadow-none h-11 rounded-lg"
+              variant="outline"
+            >
+              <Search className="h-4 w-4 mr-3" />
+              Search chats
+            </Button>
+            
+            <Button 
+              className="w-full justify-start text-left bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 shadow-none h-11 rounded-lg"
+              variant="outline"
+            >
+              <Library className="h-4 w-4 mr-3" />
+              Library
+            </Button>
           </div>
 
           <div className="flex-1">
-            <ScrollArea className="h-[calc(100vh-240px)]">
+            <ScrollArea className="h-[calc(100vh-320px)]">
               <SidebarGroup>
                 <SidebarGroupContent>
                   <SidebarMenu className="px-4 space-y-1">
