@@ -64,7 +64,73 @@ serve(async (req) => {
 
     console.log('Payment signature verified successfully')
 
-    // Update subscription status in database using order_id
+    // Get subscription details for payment record
+    console.log('Fetching subscription details for order:', razorpay_order_id)
+    
+    const { data: subscriptionData, error: subscriptionError } = await supabase
+      .from('subscribers')
+      .select('user_id, plan_id, subscription_tier')
+      .eq('razorpay_subscription_id', razorpay_order_id)
+      .single()
+
+    if (subscriptionError || !subscriptionData) {
+      console.error('Subscription lookup error:', subscriptionError)
+      throw new Error('Subscription not found for this payment')
+    }
+
+    console.log('Found subscription:', subscriptionData)
+
+    // Get order details from Razorpay (optional, but useful for amount verification)
+    const razorpayKeyId = 'rzp_test_hDWzj3XChB3yxM'
+    const authBasic = btoa(`${razorpayKeyId}:${razorpayKeySecret}`)
+
+    let orderAmount = 0
+    let orderCurrency = 'INR'
+    
+    try {
+      const orderResponse = await fetch(`https://api.razorpay.com/v1/orders/${razorpay_order_id}`, {
+        headers: {
+          'Authorization': `Basic ${authBasic}`,
+        }
+      })
+
+      if (orderResponse.ok) {
+        const orderData = await orderResponse.json()
+        orderAmount = orderData.amount
+        orderCurrency = orderData.currency
+        console.log('Order details fetched:', { amount: orderAmount, currency: orderCurrency })
+      }
+    } catch (error) {
+      console.log('Could not fetch order details, using defaults:', error.message)
+    }
+
+    // Store payment details in payments table
+    console.log('Storing payment details...')
+    
+    const { data: paymentData, error: paymentError } = await supabase
+      .from('payments')
+      .insert({
+        user_id: subscriptionData.user_id,
+        razorpay_payment_id,
+        razorpay_order_id,
+        razorpay_signature,
+        amount: orderAmount,
+        currency: orderCurrency,
+        status: 'captured',
+        plan_id: subscriptionData.plan_id,
+        plan_name: subscriptionData.subscription_tier || 'Unknown Plan'
+      })
+      .select()
+      .single()
+
+    if (paymentError) {
+      console.error('Payment storage error:', paymentError)
+      throw new Error(`Failed to store payment details: ${paymentError.message}`)
+    }
+
+    console.log('Payment details stored successfully:', paymentData.id)
+
+    // Update subscription status in database
     console.log('Updating subscription status for order:', razorpay_order_id)
     
     const { data: updateData, error: updateError } = await supabase
@@ -95,7 +161,8 @@ serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         message: 'Payment verified and subscription activated',
-        subscription: updateData[0]
+        subscription: updateData[0],
+        payment: paymentData
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
