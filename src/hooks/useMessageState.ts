@@ -14,7 +14,7 @@ export const useMessageState = (activeConversationId: string | null) => {
       console.log('Loading messages for conversation:', activeConversationId);
       
       if (!activeConversationId) {
-        console.log('No active conversation, resetting');
+        console.log('No active conversation, clearing messages');
         setMessages([]);
         setTitleGenerated(false);
         return;
@@ -22,7 +22,9 @@ export const useMessageState = (activeConversationId: string | null) => {
 
       setIsLoadingMessages(true);
       try {
+        console.log('Fetching messages from database for conversation:', activeConversationId);
         const dbMessages = await conversationDb.getMessages(activeConversationId);
+        console.log('Raw messages from database:', dbMessages);
         
         if (dbMessages && dbMessages.length > 0) {
           const messagesWithDates = dbMessages.map((msg: any) => ({
@@ -32,9 +34,9 @@ export const useMessageState = (activeConversationId: string | null) => {
             citations: msg.citations || [],
             timestamp: new Date(msg.created_at)
           }));
-          console.log('Loaded messages from database:', messagesWithDates);
+          console.log('Processed messages for display:', messagesWithDates);
           setMessages(messagesWithDates);
-          setTitleGenerated(true); // If messages exist, title should be generated
+          setTitleGenerated(true);
         } else {
           console.log('No messages found in database for conversation:', activeConversationId);
           setMessages([]);
@@ -52,10 +54,13 @@ export const useMessageState = (activeConversationId: string | null) => {
     loadMessages();
   }, [activeConversationId]);
 
-  // Define stable functions without useCallback to avoid hook ordering issues
   const addMessage = (message: Message) => {
     console.log('Adding message to state:', message);
-    setMessages(prev => [...prev, message]);
+    setMessages(prev => {
+      const updated = [...prev, message];
+      console.log('Updated messages state:', updated);
+      return updated;
+    });
   };
 
   const resetMessages = () => {

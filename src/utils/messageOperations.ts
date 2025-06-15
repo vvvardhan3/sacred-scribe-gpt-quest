@@ -18,7 +18,7 @@ export const sendMessageToAPI = async (message: string): Promise<{ answer: strin
   return data;
 };
 
-// Generate proper UUIDs for message IDs
+// Generate proper UUIDs for message IDs using crypto.randomUUID()
 const generateMessageId = (): string => {
   return crypto.randomUUID();
 };

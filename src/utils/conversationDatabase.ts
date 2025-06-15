@@ -19,8 +19,8 @@ export interface DatabaseMessage {
 }
 
 export const conversationDb = {
-  // Fetch all conversations for the current user
   async getConversations(): Promise<DatabaseConversation[]> {
+    console.log('Fetching conversations from database');
     const { data, error } = await supabase
       .from('conversations')
       .select('*')
@@ -31,16 +31,17 @@ export const conversationDb = {
       throw error;
     }
 
+    console.log('Fetched conversations:', data);
     return data || [];
   },
 
-  // Create a new conversation
   async createConversation(title: string = 'New Conversation'): Promise<DatabaseConversation> {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) {
       throw new Error('User not authenticated');
     }
 
+    console.log('Creating new conversation with title:', title);
     const { data, error } = await supabase
       .from('conversations')
       .insert({ 
@@ -59,8 +60,8 @@ export const conversationDb = {
     return data;
   },
 
-  // Update conversation title and timestamp
   async updateConversation(id: string, updates: { title?: string }): Promise<void> {
+    console.log('Updating conversation:', id, updates);
     const { error } = await supabase
       .from('conversations')
       .update({ ...updates, updated_at: new Date().toISOString() })
@@ -72,8 +73,9 @@ export const conversationDb = {
     }
   },
 
-  // Delete a conversation and its messages
   async deleteConversation(id: string): Promise<void> {
+    console.log('Deleting conversation:', id);
+    
     // First delete messages
     const { error: messagesError } = await supabase
       .from('messages')
@@ -97,7 +99,6 @@ export const conversationDb = {
     }
   },
 
-  // Get messages for a conversation
   async getMessages(conversationId: string): Promise<DatabaseMessage[]> {
     console.log('Fetching messages for conversation:', conversationId);
     
@@ -112,7 +113,7 @@ export const conversationDb = {
       throw error;
     }
 
-    console.log('Retrieved messages from database:', data);
+    console.log('Fetched messages from database:', data);
     
     return (data || []).map(msg => ({
       ...msg,
@@ -121,16 +122,22 @@ export const conversationDb = {
     }));
   },
 
-  // Save a single message to the database
   async saveMessage(conversationId: string, message: any): Promise<void> {
     console.log('Saving single message to database:', conversationId, message);
     
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(message.id)) {
+      console.error('Invalid UUID format for message ID:', message.id);
+      throw new Error(`Invalid UUID format: ${message.id}`);
+    }
+
     // Check if message already exists
     const { data: existingMessage } = await supabase
       .from('messages')
       .select('id')
       .eq('id', message.id)
-      .single();
+      .maybeSingle();
 
     if (existingMessage) {
       console.log('Message already exists, skipping insert');
@@ -163,11 +170,19 @@ export const conversationDb = {
     await this.updateConversation(conversationId, {});
   },
 
-  // Save messages for a conversation (replace all existing messages)
   async saveMessages(conversationId: string, messages: any[]): Promise<void> {
     console.log('Saving messages to database:', conversationId, messages);
     
     if (messages.length === 0) return;
+
+    // Validate all message IDs are proper UUIDs
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const invalidMessages = messages.filter(msg => !uuidRegex.test(msg.id));
+    
+    if (invalidMessages.length > 0) {
+      console.error('Invalid UUID formats found:', invalidMessages.map(m => m.id));
+      throw new Error(`Invalid UUID formats found: ${invalidMessages.map(m => m.id).join(', ')}`);
+    }
 
     // Get existing messages
     const { data: existingMessages } = await supabase
@@ -178,7 +193,6 @@ export const conversationDb = {
     const existingIds = existingMessages?.map(msg => msg.id) || [];
     const newMessages = messages.filter(msg => !existingIds.includes(msg.id));
 
-    // Only insert new messages
     if (newMessages.length > 0) {
       const messagesToInsert = newMessages.map(msg => ({
         id: msg.id,

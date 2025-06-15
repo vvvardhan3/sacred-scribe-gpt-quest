@@ -33,7 +33,7 @@ export const useChatMessages = (
     isLoadingMessages
   } = useMessageState(activeConversationId);
 
-  // Save messages to database when they change (debounced)
+  // Auto-save messages to database with debouncing
   useEffect(() => {
     if (!activeConversationId || messages.length === 0) return;
 
@@ -61,7 +61,7 @@ export const useChatMessages = (
       } catch (error) {
         console.error('Error auto-saving messages:', error);
       }
-    }, 500);
+    }, 1000); // Increased debounce time to 1 second
 
     return () => clearTimeout(timeoutId);
   }, [messages, activeConversationId, titleGenerated, getActiveConversation, updateConversation, setTitleGenerated]);

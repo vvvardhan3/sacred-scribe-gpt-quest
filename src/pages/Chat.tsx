@@ -38,9 +38,14 @@ const Chat = () => {
   );
 
   const handleSelectConversation = (id: string) => {
-    console.log('Selecting conversation:', id);
+    console.log('Selecting conversation from sidebar:', id);
+    console.log('Current active conversation:', activeConversationId);
+    
     if (id !== activeConversationId) {
+      console.log('Setting new active conversation:', id);
       setActiveConversationId(id);
+    } else {
+      console.log('Conversation already active, no change needed');
     }
   };
 
@@ -49,6 +54,15 @@ const Chat = () => {
     resetChat();
     setActiveConversationId(null);
   };
+
+  // Debug logging
+  React.useEffect(() => {
+    console.log('Chat component state:', {
+      activeConversationId,
+      messagesCount: messages.length,
+      messages: messages.map(m => ({ id: m.id, role: m.role, content: m.content.substring(0, 50) + '...' }))
+    });
+  }, [activeConversationId, messages]);
 
   if (loading) {
     return (
