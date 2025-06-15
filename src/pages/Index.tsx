@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -20,7 +19,6 @@ const Index = () => {
                 <span className="text-white font-bold text-sm">हिं</span>
               </div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">HinduGPT</h1>
-              <Sparkles className="w-6 h-6 text-orange-600" />
             </div>
             <div className="space-x-4">
               <Link to="/login">
