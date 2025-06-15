@@ -107,7 +107,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
       return;
     }
 
-    const outputSize = 400; // Increased output size to prevent pixelation
+    const outputSize = 400;
     canvas.width = outputSize;
     canvas.height = outputSize;
 
@@ -126,33 +126,34 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
     const scaleY = img.naturalHeight / imgRect.height;
     
     // Calculate crop area in natural image coordinates
-    const cropXInImg = (crop.x - imgX) * scaleX;
-    const cropYInImg = (crop.y - imgY) * scaleY;
-    const cropSizeInImg = cropSize * scaleX; // Assuming uniform scaling
+    const cropXInImg = Math.max(0, (crop.x - imgX) * scaleX);
+    const cropYInImg = Math.max(0, (crop.y - imgY) * scaleY);
+    const cropSizeXInImg = Math.min(cropSize * scaleX, img.naturalWidth - cropXInImg);
+    const cropSizeYInImg = Math.min(cropSize * scaleY, img.naturalHeight - cropYInImg);
 
     console.log('Crop parameters:', {
       natural: { width: img.naturalWidth, height: img.naturalHeight },
       displayed: { width: imgRect.width, height: imgRect.height },
-      crop: { x: cropXInImg, y: cropYInImg, size: cropSizeInImg },
+      crop: { x: cropXInImg, y: cropYInImg, sizeX: cropSizeXInImg, sizeY: cropSizeYInImg },
       scale: { x: scaleX, y: scaleY }
     });
 
     // Clear canvas with transparent background
     ctx.clearRect(0, 0, outputSize, outputSize);
     
-    // Create circular clipping path
+    // Create circular clipping path - ensuring perfect circle
     ctx.save();
     ctx.beginPath();
     ctx.arc(outputSize / 2, outputSize / 2, outputSize / 2, 0, 2 * Math.PI);
     ctx.clip();
 
-    // Draw the cropped image, ensuring it fills the entire circle
+    // Draw the cropped image to perfectly fill the circle
     ctx.drawImage(
       img,
-      Math.max(0, cropXInImg),
-      Math.max(0, cropYInImg),
-      Math.min(cropSizeInImg, img.naturalWidth - Math.max(0, cropXInImg)),
-      Math.min(cropSizeInImg, img.naturalHeight - Math.max(0, cropYInImg)),
+      cropXInImg,
+      cropYInImg,
+      cropSizeXInImg,
+      cropSizeYInImg,
       0,
       0,
       outputSize,
@@ -169,7 +170,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
       } else {
         console.error('Failed to create blob from canvas');
       }
-    }, 'image/jpeg', 0.95); // Higher quality
+    }, 'image/jpeg', 0.95);
   };
 
   return (
@@ -202,12 +203,11 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
                 />
                 {imageLoaded && (
                   <>
-                    {/* Dark overlay */}
+                    {/* Dark overlay with circular cutout */}
                     <div 
                       className="absolute inset-0 bg-black bg-opacity-50 pointer-events-none"
                       style={{
                         clipPath: `circle(100px at ${crop.x + 100}px ${crop.y + 100}px)`,
-                        clipRule: 'exclude',
                       }}
                     />
                     {/* Crop circle border */}
