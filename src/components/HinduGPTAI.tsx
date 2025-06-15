@@ -54,7 +54,7 @@ const HinduGPTAI = () => {
             <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
               <Brain className="w-4 h-4 text-white" />
             </div>
-            <span className="text-sm font-medium text-orange-700">Powered by Advanced AI</span>
+            <span className="text-sm font-medium text-orange-700">Specialized Hindu Knowledge AI</span>
           </div>
           
           <h2 className="text-5xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent mb-6">
