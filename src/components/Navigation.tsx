@@ -2,7 +2,15 @@
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useAuth } from '@/contexts/AuthContext';
-import { LogOut } from 'lucide-react';
+import { LogOut, Settings, Bell, Palette, CreditCard, User } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -23,6 +31,34 @@ const Navigation = () => {
           
           {user && (
             <div className="flex items-center space-x-3">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="text-gray-600 hover:text-orange-600 hover:bg-orange-50">
+                    <Settings className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 bg-white border border-gray-200 shadow-lg" align="end">
+                  <DropdownMenuLabel className="text-gray-700">Settings</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="hover:bg-orange-50 cursor-pointer">
+                    <User className="w-4 h-4 mr-2" />
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="hover:bg-orange-50 cursor-pointer">
+                    <Bell className="w-4 h-4 mr-2" />
+                    Notifications
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="hover:bg-orange-50 cursor-pointer">
+                    <Palette className="w-4 h-4 mr-2" />
+                    Theme
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="hover:bg-orange-50 cursor-pointer">
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Billing
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
               <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center">
                 <span className="text-xs font-bold text-white">{user?.email?.charAt(0).toUpperCase()}</span>
               </div>
