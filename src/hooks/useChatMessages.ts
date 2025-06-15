@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Message } from '@/types/chat';
 import { useMessageState } from './useMessageState';
+import { useUserLimits } from './useUserLimits';
 import { 
   sendMessageToAPI, 
   createUserMessage, 
@@ -19,10 +20,13 @@ export const useChatMessages = (
   createNewConversation: () => Promise<string>
 ) => {
   const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false); // This should only be for sending messages
+  const [loading, setLoading] = useState(false);
   const [streamingMessageId, setStreamingMessageId] = useState<string | undefined>();
   const [expandedCitations, setExpandedCitations] = useState<{ [key: string]: boolean }>({});
   const { toast } = useToast();
+
+  // Add user limits hook for subscription-based restrictions
+  const { canSendMessage, incrementMessageCount, limits, usage } = useUserLimits();
 
   const {
     messages,
@@ -61,7 +65,7 @@ export const useChatMessages = (
       } catch (error) {
         console.error('Error auto-saving messages:', error);
       }
-    }, 2000); // Increased debounce time to 2 seconds to avoid race conditions
+    }, 2000);
 
     return () => clearTimeout(timeoutId);
   }, [messages, activeConversationId, titleGenerated, getActiveConversation, updateConversation, setTitleGenerated]);
@@ -69,6 +73,17 @@ export const useChatMessages = (
   const sendMessage = async () => {
     const trimmedInput = input.trim();
     if (!trimmedInput || loading) return;
+
+    // Check if user can send messages based on subscription limits
+    if (!canSendMessage()) {
+      const remainingMessages = limits.maxDailyMessages - (usage?.messages_sent_today || 0);
+      toast({
+        title: "Message Limit Reached",
+        description: `You've reached your daily message limit of ${limits.maxDailyMessages} for ${limits.subscriptionTier} plan. ${remainingMessages > 0 ? `You have ${remainingMessages} messages remaining.` : 'Upgrade your subscription to send more messages.'}`,
+        variant: "destructive"
+      });
+      return;
+    }
 
     console.log('Sending message:', trimmedInput);
 
@@ -93,7 +108,7 @@ export const useChatMessages = (
     // Add user message immediately
     addMessage(userMessage);
     setInput('');
-    setLoading(true); // Only set loading when actually sending
+    setLoading(true);
 
     // Save user message immediately to database
     try {
@@ -119,6 +134,9 @@ export const useChatMessages = (
         console.error('Error saving assistant message:', error);
       }
 
+      // Increment message count after successful API call
+      await incrementMessageCount();
+
       // Stop streaming after a delay
       setTimeout(() => {
         setStreamingMessageId(undefined);
@@ -135,7 +153,7 @@ export const useChatMessages = (
       const errorMessage = createErrorMessage();
       addMessage(errorMessage);
     } finally {
-      setLoading(false); // Clear loading after sending is complete
+      setLoading(false);
     }
   };
 
@@ -162,13 +180,17 @@ export const useChatMessages = (
   return {
     messages,
     input,
-    loading, // Only return the sending loading state, not database loading
+    loading,
     streamingMessageId,
     expandedCitations,
     setInput,
     sendMessage,
     toggleCitations,
     handleSuggestionClick,
-    resetChat
+    resetChat,
+    // Expose limits for UI components
+    canSendMessage: canSendMessage(),
+    limits,
+    usage
   };
 };

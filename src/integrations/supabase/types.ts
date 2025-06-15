@@ -351,12 +351,54 @@ export type Database = {
         }
         Relationships: []
       }
+      user_usage: {
+        Row: {
+          created_at: string
+          id: string
+          messages_reset_date: string
+          messages_sent_today: number
+          quizzes_created_total: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          messages_reset_date?: string
+          messages_sent_today?: number
+          quizzes_created_total?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          messages_reset_date?: string
+          messages_sent_today?: number
+          quizzes_created_total?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_or_create_user_usage: {
+        Args: { p_user_id: string }
+        Returns: {
+          user_id: string
+          messages_sent_today: number
+          messages_reset_date: string
+          quizzes_created_total: number
+        }[]
+      }
+      reset_daily_messages_if_needed: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

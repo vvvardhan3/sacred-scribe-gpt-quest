@@ -1,136 +1,212 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Check, Star } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Check, X } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSubscription } from "@/hooks/useSubscription";
+import { useUserLimits } from "@/hooks/useUserLimits";
+import { RazorpayPayment } from "./RazorpayPayment";
 
-const PricingSection = () => {
+export const PricingSection = () => {
+  const { user } = useAuth();
+  const { subscription } = useSubscription();
+  const { limits, usage } = useUserLimits();
+
+  // Define pricing plans with detailed features
   const plans = [
     {
-      name: 'Basic',
-      price: 'Free',
-      description: 'Perfect for beginners exploring Hindu scriptures',
+      name: "Free Trial",
+      price: "₹0",
+      period: "forever",
+      description: "Perfect for getting started with Hindu scriptures",
       features: [
-        '10 AI chat messages per day',
-        'Basic quiz access',
-        'Limited scripture categories',
-        'Community support',
-        'Mobile app access'
+        "10 AI chat messages per day",
+        "Create 1 quiz",
+        "Access to Vedas, Puranas, Upanishads",
+        "Basic scripture guidance",
+        "Community support"
       ],
+      limitations: [
+        "No access to Mahabharata",
+        "No access to Bhagavad Gita", 
+        "No access to Ramayana",
+        "Limited daily messages",
+        "Limited quiz creation"
+      ],
+      buttonText: "Current Plan",
       popular: false,
-      buttonText: 'Get Started',
-      buttonVariant: 'outline' as const
+      planId: null,
+      current: !subscription?.subscribed
     },
     {
-      name: 'Premium',
-      price: '₹999',
-      period: '/month',
-      description: 'For serious students and scholars',
+      name: "Devotee Plan",
+      price: "₹999",
+      period: "month",
+      description: "Ideal for serious students of Hindu philosophy",
       features: [
-        'Unlimited AI chat messages',
-        'All quiz categories',
-        'Advanced scripture analysis',
-        'Priority support',
-        'Offline access',
-        'Progress tracking',
-        'Detailed analytics',
-        'Custom study plans'
+        "200 AI chat messages per day",
+        "Create up to 5 quizzes",
+        "Access to ALL scripture categories",
+        "Vedas, Puranas, Upanishads",
+        "Mahabharata, Bhagavad Gita, Ramayana", 
+        "Advanced scripture analysis",
+        "Priority support",
+        "Detailed explanations"
       ],
+      limitations: [],
+      buttonText: subscription?.subscription_tier === 'Devotee Plan' ? "Current Plan" : "Choose Devotee",
       popular: true,
-      buttonText: 'Start Free Trial',
-      buttonVariant: 'default' as const
+      planId: "devotee",
+      current: subscription?.subscription_tier === 'Devotee Plan'
     },
     {
-      name: 'Pro',
-      price: '₹2999',
-      period: '/month',
-      description: 'For teachers and spiritual guides',
+      name: "Guru Plan",
+      price: "₹2999",
+      period: "month", 
+      description: "For teachers, scholars, and advanced practitioners",
       features: [
-        'Everything in Premium',
-        'Group management tools',
-        'Student progress tracking',
-        'Custom quiz creation',
-        'Bulk user management',
-        'Advanced reporting',
-        'API access',
-        'White-label options'
+        "Unlimited AI chat messages",
+        "Unlimited quiz creation",
+        "Access to ALL scripture categories",
+        "Vedas, Puranas, Upanishads",
+        "Mahabharata, Bhagavad Gita, Ramayana",
+        "Advanced AI insights",
+        "Custom learning paths",
+        "Premium support",
+        "Early access to new features"
       ],
+      limitations: [],
+      buttonText: subscription?.subscription_tier === 'Guru Plan' ? "Current Plan" : "Choose Guru",
       popular: false,
-      buttonText: 'Start Free Trial',
-      buttonVariant: 'outline' as const
+      planId: "guru",
+      current: subscription?.subscription_tier === 'Guru Plan'
     }
   ];
 
   return (
-    <section className="max-w-6xl mx-auto px-6 py-20 bg-gradient-to-br from-slate-50 to-orange-50">
-      <div className="text-center mb-12">
-        <h2 className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-4">
-          Choose Your Learning Path
-        </h2>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Select the perfect plan to deepen your understanding of Hindu philosophy and scriptures. 
-          All plans include our comprehensive scripture database and community forums.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {plans.map((plan, index) => (
-          <Card key={plan.name} className={`relative hover:scale-105 transition-all duration-300 ${plan.popular ? 'border-orange-500 border-2 shadow-2xl' : 'border-gray-200 shadow-lg'}`}>
-            {plan.popular && (
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-2 rounded-full text-sm font-medium flex items-center space-x-1 shadow-lg">
-                  <Star className="w-4 h-4 fill-current" />
-                  <span>Most Popular</span>
-                </div>
-              </div>
-            )}
-            
-            <CardHeader className="text-center pb-8 pt-8">
-              <CardTitle className="text-xl font-semibold text-gray-900">{plan.name}</CardTitle>
-              <div className="mt-6">
-                <span className="text-4xl font-bold text-gray-900">{plan.price}</span>
-                {plan.period && <span className="text-gray-600 ml-1">{plan.period}</span>}
-              </div>
-              <p className="text-gray-600 mt-3 text-sm">{plan.description}</p>
-            </CardHeader>
-
-            <CardContent className="pt-0 pb-8">
-              <ul className="space-y-4 mb-8">
-                {plan.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-start space-x-3">
-                    <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700 text-sm">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <Button 
-                variant={plan.buttonVariant} 
-                className={`w-full py-3 font-semibold transition-all duration-200 ${
-                  plan.popular 
-                    ? 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-lg hover:shadow-xl' 
-                    : 'border-2 border-orange-200 hover:border-orange-300 hover:bg-orange-50'
-                }`}
-              >
-                {plan.buttonText}
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <div className="text-center mt-12">
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 max-w-2xl mx-auto border border-orange-100">
-          <p className="text-gray-600 text-sm mb-2">
-            🎉 <strong>Special Launch Offer:</strong> Get 2 months free on any annual plan!
+    <section id="pricing" className="py-20 bg-gradient-to-br from-orange-50 to-red-50">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Choose Your Spiritual Journey
+          </h2>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            Unlock the wisdom of Hindu scriptures with our subscription plans designed for every level of spiritual seeker
           </p>
-          <p className="text-gray-500 text-xs">
-            All prices are in Indian Rupees (INR). Cancel anytime. No hidden fees.
+          
+          {/* Current Usage Display */}
+          {user && usage && (
+            <div className="mt-8 p-4 bg-white rounded-lg shadow-sm max-w-md mx-auto">
+              <h3 className="font-semibold text-gray-800 mb-2">Your Current Usage</h3>
+              <div className="text-sm text-gray-600 space-y-1">
+                <div>Messages today: {usage.messages_sent_today}/{limits.maxDailyMessages === Infinity ? '∞' : limits.maxDailyMessages}</div>
+                <div>Quizzes created: {usage.quizzes_created_total}/{limits.maxQuizzes === Infinity ? '∞' : limits.maxQuizzes}</div>
+                <div>Plan: {limits.subscriptionTier}</div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {plans.map((plan, index) => (
+            <Card 
+              key={index} 
+              className={`relative ${plan.popular ? 'border-orange-500 border-2 scale-105' : 'border-gray-200'} ${plan.current ? 'bg-orange-50' : 'bg-white'}`}
+            >
+              {plan.popular && (
+                <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-orange-500">
+                  Most Popular
+                </Badge>
+              )}
+              
+              <CardHeader className="text-center">
+                <CardTitle className="text-2xl font-bold text-gray-900">
+                  {plan.name}
+                </CardTitle>
+                <div className="text-4xl font-bold text-orange-600">
+                  {plan.price}
+                  {plan.period && <span className="text-lg text-gray-500">/{plan.period}</span>}
+                </div>
+                <CardDescription className="text-gray-600">
+                  {plan.description}
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                <div>
+                  <h4 className="font-semibold text-green-700 mb-2 flex items-center">
+                    <Check className="w-4 h-4 mr-2" />
+                    Features Included:
+                  </h4>
+                  <ul className="space-y-2">
+                    {plan.features.map((feature, featureIndex) => (
+                      <li key={featureIndex} className="flex items-center text-sm text-gray-700">
+                        <Check className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {plan.limitations.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold text-red-700 mb-2 flex items-center">
+                      <X className="w-4 h-4 mr-2" />
+                      Limitations:
+                    </h4>
+                    <ul className="space-y-2">
+                      {plan.limitations.map((limitation, limitIndex) => (
+                        <li key={limitIndex} className="flex items-center text-sm text-gray-600">
+                          <X className="w-4 h-4 text-red-500 mr-2 flex-shrink-0" />
+                          {limitation}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </CardContent>
+
+              <CardFooter>
+                {plan.current ? (
+                  <Button 
+                    className="w-full" 
+                    variant="outline"
+                    disabled
+                  >
+                    {plan.buttonText}
+                  </Button>
+                ) : plan.planId ? (
+                  <RazorpayPayment 
+                    planId={plan.planId}
+                    planName={plan.name}
+                    amount={parseInt(plan.price.replace('₹', '').replace(',', ''))}
+                    buttonText={plan.buttonText}
+                    className="w-full"
+                  />
+                ) : (
+                  <Button 
+                    className="w-full" 
+                    variant="outline"
+                    disabled
+                  >
+                    {plan.buttonText}
+                  </Button>
+                )}
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+
+        <div className="text-center mt-12">
+          <p className="text-gray-600">
+            All plans include access to our AI-powered scripture guidance system
+          </p>
+          <p className="text-sm text-gray-500 mt-2">
+            Prices in Indian Rupees. Cancel anytime. 
           </p>
         </div>
       </div>
     </section>
   );
 };
-
-export default PricingSection;

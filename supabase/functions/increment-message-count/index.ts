@@ -1,0 +1,92 @@
+
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders })
+  }
+
+  try {
+    console.log('=== Increment Message Count Function Started ===')
+    
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    // Get user data
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      throw new Error('No authorization header provided')
+    }
+
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+
+    if (authError || !user) {
+      throw new Error('User not authenticated')
+    }
+
+    console.log('Incrementing message count for user:', user.id)
+
+    // Reset daily messages if needed first
+    await supabase.rpc('reset_daily_messages_if_needed', { p_user_id: user.id })
+
+    // Increment message count
+    const { error: updateError } = await supabase
+      .from('user_usage')
+      .upsert({
+        user_id: user.id,
+        messages_sent_today: 1,
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id',
+        ignoreDuplicates: false
+      })
+
+    // If upsert doesn't work as expected, try direct increment
+    if (updateError) {
+      console.log('Upsert failed, trying direct increment:', updateError)
+      
+      const { error: incrementError } = await supabase
+        .from('user_usage')
+        .update({
+          messages_sent_today: supabase.sql`messages_sent_today + 1`,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id)
+
+      if (incrementError) {
+        console.error('Error incrementing message count:', incrementError)
+        throw new Error('Failed to increment message count')
+      }
+    }
+
+    console.log('Message count incremented successfully')
+
+    return new Response(
+      JSON.stringify({ success: true }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
+      }
+    )
+
+  } catch (error) {
+    console.error('Error in increment-message-count:', error)
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400 
+      }
+    )
+  }
+})

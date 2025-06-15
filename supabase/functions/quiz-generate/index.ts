@@ -8,6 +8,22 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Define subscription limits and allowed categories
+const SUBSCRIPTION_LIMITS = {
+  free: {
+    maxQuizzes: 1,
+    allowedCategories: ['Vedas', 'Puranas', 'Upanishads']
+  },
+  'Devotee Plan': {
+    maxQuizzes: 5,
+    allowedCategories: ['Vedas', 'Puranas', 'Upanishads', 'Mahabharata', 'Bhagavad Gita', 'Ramayana']
+  },
+  'Guru Plan': {
+    maxQuizzes: Infinity,
+    allowedCategories: ['Vedas', 'Puranas', 'Upanishads', 'Mahabharata', 'Bhagavad Gita', 'Ramayana']
+  }
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -48,6 +64,46 @@ serve(async (req) => {
     }
 
     console.log(`User authenticated: ${user.id}`);
+
+    // Get user's subscription details to check limits
+    const { data: subscriptionData, error: subError } = await supabase
+      .from('subscribers')
+      .select('subscribed, subscription_tier')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (subError) {
+      console.error('Error fetching subscription:', subError);
+    }
+
+    // Determine user's subscription tier
+    const subscriptionTier = subscriptionData?.subscribed 
+      ? subscriptionData.subscription_tier 
+      : 'free';
+    
+    console.log('User subscription tier:', subscriptionTier);
+
+    // Get subscription limits for this tier
+    const userLimits = SUBSCRIPTION_LIMITS[subscriptionTier as keyof typeof SUBSCRIPTION_LIMITS] || SUBSCRIPTION_LIMITS.free;
+
+    // Check if category is allowed for user's subscription
+    if (!userLimits.allowedCategories.includes(category)) {
+      console.error(`Category ${category} not allowed for ${subscriptionTier} subscription`);
+      throw new Error(`Category "${category}" is not available for your subscription plan. Please upgrade to access this category.`);
+    }
+
+    // Get user's current quiz count
+    const { data: usageData } = await supabase.rpc('get_or_create_user_usage', { 
+      p_user_id: user.id 
+    });
+
+    const currentQuizCount = usageData && usageData.length > 0 ? usageData[0].quizzes_created_total : 0;
+
+    // Check if user has reached quiz limit
+    if (currentQuizCount >= userLimits.maxQuizzes) {
+      console.error(`User has reached quiz limit: ${currentQuizCount}/${userLimits.maxQuizzes}`);
+      throw new Error(`You have reached your quiz creation limit of ${userLimits.maxQuizzes} for your subscription plan. Please upgrade to create more quizzes.`);
+    }
 
     // Check existing quizzes for this user
     const { data: existingQuizzes, error: fetchError } = await supabase
@@ -218,7 +274,16 @@ Return only valid JSON in this exact format:
       throw new Error(`Failed to create questions: ${questionsError.message}`);
     }
 
-    console.log(`Successfully created ${questionsToInsert.length} questions`);
+    // Increment user's quiz count
+    await supabase
+      .from('user_usage')
+      .upsert({
+        user_id: user.id,
+        quizzes_created_total: currentQuizCount + 1,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'user_id' });
+
+    console.log(`Successfully created ${questionsToInsert.length} questions and incremented quiz count`);
 
     return new Response(
       JSON.stringify({ 
