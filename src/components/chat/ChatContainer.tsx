@@ -27,7 +27,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   onSuggestionClick
 }) => {
   return (
-    <div className="flex flex-col h-full bg-white rounded-2xl shadow-xl border border-orange-100">
+    <div className="flex flex-col h-full bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-orange-100">
       <ChatHeader />
 
       <div className="flex-1 min-h-0">

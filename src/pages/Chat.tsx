@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
-import ChatNavigation from '@/components/chat/ChatNavigation';
 import ChatContainer from '@/components/chat/ChatContainer';
 import ConversationSidebar from '@/components/chat/ConversationSidebar';
+import Navigation from '@/components/Navigation';
 import { useConversations } from '@/hooks/useConversations';
 import { useChatMessages } from '@/hooks/useChatMessages';
 
@@ -38,18 +38,19 @@ const Chat = () => {
 
   const handleSelectConversation = (id: string) => {
     setActiveConversationId(id);
-    // Don't call resetChat here - let the useMessageState hook handle loading messages
   };
 
   const handleCreateNew = () => {
     const newId = createNewConversation();
-    resetChat(); // Only reset when creating a completely new conversation
+    resetChat();
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-red-50">
+      <Navigation />
+      
       <SidebarProvider>
-        <div className="min-h-screen flex w-full">
+        <div className="flex w-full h-[calc(100vh-64px)]">
           <ConversationSidebar
             conversations={conversations}
             activeConversationId={activeConversationId}
@@ -60,9 +61,7 @@ const Chat = () => {
           />
           
           <SidebarInset className="flex-1 flex flex-col">
-            <ChatNavigation />
-
-            <div className="flex-1 flex flex-col p-4">
+            <div className="flex-1 p-6">
               <ChatContainer
                 messages={messages}
                 input={input}
