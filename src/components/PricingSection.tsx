@@ -34,11 +34,6 @@ export const PricingSection = () => {
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Unlock the profound wisdom of Hindu scriptures with AI-powered learning designed for every seeker
           </p>
-          
-          {/* Current Usage Display - Only show for authenticated users and when usage data is available */}
-          {user && usage && limits && (
-            <UsageDisplay usage={usage} limits={limits} />
-          )}
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
