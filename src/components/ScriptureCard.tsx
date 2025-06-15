@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Play } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { ArrowRight, Play, Clock, Star } from 'lucide-react';
 
 interface ScriptureCardProps {
   category: {
@@ -16,51 +16,53 @@ interface ScriptureCardProps {
 }
 
 const ScriptureCard: React.FC<ScriptureCardProps> = ({ category }) => {
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty.toLowerCase()) {
+      case 'beginner': return 'bg-green-100 text-green-700 border-green-200';
+      case 'intermediate': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+      case 'advanced': return 'bg-red-100 text-red-700 border-red-200';
+      default: return 'bg-gray-100 text-gray-700 border-gray-200';
+    }
+  };
+
   return (
-    <Link
-      to={`/quiz/category/${encodeURIComponent(category.name)}`}
-      className="group block"
-    >
-      <Card className="h-full transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 border-0 bg-white/80 backdrop-blur-sm overflow-hidden relative">
-        <div className={`h-2 bg-gradient-to-r ${category.color}`} />
-        
-        {/* Background Image */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center opacity-10 group-hover:opacity-20 transition-opacity duration-300"
-          style={{
-            backgroundImage: `url(${category.image})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-          }}
-        />
-        
-        {/* Content with gradient overlay */}
-        <div className="relative z-10 bg-gradient-to-t from-white/95 via-white/90 to-white/95 h-full">
-          <div className="p-6 h-full flex flex-col">
-            <div className="mb-4 flex justify-between items-start">
-              <div className="flex-1">
-                <CardTitle className="text-xl font-bold text-gray-900 group-hover:text-orange-600 transition-colors mb-2">
-                  {category.name}
-                </CardTitle>
-                <CardDescription className="text-gray-600 leading-relaxed mb-4">
-                  {category.description}
-                </CardDescription>
-              </div>
-              <div className="inline-flex items-center px-2 py-1 bg-white/90 backdrop-blur-sm rounded-full border border-orange-100">
-                <span className="text-xs font-medium text-gray-700">{category.difficulty}</span>
-              </div>
-            </div>
-            
-            <div className="mt-auto flex items-center justify-between text-sm">
-              <span className="text-gray-500 font-medium">{category.questions}</span>
-              <div className="flex items-center text-orange-600">
-                <Play className="w-4 h-4 mr-1" />
-                <span className="font-medium">Start Quiz</span>
-                <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-all duration-300" />
-              </div>
+    <Link to={`/quiz/category/${encodeURIComponent(category.name)}`} className="group block">
+      <Card className="h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-0 bg-white overflow-hidden">
+        {/* Image Header */}
+        <div className="relative h-48 overflow-hidden">
+          <img 
+            src={category.image} 
+            alt={category.name}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+          />
+          <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${category.color}`} />
+          <div className="absolute top-4 right-4">
+            <div className={`px-3 py-1 rounded-full text-xs font-medium border ${getDifficultyColor(category.difficulty)}`}>
+              {category.difficulty}
             </div>
           </div>
         </div>
+        
+        <CardContent className="p-6">
+          <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-orange-600 transition-colors">
+            {category.name}
+          </h3>
+          <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-2">
+            {category.description}
+          </p>
+          
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center text-gray-500">
+              <Clock className="w-4 h-4 mr-1" />
+              <span>{category.questions}</span>
+            </div>
+            <div className="flex items-center text-orange-600 font-medium group-hover:text-orange-700">
+              <Play className="w-4 h-4 mr-1" />
+              <span>Start Quiz</span>
+              <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+        </CardContent>
       </Card>
     </Link>
   );
