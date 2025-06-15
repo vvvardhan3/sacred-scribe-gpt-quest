@@ -56,7 +56,7 @@ export const createPricingPlans = (subscription: any): PricingPlan[] => [
     price: "₹2,999",
     period: "month", 
     originalPrice: "₹3,999",
-    description: "Ultimate package for teachers, scholars & spiritual guides",
+    description: "Ultimate package for the teachers, scholars & spiritual guides",
     features: [
       "Unlimited AI conversations",
       "Unlimited quiz creation",

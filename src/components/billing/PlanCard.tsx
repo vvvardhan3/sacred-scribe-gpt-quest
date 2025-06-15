@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Crown, Infinity, Check } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import RazorpayPayment from '@/components/RazorpayPayment';
 
 interface Plan {
@@ -57,31 +58,47 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, isCurrentPlan, onPayme
       <CardContent className="flex-grow flex flex-col">
         <div className="flex-grow space-y-4">
           <div className="text-center mx-auto">
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  className="font-semibold text-green-700 hover:text-green-800 hover:bg-green-50 border-green-200 mx-auto"
-                >
-                  What's Included
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle className="text-center text-green-700">
-                    {plan.name} Features
-                  </DialogTitle>
-                </DialogHeader>
-                <ul className="space-y-3 mt-4">
-                  {plan.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-start text-sm text-gray-700">
-                      <Check className="w-4 h-4 text-green-500 mr-3 flex-shrink-0 mt-0.5" />
-                      <span className="text-left">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </DialogContent>
-            </Dialog>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        className="font-semibold text-green-700 hover:text-green-800 hover:bg-green-50 border-green-200 mx-auto"
+                      >
+                        What's Included
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-md">
+                      <DialogHeader>
+                        <DialogTitle className="text-center text-green-700">
+                          {plan.name} Features
+                        </DialogTitle>
+                      </DialogHeader>
+                      <ul className="space-y-3 mt-4">
+                        {plan.features.map((feature, featureIndex) => (
+                          <li key={featureIndex} className="flex items-start text-sm text-gray-700">
+                            <Check className="w-4 h-4 text-green-500 mr-3 flex-shrink-0 mt-0.5" />
+                            <span className="text-left">{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </DialogContent>
+                  </Dialog>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <ul className="space-y-1">
+                    {plan.features.map((feature, featureIndex) => (
+                      <li key={featureIndex} className="flex items-start text-sm">
+                        <Check className="w-3 h-3 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
         

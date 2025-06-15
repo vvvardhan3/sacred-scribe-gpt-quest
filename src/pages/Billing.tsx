@@ -46,7 +46,7 @@ const Billing = () => {
       price: 2999,
       originalPrice: 3999,
       period: 'month',
-      description: 'Ultimate package for teachers, scholars & spiritual guides',
+      description: 'Ultimate package for the teachers, scholars & spiritual guides',
       features: [
         'Unlimited AI conversations',
         'Unlimited quiz creation',
