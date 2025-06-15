@@ -1,12 +1,37 @@
 
 import React from 'react';
 import { Message } from '@/types/chat';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ChatMessageProps {
   message: Message;
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
+  const { user } = useAuth();
+
+  // Function to get user initials
+  const getUserInitials = () => {
+    if (!user?.email) return 'U';
+    
+    const displayName = user?.user_metadata?.display_name;
+    if (displayName) {
+      const names = displayName.trim().split(' ');
+      if (names.length >= 2) {
+        return `${names[0].charAt(0)}${names[names.length - 1].charAt(0)}`.toUpperCase();
+      }
+      return names[0].charAt(0).toUpperCase();
+    }
+    
+    // Fallback to email
+    const emailParts = user.email.split('@')[0];
+    const nameParts = emailParts.split(/[._-]/);
+    if (nameParts.length >= 2) {
+      return `${nameParts[0].charAt(0)}${nameParts[1].charAt(0)}`.toUpperCase();
+    }
+    return emailParts.charAt(0).toUpperCase();
+  };
+
   // Function to generate online links for citations
   const getCitationLink = (citation: string) => {
     const lowerCitation = citation.toLowerCase();
@@ -73,41 +98,35 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
       return <p className="text-base leading-relaxed whitespace-pre-wrap">{content}</p>;
     }
 
-    // Split content into paragraphs and process each one
-    const paragraphs = content.split('\n\n');
-    
+    // Process content to add inline citations
+    let processedContent = content;
+    const citationElements: JSX.Element[] = [];
+
+    citations.forEach((citation, index) => {
+      const citationNumber = index + 1;
+      citationElements.push(
+        <div key={index} className="text-sm text-gray-600 mt-2">
+          <span className="font-medium">#{citationNumber}</span> {citation}{' '}
+          <a 
+            href={getCitationLink(citation)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:text-blue-800 font-medium underline"
+          >
+            Read online
+          </a>
+        </div>
+      );
+    });
+
     return (
-      <div className="space-y-4">
-        {paragraphs.map((paragraph, index) => {
-          if (!paragraph.trim()) return null;
-          
-          return (
-            <div key={index}>
-              <p className="text-base leading-relaxed whitespace-pre-wrap">{paragraph}</p>
-              
-              {/* Show relevant citations after each paragraph if this is the last paragraph or every few paragraphs */}
-              {(index === paragraphs.length - 1) && (
-                <div className="mt-3 space-y-2">
-                  <div className="text-sm font-medium text-gray-600 mb-2">References:</div>
-                  {citations.map((citation, citIndex) => (
-                    <div key={citIndex} className="text-sm text-gray-600 border-l-2 border-gray-200 pl-3 py-1">
-                      <span className="font-medium text-gray-800">#{citIndex + 1}</span> {citation}
-                      <br />
-                      <a 
-                        href={getCitationLink(citation)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-xs transition-colors mt-1"
-                      >
-                        Read online →
-                      </a>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
+      <div>
+        <p className="text-base leading-relaxed whitespace-pre-wrap">{processedContent}</p>
+        {citationElements.length > 0 && (
+          <div className="mt-3 space-y-1">
+            {citationElements}
+          </div>
+        )}
       </div>
     );
   };
@@ -115,6 +134,19 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
   return (
     <div className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} mb-6`}>
       <div className={`flex items-start space-x-4 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
+        {/* Avatar */}
+        <div className="flex-shrink-0">
+          {message.role === 'user' ? (
+            <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
+              <span className="text-white font-bold text-sm">{getUserInitials()}</span>
+            </div>
+          ) : (
+            <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full flex items-center justify-center">
+              <span className="text-white font-bold text-sm">हिं</span>
+            </div>
+          )}
+        </div>
+
         {/* Message Content */}
         <div className="flex flex-col space-y-2">
           <div className={`rounded-2xl px-5 py-4 shadow-sm ${
