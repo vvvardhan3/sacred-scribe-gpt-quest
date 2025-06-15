@@ -6,12 +6,13 @@ import { Check, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useUserLimits } from "@/hooks/useUserLimits";
-import RazorpayPayment from "./RazorpayPayment";
+import { useNavigate } from "react-router-dom";
 
 export const PricingSection = () => {
   const { user } = useAuth();
   const { subscription } = useSubscription();
   const { limits, usage } = useUserLimits();
+  const navigate = useNavigate();
 
   // Define pricing plans with exactly 5 features each
   const plans = [
@@ -28,7 +29,7 @@ export const PricingSection = () => {
         "Community support"
       ],
       limitations: [], // Removed limitations for Free Trial
-      buttonText: "Current Plan",
+      buttonText: "Choose Free",
       popular: false,
       planId: null,
       current: !subscription?.subscribed
@@ -72,6 +73,14 @@ export const PricingSection = () => {
       current: subscription?.subscription_tier === 'Guru Plan'
     }
   ];
+
+  const handlePlanClick = (planId: string | null) => {
+    if (user) {
+      navigate('/billing');
+    } else {
+      navigate('/signup');
+    }
+  };
 
   return (
     <section id="pricing" className="py-20 bg-gradient-to-br from-orange-50 to-red-50">
@@ -164,31 +173,13 @@ export const PricingSection = () => {
               </CardContent>
 
               <CardFooter>
-                {plan.current ? (
-                  <Button 
-                    className="w-full" 
-                    variant="outline"
-                    disabled
-                  >
-                    {plan.buttonText}
-                  </Button>
-                ) : plan.planId ? (
-                  <RazorpayPayment 
-                    planId={plan.planId}
-                    planName={plan.name}
-                    price={parseInt(plan.price.replace('₹', '').replace(',', ''))}
-                    buttonText={plan.buttonText}
-                    className="w-full"
-                  />
-                ) : (
-                  <Button 
-                    className="w-full" 
-                    variant="outline"
-                    disabled
-                  >
-                    {plan.buttonText}
-                  </Button>
-                )}
+                <Button 
+                  className="w-full" 
+                  variant={plan.current ? "outline" : "default"}
+                  onClick={() => handlePlanClick(plan.planId)}
+                >
+                  {plan.buttonText}
+                </Button>
               </CardFooter>
             </Card>
           ))}
