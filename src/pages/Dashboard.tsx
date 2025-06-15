@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
@@ -16,45 +16,49 @@ import Navigation from '@/components/Navigation';
 import { useUserLimits } from '@/hooks/useUserLimits';
 import RazorpayPayment from '@/components/RazorpayPayment';
 
+// Move categories outside component to prevent re-creation on every render
+const SCRIPTURE_CATEGORIES = [
+  { 
+    name: 'Bhagavad Gita', 
+    description: 'Test your knowledge of Krishna\'s teachings and divine wisdom',
+    color: 'from-amber-400 to-orange-500'
+  },
+  { 
+    name: 'Upanishads', 
+    description: 'Explore the philosophical foundations of Vedantic thought',
+    color: 'from-purple-400 to-violet-500'
+  },
+  { 
+    name: 'Ramayana', 
+    description: 'Journey through Rama\'s epic story of dharma and devotion',
+    color: 'from-emerald-400 to-teal-500'
+  },
+  { 
+    name: 'Mahabharata', 
+    description: 'Dive into the great epic of duty, war, and righteousness',
+    color: 'from-red-400 to-pink-500'
+  },
+  { 
+    name: 'Puranas', 
+    description: 'Ancient stories of gods, creation, and cosmic cycles',
+    color: 'from-yellow-400 to-amber-500'
+  },
+  { 
+    name: 'Vedas', 
+    description: 'Sacred hymns, rituals, and the foundation of Hindu knowledge',
+    color: 'from-cyan-400 to-blue-500'
+  }
+];
+
 const Dashboard = () => {
   const { limits, usage, isCategoryAllowed } = useUserLimits();
 
-  const categories = [
-    { 
-      name: 'Bhagavad Gita', 
-      description: 'Test your knowledge of Krishna\'s teachings and divine wisdom',
-      color: 'from-amber-400 to-orange-500'
-    },
-    { 
-      name: 'Upanishads', 
-      description: 'Explore the philosophical foundations of Vedantic thought',
-      color: 'from-purple-400 to-violet-500'
-    },
-    { 
-      name: 'Ramayana', 
-      description: 'Journey through Rama\'s epic story of dharma and devotion',
-      color: 'from-emerald-400 to-teal-500'
-    },
-    { 
-      name: 'Mahabharata', 
-      description: 'Dive into the great epic of duty, war, and righteousness',
-      color: 'from-red-400 to-pink-500'
-    },
-    { 
-      name: 'Puranas', 
-      description: 'Ancient stories of gods, creation, and cosmic cycles',
-      color: 'from-yellow-400 to-amber-500'
-    },
-    { 
-      name: 'Vedas', 
-      description: 'Sacred hymns, rituals, and the foundation of Hindu knowledge',
-      color: 'from-cyan-400 to-blue-500'
-    }
-  ];
-
-  // Separate categories into allowed and locked
-  const allowedCategories = categories.filter(category => isCategoryAllowed(category.name));
-  const lockedCategories = categories.filter(category => !isCategoryAllowed(category.name));
+  // Memoize filtered categories to prevent unnecessary re-renders
+  const { allowedCategories, lockedCategories } = useMemo(() => {
+    const allowed = SCRIPTURE_CATEGORIES.filter(category => isCategoryAllowed(category.name));
+    const locked = SCRIPTURE_CATEGORIES.filter(category => !isCategoryAllowed(category.name));
+    return { allowedCategories: allowed, lockedCategories: locked };
+  }, [isCategoryAllowed]);
 
   const handleStartConversation = () => {
     // Open chat in a new window
@@ -96,8 +100,8 @@ const Dashboard = () => {
               <div className="flex-1 h-px bg-gradient-to-r from-transparent via-orange-200 to-transparent"></div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {allowedCategories.map((category, index) => (
-                <div key={`${category.name}-${index}`} className="transform hover:scale-[1.02] transition-all duration-300">
+              {allowedCategories.map((category) => (
+                <div key={category.name} className="transform hover:scale-[1.02] transition-all duration-300">
                   <ScriptureCard category={category} />
                 </div>
               ))}
@@ -117,8 +121,8 @@ const Dashboard = () => {
               <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-200 to-transparent"></div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-              {lockedCategories.map((category, index) => (
-                <Card key={`${category.name}-${index}`} className="h-full transition-all duration-300 border-0 bg-gradient-to-br from-white via-purple-50/30 to-indigo-50/40 backdrop-blur-sm relative overflow-hidden group hover:shadow-xl">
+              {lockedCategories.map((category) => (
+                <Card key={category.name} className="h-full transition-all duration-300 border-0 bg-gradient-to-br from-white via-purple-50/30 to-indigo-50/40 backdrop-blur-sm relative overflow-hidden group hover:shadow-xl">
                   <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${category.color} opacity-60`} />
                   
                   {/* Premium overlay */}
