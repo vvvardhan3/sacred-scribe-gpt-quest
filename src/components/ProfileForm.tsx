@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -88,7 +89,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
       {/* Profile Picture Section - TODO: Implement profile picture upload in future release */}
       <div className="flex flex-col items-center space-y-4">
         <div className="relative">
-          <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center shadow-lg border-4 border-white">
+          <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-lg border-4 border-white">
             <span className="text-3xl font-bold text-white">{getInitials()}</span>
           </div>
           {/* TODO: Re-implement profile picture upload functionality in future release
@@ -146,7 +147,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
                 <Button
                   type="button"
                   onClick={() => setIsEditing(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white"
                 >
                   <User className="w-4 h-4 mr-2" />
                   Edit Profile
@@ -166,7 +167,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
                   </Button>
                   <Button
                     type="submit"
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white"
                   >
                     <Save className="w-4 h-4 mr-2" />
                     Save Changes
