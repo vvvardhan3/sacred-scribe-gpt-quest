@@ -18,7 +18,7 @@ interface ScriptureCardProps {
 const ScriptureCard: React.FC<ScriptureCardProps> = ({ category, isNavigatable = true }) => {
   // Landing page design (non-navigatable) with enhanced animations and styling
   const landingPageCard = (
-    <Card className="h-full border-0 bg-gradient-to-br from-white via-orange-50/30 to-amber-50/50 backdrop-blur-sm shadow-lg hover:shadow-2xl transition-all duration-700 overflow-hidden group hover:-translate-y-4 hover:scale-105 hover:rotate-1 relative">
+    <Card className="h-full border-0 bg-gradient-to-br from-white via-orange-50/30 to-amber-50/50 backdrop-blur-sm shadow-lg hover:shadow-2xl transition-all duration-700 overflow-hidden group hover:scale-105 hover:rotate-1 relative">
       {/* Animated background gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-transparent via-orange-100/20 to-red-100/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
       
@@ -28,7 +28,7 @@ const ScriptureCard: React.FC<ScriptureCardProps> = ({ category, isNavigatable =
       <CardContent className="p-8 relative z-10">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            {/* Enhanced title with gradient background and animation - removed translate effect */}
+            {/* Enhanced title with gradient background and animation - no translate effects */}
             <div className="relative">
               <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-orange-600 group-hover:via-red-600 group-hover:to-amber-600 group-hover:bg-clip-text transition-all duration-500 transform group-hover:scale-110">
                 {category.name}
@@ -39,7 +39,7 @@ const ScriptureCard: React.FC<ScriptureCardProps> = ({ category, isNavigatable =
           </div>
         </div>
         
-        <p className="text-gray-600 leading-relaxed text-sm mb-6 group-hover:text-gray-700 transition-colors duration-300 transform group-hover:translate-x-2">
+        <p className="text-gray-600 leading-relaxed text-sm mb-6 group-hover:text-gray-700 transition-colors duration-300">
           {category.description}
         </p>
         
