@@ -64,8 +64,7 @@ export const PricingSection = () => {
       buttonText: subscription?.subscription_tier === 'Devotee Plan' ? "Current Plan" : "Choose Devotee",
       popular: true,
       planId: "devotee",
-      current: subscription?.subscription_tier === 'Devotee Plan',
-      savings: "Save ₹500/month"
+      current: subscription?.subscription_tier === 'Devotee Plan'
     },
     {
       name: "Guru Plan",
@@ -91,8 +90,7 @@ export const PricingSection = () => {
       buttonText: subscription?.subscription_tier === 'Guru Plan' ? "Current Plan" : "Choose Guru",
       popular: false,
       planId: "guru",
-      current: subscription?.subscription_tier === 'Guru Plan',
-      savings: "Save ₹1,000/month"
+      current: subscription?.subscription_tier === 'Guru Plan'
     }
   ];
 
@@ -129,12 +127,6 @@ export const PricingSection = () => {
               {plan.popular && (
                 <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-orange-500">
                   Most Popular
-                </Badge>
-              )}
-
-              {plan.savings && (
-                <Badge className="absolute -top-3 right-4 bg-green-500">
-                  {plan.savings}
                 </Badge>
               )}
               

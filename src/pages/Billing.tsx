@@ -1,9 +1,10 @@
+
 import React from 'react';
 import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Crown, Star, Infinity, Check, CreditCard, Download } from 'lucide-react';
+import { ArrowLeft, Crown, Star, Infinity, Check, CreditCard, Download, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSubscription } from '@/hooks/useSubscription';
 import { usePayments } from '@/hooks/usePayments';
@@ -17,51 +18,75 @@ const Billing = () => {
   const plans = [
     {
       id: 'free',
-      name: 'Free',
+      name: 'Free Trial',
       price: 0,
       period: 'forever',
-      description: 'Perfect for getting started with your spiritual journey',
+      description: 'Perfect for exploring Hindu scriptures and getting started',
       features: [
-        'Access to basic quizzes',
-        '10 AI chat messages per day',
-        'Basic progress tracking',
-        'Daily wisdom quotes'
+        '10 AI chat messages daily',
+        'Create 1 quiz total',
+        'Access to Vedas, Puranas & Upanishads',
+        'Basic scripture guidance',
+        'Community support',
+        'Sanskrit translations',
+        'Daily spiritual quotes'
+      ],
+      limitations: [
+        'No Mahabharata access',
+        'No Bhagavad Gita access', 
+        'No Ramayana access',
+        'Limited daily interactions',
+        'No advanced AI insights',
+        'No custom learning paths'
       ],
       popular: false,
       color: 'from-gray-400 to-gray-600'
     },
     {
       id: 'devotee',
-      name: 'Devotee',
+      name: 'Devotee Plan',
       price: 999,
+      originalPrice: 1499,
       period: 'month',
-      description: 'Enhanced learning for dedicated spiritual seekers',
+      description: 'Comprehensive access for dedicated learners of Hindu philosophy',
       features: [
-        'Unlimited quiz access',
-        'Unlimited AI chat with HinduGPT',
-        'Advanced progress analytics',
-        'Personalized learning paths',
-        'Offline scripture downloads',
-        'Priority support'
+        '200 AI chat messages daily',
+        'Create up to 5 quizzes',
+        'Complete scripture library access',
+        'Vedas, Puranas & Upanishads',
+        'Mahabharata & Ramayana', 
+        'Bhagavad Gita with commentary',
+        'Advanced AI explanations',
+        'Personalized study plans',
+        'Priority email support',
+        'Progress tracking & analytics'
       ],
+      limitations: [],
       popular: true,
       color: 'from-orange-500 to-red-600'
     },
     {
       id: 'guru',
-      name: 'Guru',
+      name: 'Guru Plan',
       price: 2999,
+      originalPrice: 3999,
       period: 'month',
-      description: 'Complete spiritual learning experience',
+      description: 'Ultimate package for teachers, scholars & spiritual guides',
       features: [
-        'Everything in Devotee plan',
-        'Advanced AI insights and analysis',
-        'Custom quiz creation',
-        'Exclusive premium content',
-        'One-on-one guidance sessions',
+        'Unlimited AI conversations',
+        'Unlimited quiz creation',
+        'Complete scripture collection',
+        'All Vedas with commentaries',
+        'Complete Mahabharata & Ramayana',
+        'Bhagavad Gita with multiple translations',
+        'Advanced AI philosophical insights',
+        'Custom learning path creation',
+        'White-glove support',
         'Early access to new features',
-        'Ad-free experience'
+        'Export & share content',
+        'API access for integration'
       ],
+      limitations: [],
       popular: false,
       color: 'from-purple-500 to-indigo-600'
     }
@@ -159,48 +184,84 @@ const Billing = () => {
                   )}
                   <CardHeader className="text-center">
                     <div className={`w-16 h-16 mx-auto rounded-full bg-gradient-to-r ${plan.color} flex items-center justify-center mb-4`}>
-                      {plan.name === 'Free' && <Star className="w-8 h-8 text-white" />}
-                      {plan.name === 'Devotee' && <Crown className="w-8 h-8 text-white" />}
-                      {plan.name === 'Guru' && <Infinity className="w-8 h-8 text-white" />}
+                      {plan.name === 'Free Trial' && <Star className="w-8 h-8 text-white" />}
+                      {plan.name === 'Devotee Plan' && <Crown className="w-8 h-8 text-white" />}
+                      {plan.name === 'Guru Plan' && <Infinity className="w-8 h-8 text-white" />}
                     </div>
                     <CardTitle className="text-xl font-bold">{plan.name}</CardTitle>
-                    <div className="text-3xl font-bold text-gray-900">
-                      ₹{plan.price}
-                      <span className="text-sm text-gray-600 font-normal">/{plan.period}</span>
+                    <div className="space-y-2">
+                      <div className="text-3xl font-bold text-orange-600">
+                        ₹{plan.price}
+                        <span className="text-sm text-gray-600 font-normal">/{plan.period}</span>
+                      </div>
+                      {plan.originalPrice && (
+                        <div className="text-lg text-gray-400 line-through">
+                          ₹{plan.originalPrice}/{plan.period}
+                        </div>
+                      )}
                     </div>
                     <p className="text-gray-600 mt-2">{plan.description}</p>
                   </CardHeader>
                   <CardContent>
-                    <ul className="space-y-3 mb-6">
-                      {plan.features.map((feature, index) => (
-                        <li key={index} className="flex items-center space-x-3">
-                          <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-                          <span className="text-gray-700">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="font-semibold text-green-700 mb-3 flex items-center">
+                          <Check className="w-4 h-4 mr-2" />
+                          What's Included:
+                        </h4>
+                        <ul className="space-y-2">
+                          {plan.features.map((feature, featureIndex) => (
+                            <li key={featureIndex} className="flex items-start text-sm text-gray-700">
+                              <Check className="w-4 h-4 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
+                              <span>{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {plan.limitations.length > 0 && (
+                        <div>
+                          <h4 className="font-semibold text-red-700 mb-3 flex items-center">
+                            <X className="w-4 h-4 mr-2" />
+                            Not Included:
+                          </h4>
+                          <ul className="space-y-2">
+                            {plan.limitations.map((limitation, limitIndex) => (
+                              <li key={limitIndex} className="flex items-start text-sm text-gray-600">
+                                <X className="w-4 h-4 text-red-500 mr-2 flex-shrink-0 mt-0.5" />
+                                <span>{limitation}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
                     
-                    {plan.id === 'free' ? (
-                      <Button 
-                        className="w-full bg-gray-200 text-gray-700"
-                        disabled={!subscription?.subscribed}
-                      >
-                        {!subscription?.subscribed ? 'Current Plan' : 'Downgrade to Free'}
-                      </Button>
-                    ) : subscription?.plan_id === plan.id ? (
-                      <Button 
-                        className="w-full bg-gray-200 text-gray-700"
-                        disabled
-                      >
-                        Current Plan
-                      </Button>
-                    ) : (
-                      <RazorpayPayment
-                        planId={plan.id}
-                        planName={plan.name}
-                        price={plan.price}
-                      />
-                    )}
+                    <div className="mt-6">
+                      {plan.id === 'free' ? (
+                        <Button 
+                          className="w-full bg-gray-200 text-gray-700"
+                          disabled={!subscription?.subscribed}
+                        >
+                          {!subscription?.subscribed ? 'Current Plan' : 'Downgrade to Free'}
+                        </Button>
+                      ) : subscription?.plan_id === plan.id ? (
+                        <Button 
+                          className="w-full bg-gray-200 text-gray-700"
+                          disabled
+                        >
+                          Current Plan
+                        </Button>
+                      ) : (
+                        <RazorpayPayment
+                          planId={plan.id}
+                          planName={plan.name}
+                          price={plan.price}
+                          buttonText={`Choose ${plan.name}`}
+                          className="w-full"
+                        />
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               ))}
