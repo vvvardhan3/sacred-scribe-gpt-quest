@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Message } from '@/types/chat';
-import { Bot, User } from 'lucide-react';
 
 interface ChatMessageProps {
   message: Message;
@@ -116,19 +115,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
   return (
     <div className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} mb-6`}>
       <div className={`flex items-start space-x-4 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
-        {/* Avatar */}
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm ${
-          message.role === 'user' 
-            ? 'bg-blue-600' 
-            : 'bg-orange-600'
-        }`}>
-          {message.role === 'user' ? (
-            <User className="w-5 h-5 text-white" />
-          ) : (
-            <Bot className="w-5 h-5 text-white" />
-          )}
-        </div>
-        
         {/* Message Content */}
         <div className="flex flex-col space-y-2">
           <div className={`rounded-2xl px-5 py-4 shadow-sm ${

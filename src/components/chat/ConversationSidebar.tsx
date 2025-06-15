@@ -29,7 +29,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Plus, Edit2, Trash2, MessageSquare, MoreHorizontal, PanelLeft, Search, Library, LogOut } from 'lucide-react';
+import { Plus, Edit2, Trash2, MessageSquare, MoreHorizontal, Menu, LogOut } from 'lucide-react';
 import { Conversation } from '@/hooks/useConversations';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSidebar } from '@/components/ui/sidebar';
@@ -100,39 +100,23 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
   // Collapsed sidebar - show only icons
   if (state === 'collapsed') {
     return (
-      <div className="fixed left-0 top-0 h-full w-12 bg-gray-900 z-40 flex flex-col items-center py-3 space-y-3">
+      <div className="fixed left-0 top-0 h-full w-12 z-40 flex flex-col items-center py-3 space-y-3" style={{ backgroundColor: 'hsl(0deg 0% 98.04%)' }}>
         <Button
           variant="ghost"
           size="sm"
           onClick={toggleSidebar}
-          className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-gray-800"
+          className="h-8 w-8 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
         >
-          <PanelLeft className="h-4 w-4" />
+          <Menu className="h-4 w-4" />
         </Button>
         
         <Button
           variant="ghost"
           size="sm"
           onClick={onCreateNew}
-          className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-gray-800"
+          className="h-8 w-8 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-200"
         >
           <Plus className="h-4 w-4" />
-        </Button>
-        
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-gray-800"
-        >
-          <Search className="h-4 w-4" />
-        </Button>
-        
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-gray-800"
-        >
-          <Library className="h-4 w-4" />
         </Button>
 
         <div className="flex-1" />
@@ -141,7 +125,7 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
           <PopoverTrigger asChild>
             <Button
               variant="ghost"
-              className="h-8 w-8 p-0 hover:bg-gray-800"
+              className="h-8 w-8 p-0 hover:bg-gray-200"
             >
               <Avatar className="h-6 w-6">
                 <AvatarFallback className="bg-gray-600 text-white text-xs">
@@ -186,7 +170,7 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
   // Expanded sidebar
   return (
     <>
-      <Sidebar className="border-r border-gray-200 bg-white w-80">
+      <Sidebar className="border-r border-gray-200 w-80" style={{ backgroundColor: 'hsl(0deg 0% 98.04%)' }}>
         <SidebarHeader className="p-4 border-b border-gray-100">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -201,7 +185,7 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
               onClick={toggleSidebar}
               className="h-8 w-8 p-0 hover:bg-gray-100"
             >
-              <PanelLeft className="h-4 w-4" />
+              <Menu className="h-4 w-4" />
             </Button>
           </div>
         </SidebarHeader>
@@ -216,26 +200,10 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
               <Plus className="h-4 w-4 mr-3" />
               New chat
             </Button>
-            
-            <Button 
-              className="w-full justify-start text-left bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 shadow-none h-11 rounded-lg"
-              variant="outline"
-            >
-              <Search className="h-4 w-4 mr-3" />
-              Search chats
-            </Button>
-            
-            <Button 
-              className="w-full justify-start text-left bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 shadow-none h-11 rounded-lg"
-              variant="outline"
-            >
-              <Library className="h-4 w-4 mr-3" />
-              Library
-            </Button>
           </div>
 
           <div className="flex-1">
-            <ScrollArea className="h-[calc(100vh-320px)]">
+            <ScrollArea className="h-[calc(100vh-240px)]">
               <SidebarGroup>
                 <SidebarGroupContent>
                   <SidebarMenu className="px-4 space-y-1">
