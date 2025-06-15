@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -74,7 +73,7 @@ const ContactSection = () => {
     <section className="max-w-4xl mx-auto px-6 py-16">
       <div className="text-center mb-12">
         <h2 className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-4">
-          Get in Touch
+          Contact Us
         </h2>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
           Have questions about Hindu scriptures or need help with our platform? 
@@ -83,11 +82,7 @@ const ContactSection = () => {
       </div>
 
       <div className="relative">
-        {/* Background decoration */}
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-red-50 rounded-3xl transform rotate-1"></div>
-        <div className="absolute inset-0 bg-gradient-to-tl from-red-50 to-orange-50 rounded-3xl transform -rotate-1"></div>
-        
-        <Card className="relative bg-white/80 backdrop-blur-sm border-0 shadow-2xl rounded-3xl overflow-hidden">
+        <Card className="bg-white border shadow-lg rounded-3xl overflow-hidden">
           <CardContent className="p-8">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
