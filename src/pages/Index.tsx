@@ -78,7 +78,7 @@ const Index = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-orange-100/30 to-purple-100/30"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="text-center mb-16">
-            <h3 className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-purple-600 bg-clip-text text-transparent mb-4">
+            <h3 className="text-4xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent mb-4">
               Learn Through Modern Technology
             </h3>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
