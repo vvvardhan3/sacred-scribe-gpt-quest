@@ -51,7 +51,7 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
     
     try {
       setIsLoading(true);
-      console.log('Starting payment process for plan:', planId);
+      // console.log('Starting payment process for plan:', planId);
       
       const scriptLoaded = await loadRazorpayScript();
       
@@ -64,11 +64,11 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
         return;
       }
 
-      console.log('Razorpay script loaded successfully');
+      // console.log('Razorpay script loaded successfully');
 
       // Create order
       const orderData = await createSubscription(planId);
-      console.log('Order created:', orderData);
+      // console.log('Order created:', orderData);
       
       const options = {
         key: 'rzp_test_hDWzj3XChB3yxM',
@@ -79,7 +79,7 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
         description: `Subscription to ${planName}`,
         handler: async (response: any) => {
           try {
-            console.log('Payment successful:', response);
+            // console.log('Payment successful:', response);
             
             await verifyPayment({
               razorpay_payment_id: response.razorpay_payment_id,
@@ -88,7 +88,7 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
             });
 
             // Force refresh subscription data
-            console.log('Refreshing subscription data...');
+            // console.log('Refreshing subscription data...');
             await refetch();
 
             toast({
@@ -105,7 +105,7 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
             }, 1000);
 
           } catch (error) {
-            console.error('Payment verification failed:', error);
+            // console.error('Payment verification failed:', error);
             toast({
               title: "Payment Verification Failed",
               description: "Please contact support if your payment was deducted.",
@@ -117,7 +117,7 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
         },
         modal: {
           ondismiss: () => {
-            console.log('Payment modal closed by user');
+            // console.log('Payment modal closed by user');
             setIsLoading(false);
           }
         },
@@ -130,12 +130,12 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
         }
       };
 
-      console.log('Opening Razorpay with options:', options);
+      // console.log('Opening Razorpay with options:', options);
       const razorpay = new window.Razorpay(options);
       razorpay.open();
 
     } catch (error) {
-      console.error('Payment initiation failed:', error);
+      // console.error('Payment initiation failed:', error);
       
       let errorMessage = "Failed to initiate payment. Please try again.";
       

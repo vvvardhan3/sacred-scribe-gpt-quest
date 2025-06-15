@@ -80,7 +80,7 @@ const Billing = () => {
 
   const handlePaymentSuccess = () => {
     // Refresh subscription and payment data after successful payment
-    console.log('Payment successful, refreshing data...');
+    // console.log('Payment successful, refreshing data...');
     refetch();
   };
 
