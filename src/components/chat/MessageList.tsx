@@ -23,27 +23,44 @@ const MessageList: React.FC<MessageListProps> = ({
   onSuggestionClick
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const scrollToBottomImmediate = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+  };
+
+  // Scroll when messages change
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  // Scroll to bottom when messages are first loaded (when opening a conversation)
+  // Scroll when messages are first loaded (when opening a conversation)
   useEffect(() => {
     if (messages.length > 0) {
-      // Small delay to ensure DOM is updated
       setTimeout(() => {
         scrollToBottom();
       }, 100);
     }
   }, [messages.length]);
 
+  // Scroll during streaming - check every 100ms when streaming is active
+  useEffect(() => {
+    if (streamingMessageId) {
+      const scrollInterval = setInterval(() => {
+        scrollToBottomImmediate();
+      }, 100);
+
+      return () => clearInterval(scrollInterval);
+    }
+  }, [streamingMessageId]);
+
   return (
     <div 
+      ref={containerRef}
       className="flex-1 overflow-y-auto" 
       style={{
         scrollbarWidth: 'none',

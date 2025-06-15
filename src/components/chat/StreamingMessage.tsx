@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Message } from '@/types/chat';
 
@@ -11,6 +12,7 @@ const StreamingMessage: React.FC<StreamingMessageProps> = ({ message, isStreamin
   const [isComplete, setIsComplete] = useState(!isStreaming);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const indexRef = useRef(0);
+  const componentRef = useRef<HTMLDivElement>(null);
 
   // Initialize content based on streaming state
   useEffect(() => {
@@ -60,6 +62,15 @@ const StreamingMessage: React.FC<StreamingMessageProps> = ({ message, isStreamin
         const nextContent = message.content.substring(0, currentIndex + 1);
         setDisplayedContent(nextContent);
         indexRef.current = currentIndex + 1;
+
+        // Scroll into view as content updates
+        if (componentRef.current) {
+          componentRef.current.scrollIntoView({ 
+            behavior: "auto", 
+            block: "end",
+            inline: "nearest" 
+          });
+        }
       } else {
         // Streaming complete
         console.log('Streaming animation complete for message:', message.id);
@@ -143,7 +154,7 @@ const StreamingMessage: React.FC<StreamingMessageProps> = ({ message, isStreamin
   };
 
   return (
-    <div className="rounded-2xl px-5 py-4 shadow-sm bg-white border border-gray-200 text-gray-900">
+    <div ref={componentRef} className="rounded-2xl px-5 py-4 shadow-sm bg-white border border-gray-200 text-gray-900">
       <div className="flex items-start">
         <div className="flex-1">
           <p className="text-base leading-relaxed whitespace-pre-wrap">
