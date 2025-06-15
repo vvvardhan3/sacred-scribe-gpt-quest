@@ -6,16 +6,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Crown, Star, Infinity, Check, CreditCard, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useSubscription } from '@/hooks/useSubscription';
+import RazorpayPayment from '@/components/RazorpayPayment';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const Billing = () => {
-  const currentPlan = {
-    name: 'Free Plan',
-    price: 0,
-    features: ['Basic Quiz Access', 'Limited AI Chat', 'Progress Tracking']
-  };
+  const { subscription, loading } = useSubscription();
 
   const plans = [
     {
+      id: 'free',
       name: 'Free',
       price: 0,
       period: 'forever',
@@ -30,8 +30,9 @@ const Billing = () => {
       color: 'from-gray-400 to-gray-600'
     },
     {
+      id: 'devotee',
       name: 'Devotee',
-      price: 9.99,
+      price: 999,
       period: 'month',
       description: 'Enhanced learning for dedicated spiritual seekers',
       features: [
@@ -46,8 +47,9 @@ const Billing = () => {
       color: 'from-orange-500 to-red-600'
     },
     {
+      id: 'guru',
       name: 'Guru',
-      price: 29.99,
+      price: 2999,
       period: 'month',
       description: 'Complete spiritual learning experience',
       features: [
@@ -64,14 +66,45 @@ const Billing = () => {
     }
   ];
 
+  const getCurrentPlan = () => {
+    if (loading) return null;
+    
+    if (!subscription?.subscribed) {
+      return plans.find(p => p.id === 'free');
+    }
+    
+    return plans.find(p => p.id === subscription.plan_id) || plans.find(p => p.id === 'free');
+  };
+
+  const currentPlan = getCurrentPlan();
+
   const billingHistory = [
     {
-      date: '2024-12-15',
-      description: 'Free Plan',
-      amount: '$0.00',
-      status: 'Active'
+      date: new Date().toLocaleDateString('en-IN'),
+      description: currentPlan?.name || 'Free Plan',
+      amount: currentPlan?.price ? `₹${currentPlan.price}.00` : '₹0.00',
+      status: subscription?.subscribed ? 'Active' : 'Active'
     }
   ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50">
+        <Navigation />
+        <div className="min-h-screen px-4 sm:px-6 lg:px-8 py-8">
+          <div className="max-w-6xl mx-auto">
+            <Skeleton className="h-8 w-48 mb-8" />
+            <Skeleton className="h-32 w-full mb-8" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-96 w-full" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50">
@@ -103,12 +136,17 @@ const Billing = () => {
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-2xl font-bold text-gray-900">{currentPlan.name}</h3>
-                  <p className="text-gray-600">Free access to basic spiritual learning features</p>
+                  <h3 className="text-2xl font-bold text-gray-900">{currentPlan?.name}</h3>
+                  <p className="text-gray-600">{currentPlan?.description}</p>
+                  {subscription?.subscription_end && (
+                    <p className="text-sm text-gray-500 mt-2">
+                      Valid until: {new Date(subscription.subscription_end).toLocaleDateString('en-IN')}
+                    </p>
+                  )}
                 </div>
                 <div className="text-right">
-                  <div className="text-3xl font-bold text-gray-900">${currentPlan.price}</div>
-                  <div className="text-gray-600">per month</div>
+                  <div className="text-3xl font-bold text-gray-900">₹{currentPlan?.price || 0}</div>
+                  <div className="text-gray-600">per {currentPlan?.period}</div>
                 </div>
               </div>
             </CardContent>
@@ -135,7 +173,7 @@ const Billing = () => {
                     </div>
                     <CardTitle className="text-xl font-bold">{plan.name}</CardTitle>
                     <div className="text-3xl font-bold text-gray-900">
-                      ${plan.price}
+                      ₹{plan.price}
                       <span className="text-sm text-gray-600 font-normal">/{plan.period}</span>
                     </div>
                     <p className="text-gray-600 mt-2">{plan.description}</p>
@@ -149,12 +187,28 @@ const Billing = () => {
                         </li>
                       ))}
                     </ul>
-                    <Button 
-                      className={`w-full ${plan.popular ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
-                      disabled={plan.name === currentPlan.name}
-                    >
-                      {plan.name === currentPlan.name ? 'Current Plan' : `Upgrade to ${plan.name}`}
-                    </Button>
+                    
+                    {plan.id === 'free' ? (
+                      <Button 
+                        className="w-full bg-gray-200 text-gray-700"
+                        disabled={!subscription?.subscribed}
+                      >
+                        {!subscription?.subscribed ? 'Current Plan' : 'Downgrade to Free'}
+                      </Button>
+                    ) : subscription?.plan_id === plan.id ? (
+                      <Button 
+                        className="w-full bg-gray-200 text-gray-700"
+                        disabled
+                      >
+                        Current Plan
+                      </Button>
+                    ) : (
+                      <RazorpayPayment
+                        planId={plan.id}
+                        planName={plan.name}
+                        price={plan.price}
+                      />
+                    )}
                   </CardContent>
                 </Card>
               ))}

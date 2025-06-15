@@ -23,7 +23,7 @@ const PricingSection = () => {
     },
     {
       name: 'Premium',
-      price: '₹499',
+      price: '₹999',
       period: '/month',
       description: 'For serious students and scholars',
       features: [
@@ -42,7 +42,7 @@ const PricingSection = () => {
     },
     {
       name: 'Pro',
-      price: '₹999',
+      price: '₹2999',
       period: '/month',
       description: 'For teachers and spiritual guides',
       features: [
