@@ -9,6 +9,9 @@ import {
 import { Button } from '@/components/ui/button';
 import ScriptureCard from '@/components/ScriptureCard';
 import Navigation from '@/components/Navigation';
+import PricingSection from '@/components/PricingSection';
+import ContactSection from '@/components/ContactSection';
+import Footer from '@/components/Footer';
 
 const Dashboard = () => {
   const categories = [
@@ -97,6 +100,15 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </section>
+
+      {/* Pricing Section */}
+      <PricingSection />
+
+      {/* Contact Section */}
+      <ContactSection />
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };
