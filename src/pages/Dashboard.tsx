@@ -5,17 +5,17 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel';
+import { 
   BookOpen, 
   MessageCircle, 
-  Settings, 
   LogOut, 
-  ArrowRight, 
-  Target, 
-  Users, 
-  TrendingUp,
-  Sparkles,
-  Star,
-  Clock
+  ArrowRight
 } from 'lucide-react';
 import { useLazyLoading } from '@/hooks/useLazyLoading';
 import { useScrollObserver } from '@/hooks/useScrollObserver';
@@ -29,7 +29,7 @@ const Dashboard = () => {
     { 
       name: 'Bhagavad Gita', 
       description: 'Test your knowledge of Krishna\'s teachings and divine wisdom',
-      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop&crop=center',
+      image: '',
       color: 'from-amber-400 to-orange-500',
       questions: '150+ Questions',
       difficulty: 'Beginner'
@@ -37,7 +37,7 @@ const Dashboard = () => {
     { 
       name: 'Upanishads', 
       description: 'Explore the philosophical foundations of Vedantic thought',
-      image: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=300&fit=crop&crop=center',
+      image: '',
       color: 'from-purple-400 to-violet-500',
       questions: '120+ Questions',
       difficulty: 'Advanced'
@@ -45,7 +45,7 @@ const Dashboard = () => {
     { 
       name: 'Ramayana', 
       description: 'Journey through Rama\'s epic story of dharma and devotion',
-      image: 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=400&h=300&fit=crop&crop=center',
+      image: '',
       color: 'from-emerald-400 to-teal-500',
       questions: '200+ Questions',
       difficulty: 'Intermediate'
@@ -53,7 +53,7 @@ const Dashboard = () => {
     { 
       name: 'Mahabharata', 
       description: 'Dive into the great epic of duty, war, and righteousness',
-      image: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=300&fit=crop&crop=center',
+      image: '',
       color: 'from-red-400 to-pink-500',
       questions: '180+ Questions',
       difficulty: 'Advanced'
@@ -61,7 +61,7 @@ const Dashboard = () => {
     { 
       name: 'Puranas', 
       description: 'Ancient stories of gods, creation, and cosmic cycles',
-      image: 'https://images.unsplash.com/photo-1604608672516-b9b8f2b4ca5c?w=400&h=300&fit=crop&crop=center',
+      image: '',
       color: 'from-yellow-400 to-amber-500',
       questions: '100+ Questions',
       difficulty: 'Beginner'
@@ -69,7 +69,7 @@ const Dashboard = () => {
     { 
       name: 'Vedas', 
       description: 'Sacred hymns, rituals, and the foundation of Hindu knowledge',
-      image: 'https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=400&h=300&fit=crop&crop=center',
+      image: '',
       color: 'from-cyan-400 to-blue-500',
       questions: '80+ Questions',
       difficulty: 'Advanced'
@@ -88,7 +88,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50">
-      {/* Simplified Header */}
+      {/* Header */}
       <header className="bg-white/80 backdrop-blur-md border-b border-orange-100 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
@@ -126,7 +126,7 @@ const Dashboard = () => {
         </div>
       </header>
 
-      {/* Hero Section - More Compact */}
+      {/* Hero Section */}
       <section className="max-w-6xl mx-auto px-6 py-12 text-center">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
           Master Ancient 
@@ -157,31 +157,43 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Scripture Categories */}
+      {/* Scripture Categories Carousel */}
       <section className="max-w-6xl mx-auto px-6 pb-12">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Choose Your Path</h2>
             <p className="text-gray-600">Select a scripture category to begin your journey</p>
           </div>
-          <Button variant="outline" className="hidden md:flex border-orange-200 text-orange-700 hover:bg-orange-50">
-            View All
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {displayedItems.map((category, index) => (
-            <ScriptureCard key={`${category.name}-${index}`} category={category} />
-          ))}
-          
-          {isLoading && (
-            <>
-              <LoadingSkeleton />
-              <LoadingSkeleton />
-            </>
-          )}
-        </div>
+        <Carousel
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+          className="w-full"
+        >
+          <CarouselContent className="-ml-2 md:-ml-4">
+            {displayedItems.map((category, index) => (
+              <CarouselItem key={`${category.name}-${index}`} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                <ScriptureCard category={category} />
+              </CarouselItem>
+            ))}
+            
+            {isLoading && (
+              <>
+                <CarouselItem className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                  <LoadingSkeleton />
+                </CarouselItem>
+                <CarouselItem className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                  <LoadingSkeleton />
+                </CarouselItem>
+              </>
+            )}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
         
         {hasMore && (
           <div ref={observerRef} className="h-10 flex items-center justify-center mt-8">
@@ -195,7 +207,7 @@ const Dashboard = () => {
         )}
       </section>
 
-      {/* AI Chat CTA - Simplified */}
+      {/* AI Chat CTA */}
       <section className="max-w-6xl mx-auto px-6 pb-12">
         <Card className="bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 border-0 text-white overflow-hidden">
           <CardContent className="p-8 text-center">
