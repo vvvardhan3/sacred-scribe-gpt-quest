@@ -13,7 +13,7 @@ export const PricingSection = () => {
   const { subscription } = useSubscription();
   const { limits, usage } = useUserLimits();
 
-  // Define pricing plans with detailed features
+  // Define pricing plans with exactly 5 features each
   const plans = [
     {
       name: "Free Trial",
@@ -25,17 +25,14 @@ export const PricingSection = () => {
         "Create 1 quiz total",
         "Access to Vedas, Puranas & Upanishads",
         "Basic scripture guidance",
-        "Community support",
-        "Sanskrit translations",
-        "Daily spiritual quotes"
+        "Community support"
       ],
       limitations: [
         "No Mahabharata access",
         "No Bhagavad Gita access", 
         "No Ramayana access",
         "Limited daily interactions",
-        "No advanced AI insights",
-        "No custom learning paths"
+        "No advanced AI insights"
       ],
       buttonText: "Current Plan",
       popular: false,
@@ -52,13 +49,8 @@ export const PricingSection = () => {
         "200 AI chat messages daily",
         "Create up to 5 quizzes",
         "Complete scripture library access",
-        "Vedas, Puranas & Upanishads",
-        "Mahabharata & Ramayana", 
-        "Bhagavad Gita with commentary",
         "Advanced AI explanations",
-        "Personalized study plans",
-        "Priority email support",
-        "Progress tracking & analytics"
+        "Personalized study plans"
       ],
       limitations: [],
       buttonText: subscription?.subscription_tier === 'Devotee Plan' ? "Current Plan" : "Choose Devotee",
@@ -76,15 +68,8 @@ export const PricingSection = () => {
         "Unlimited AI conversations",
         "Unlimited quiz creation",
         "Complete scripture collection",
-        "All Vedas with commentaries",
-        "Complete Mahabharata & Ramayana",
-        "Bhagavad Gita with multiple translations",
         "Advanced AI philosophical insights",
-        "Custom learning path creation",
-        "White-glove support",
-        "Early access to new features",
-        "Export & share content",
-        "API access for integration"
+        "White-glove support & API access"
       ],
       limitations: [],
       buttonText: subscription?.subscription_tier === 'Guru Plan' ? "Current Plan" : "Choose Guru",
