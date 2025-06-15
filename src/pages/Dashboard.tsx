@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -52,6 +53,11 @@ const Dashboard = () => {
   // Separate categories into allowed and locked
   const allowedCategories = categories.filter(category => isCategoryAllowed(category.name));
   const lockedCategories = categories.filter(category => !isCategoryAllowed(category.name));
+
+  const handleStartConversation = () => {
+    // Open chat in a new window
+    window.open('/chat', '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50">
@@ -154,12 +160,13 @@ const Dashboard = () => {
             <p className="text-lg text-white/90 mb-6 max-w-2xl mx-auto">
               Get instant answers with proper citations from Hindu scriptures. Start a meaningful conversation about philosophy, spirituality, and ancient wisdom.
             </p>
-            <Link to="/chat">
-              <Button className="bg-white text-orange-600 hover:bg-white/90 font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200">
-                Start Conversation
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </Link>
+            <Button 
+              onClick={handleStartConversation}
+              className="bg-white text-orange-600 hover:bg-white/90 font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
+            >
+              Start Conversation
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
           </CardContent>
         </Card>
       </section>
