@@ -16,7 +16,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSuggestionClick }) => {
   ];
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6">
+    <div className="flex flex-col items-center justify-center h-full min-h-[70vh] text-center px-6">
       <div className="mb-12">
         <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
           <Bot className="w-10 h-10 text-white" />
@@ -36,7 +36,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSuggestionClick }) => {
             onClick={() => onSuggestionClick(suggestion)}
           >
             <div className="flex items-start space-x-3">
-              <Sparkles className="w-5 h-5 text-orange-500 mt-0.5 group-hover:text-orange-600 transition-colors" />
+              <Sparkles className="w-5 h-5 text-orange-500 mt-0.5 group-hover:text-orange-600 transition-colors flex-shrink-0" />
               <div className="text-sm font-medium text-gray-700 leading-relaxed group-hover:text-gray-900 transition-colors">
                 {suggestion}
               </div>

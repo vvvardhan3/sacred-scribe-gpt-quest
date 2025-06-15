@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -170,7 +169,7 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
   // Expanded sidebar
   return (
     <>
-      <Sidebar className="border-r border-gray-200 w-80" style={{ backgroundColor: 'hsl(0deg 0% 98.04%)' }}>
+      <Sidebar className="border-r border-gray-200" style={{ backgroundColor: 'hsl(0deg 0% 98.04%)' }}>
         <SidebarHeader className="p-4 border-b border-gray-100">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
