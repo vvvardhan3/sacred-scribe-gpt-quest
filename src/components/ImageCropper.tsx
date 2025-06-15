@@ -31,6 +31,15 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
 
   const handleImageLoad = () => {
     setImageLoaded(true);
+    // Center the crop area when image loads
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const cropSize = 200;
+      setCrop({
+        x: (rect.width - cropSize) / 2,
+        y: (rect.height - cropSize) / 2,
+      });
+    }
     console.log('Image loaded successfully');
   };
 
@@ -98,55 +107,52 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
       return;
     }
 
-    const outputSize = 300;
+    const outputSize = 400; // Increased output size to prevent pixelation
     canvas.width = outputSize;
     canvas.height = outputSize;
 
     const containerRect = containerRef.current.getBoundingClientRect();
-    
-    // Calculate the actual displayed image dimensions
-    const imgAspectRatio = img.naturalWidth / img.naturalHeight;
-    const containerAspectRatio = containerRect.width / containerRect.height;
-    
-    let displayedWidth, displayedHeight, offsetX = 0, offsetY = 0;
-    
-    if (imgAspectRatio > containerAspectRatio) {
-      displayedHeight = containerRect.height * scale;
-      displayedWidth = displayedHeight * imgAspectRatio;
-      offsetX = (containerRect.width - displayedWidth) / 2;
-    } else {
-      displayedWidth = containerRect.width * scale;
-      displayedHeight = displayedWidth / imgAspectRatio;
-      offsetY = (containerRect.height - displayedHeight) / 2;
-    }
-
-    const scaleX = img.naturalWidth / displayedWidth;
-    const scaleY = img.naturalHeight / displayedHeight;
-
     const cropSize = 200;
-    const naturalCropX = Math.max(0, (crop.x - offsetX) * scaleX);
-    const naturalCropY = Math.max(0, (crop.y - offsetY) * scaleY);
-    const naturalCropSize = Math.min(
-      cropSize * Math.max(scaleX, scaleY),
-      img.naturalWidth - naturalCropX,
-      img.naturalHeight - naturalCropY
-    );
+    
+    // Get the actual displayed image dimensions
+    const imgRect = img.getBoundingClientRect();
+    const containerX = containerRect.left;
+    const containerY = containerRect.top;
+    const imgX = imgRect.left - containerX;
+    const imgY = imgRect.top - containerY;
+    
+    // Calculate scale factors between natural and displayed image
+    const scaleX = img.naturalWidth / imgRect.width;
+    const scaleY = img.naturalHeight / imgRect.height;
+    
+    // Calculate crop area in natural image coordinates
+    const cropXInImg = (crop.x - imgX) * scaleX;
+    const cropYInImg = (crop.y - imgY) * scaleY;
+    const cropSizeInImg = cropSize * scaleX; // Assuming uniform scaling
 
-    console.log('Crop dimensions:', { naturalCropX, naturalCropY, naturalCropSize });
+    console.log('Crop parameters:', {
+      natural: { width: img.naturalWidth, height: img.naturalHeight },
+      displayed: { width: imgRect.width, height: imgRect.height },
+      crop: { x: cropXInImg, y: cropYInImg, size: cropSizeInImg },
+      scale: { x: scaleX, y: scaleY }
+    });
 
-    // Create circular clip path
+    // Clear canvas with transparent background
+    ctx.clearRect(0, 0, outputSize, outputSize);
+    
+    // Create circular clipping path
     ctx.save();
     ctx.beginPath();
     ctx.arc(outputSize / 2, outputSize / 2, outputSize / 2, 0, 2 * Math.PI);
     ctx.clip();
 
-    // Draw the cropped image
+    // Draw the cropped image, ensuring it fills the entire circle
     ctx.drawImage(
       img,
-      naturalCropX,
-      naturalCropY,
-      naturalCropSize,
-      naturalCropSize,
+      Math.max(0, cropXInImg),
+      Math.max(0, cropYInImg),
+      Math.min(cropSizeInImg, img.naturalWidth - Math.max(0, cropXInImg)),
+      Math.min(cropSizeInImg, img.naturalHeight - Math.max(0, cropYInImg)),
       0,
       0,
       outputSize,
@@ -155,7 +161,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
 
     ctx.restore();
 
-    // Convert to blob
+    // Convert to blob with high quality
     canvas.toBlob((blob) => {
       if (blob) {
         console.log('Successfully created cropped image blob');
@@ -163,7 +169,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
       } else {
         console.error('Failed to create blob from canvas');
       }
-    }, 'image/jpeg', 0.9);
+    }, 'image/jpeg', 0.95); // Higher quality
   };
 
   return (
@@ -196,15 +202,23 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
                 />
                 {imageLoaded && (
                   <>
-                    {/* Crop overlay */}
+                    {/* Dark overlay */}
+                    <div 
+                      className="absolute inset-0 bg-black bg-opacity-50 pointer-events-none"
+                      style={{
+                        clipPath: `circle(100px at ${crop.x + 100}px ${crop.y + 100}px)`,
+                        clipRule: 'exclude',
+                      }}
+                    />
+                    {/* Crop circle border */}
                     <div
-                      className="absolute border-4 border-blue-500 rounded-full shadow-lg pointer-events-none"
+                      className="absolute border-4 border-white rounded-full pointer-events-none shadow-lg"
                       style={{
                         width: '200px',
                         height: '200px',
                         left: `${crop.x}px`,
                         top: `${crop.y}px`,
-                        boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.5)',
+                        boxShadow: 'inset 0 0 0 2px rgba(59, 130, 246, 0.8), 0 0 20px rgba(0, 0, 0, 0.3)',
                       }}
                     />
                     {/* Draggable area */}

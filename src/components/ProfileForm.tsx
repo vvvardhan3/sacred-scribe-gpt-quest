@@ -37,11 +37,13 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [currentProfilePicture, setCurrentProfilePicture] = useState(profile.profile_picture_url);
+  const [imageKey, setImageKey] = useState(0); // Force re-render of image
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Update local profile picture when profile prop changes
   React.useEffect(() => {
     setCurrentProfilePicture(profile.profile_picture_url);
+    setImageKey(prev => prev + 1); // Force re-render
   }, [profile.profile_picture_url]);
 
   const form = useForm<FormData>({
@@ -104,7 +106,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
     setUploading(true);
     try {
       console.log('Uploading cropped image...');
-      const fileExt = selectedImage?.name.split('.').pop() || 'jpg';
+      const fileExt = 'jpg';
       const fileName = `${user.id}/profile-${Date.now()}.${fileExt}`;
 
       // Upload the cropped image
@@ -112,7 +114,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
         .from('profile-pictures')
         .upload(fileName, croppedImageBlob, {
           upsert: true,
-          contentType: `image/${fileExt}`,
+          contentType: 'image/jpeg',
         });
 
       if (uploadError) {
@@ -120,7 +122,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
         throw uploadError;
       }
 
-      // Get the public URL with timestamp to avoid caching
+      // Get the public URL with cache-busting timestamp
       const { data: { publicUrl } } = supabase.storage
         .from('profile-pictures')
         .getPublicUrl(fileName);
@@ -131,8 +133,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
       // Update the profile with the new image URL
       await onUpdateProfile({ profile_picture_url: finalUrl });
       
-      // Update local state immediately
+      // Update local state with cache-busting
       setCurrentProfilePicture(finalUrl);
+      setImageKey(prev => prev + 1);
 
       toast({
         title: "Success",
@@ -190,19 +193,21 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
           <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center shadow-lg border-4 border-white">
             {currentProfilePicture ? (
               <img
-                src={currentProfilePicture}
+                key={`${imageKey}-${currentProfilePicture}`}
+                src={`${currentProfilePicture}${currentProfilePicture.includes('?') ? '&' : '?'}cache=${imageKey}`}
                 alt="Profile"
                 className="w-full h-full object-cover"
-                key={currentProfilePicture} // Force re-render when URL changes
+                style={{ 
+                  objectFit: 'cover',
+                  objectPosition: 'center center'
+                }}
+                onLoad={() => console.log('Profile image loaded successfully')}
                 onError={(e) => {
-                  console.error('Image failed to load:', currentProfilePicture);
-                  // Fallback to initials if image fails to load
+                  console.error('Profile image failed to load:', currentProfilePicture);
                   e.currentTarget.style.display = 'none';
                 }}
               />
-            ) : (
-              <span className="text-3xl font-bold text-white">{getInitials()}</span>
-            )}
+            ) : null}
             {!currentProfilePicture && (
               <span className="text-3xl font-bold text-white">{getInitials()}</span>
             )}
