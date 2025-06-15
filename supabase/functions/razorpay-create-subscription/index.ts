@@ -14,22 +14,55 @@ serve(async (req) => {
   }
 
   try {
+    console.log('=== Razorpay Create Subscription Function Started ===')
+    
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { planId, userId } = await req.json()
+    // Parse request body
+    let requestBody
+    try {
+      requestBody = await req.json()
+      console.log('Request body received:', requestBody)
+    } catch (error) {
+      console.error('Failed to parse request body:', error)
+      throw new Error('Invalid request body')
+    }
+
+    const { planId, userId } = requestBody
     console.log('Creating subscription for user:', userId, 'plan:', planId)
 
-    // Get user data
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      req.headers.get('Authorization')?.replace('Bearer ', '') ?? ''
-    )
+    if (!planId || !userId) {
+      console.error('Missing required parameters:', { planId, userId })
+      throw new Error('Missing required parameters: planId and userId')
+    }
 
-    if (authError || !user) {
+    // Get user data
+    const authHeader = req.headers.get('Authorization')
+    console.log('Auth header present:', !!authHeader)
+    
+    if (!authHeader) {
+      throw new Error('No authorization header provided')
+    }
+
+    const token = authHeader.replace('Bearer ', '')
+    console.log('Token extracted, length:', token.length)
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+
+    if (authError) {
+      console.error('Auth error:', authError)
+      throw new Error(`Authentication failed: ${authError.message}`)
+    }
+
+    if (!user) {
+      console.error('No user found')
       throw new Error('User not authenticated')
     }
+
+    console.log('User authenticated successfully:', user.id)
 
     // Plan configurations
     const plans = {
@@ -51,110 +84,96 @@ serve(async (req) => {
 
     const selectedPlan = plans[planId as keyof typeof plans]
     if (!selectedPlan) {
+      console.error('Invalid plan selected:', planId)
       throw new Error('Invalid plan selected')
     }
+
+    console.log('Selected plan:', selectedPlan)
 
     const razorpayKeyId = 'rzp_test_hDWzj3XChB3yxM'
     const razorpayKeySecret = Deno.env.get('RAZORPAY_KEY_SECRET')
     
     if (!razorpayKeySecret) {
+      console.error('Razorpay key secret not found in environment')
       throw new Error('Razorpay key secret not configured')
     }
 
-    console.log('Using Razorpay Key ID:', razorpayKeyId)
-    const authHeader = btoa(`${razorpayKeyId}:${razorpayKeySecret}`)
+    console.log('Razorpay credentials configured')
+    const authBasic = btoa(`${razorpayKeyId}:${razorpayKeySecret}`)
 
-    // First, create/ensure the plan exists in Razorpay
-    console.log('Creating/checking plan in Razorpay...')
-    const planResponse = await fetch('https://api.razorpay.com/v1/plans', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${authHeader}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        id: selectedPlan.razorpay_plan_id,
-        item: {
-          name: selectedPlan.name,
-          amount: selectedPlan.amount,
-          currency: 'INR'
-        },
-        period: selectedPlan.period,
-        interval: selectedPlan.interval,
-        notes: {
-          plan_type: planId
-        }
-      })
-    })
-
-    // If plan creation fails because it already exists, that's fine
-    if (!planResponse.ok) {
-      const planErrorData = await planResponse.text()
-      console.log('Plan creation response:', planErrorData)
-      // If it's not a "plan already exists" error, we might have an issue
-      if (!planErrorData.includes('already exists') && !planErrorData.includes('BAD_REQUEST_ERROR')) {
-        console.error('Plan creation failed:', planErrorData)
+    // Create subscription directly (plans are created on Razorpay dashboard)
+    console.log('Creating subscription with Razorpay...')
+    const subscriptionPayload = {
+      plan_id: selectedPlan.razorpay_plan_id,
+      customer_notify: 1,
+      quantity: 1,
+      total_count: 12, // 12 months
+      start_at: Math.floor(Date.now() / 1000) + 300, // Start 5 minutes from now
+      notes: {
+        user_id: user.id,
+        user_email: user.email,
+        plan_type: planId
       }
-    } else {
-      const planData = await planResponse.json()
-      console.log('Plan created/verified:', planData.id)
     }
 
-    // Now create the subscription using the plan
-    console.log('Creating subscription with plan:', selectedPlan.razorpay_plan_id)
+    console.log('Subscription payload:', JSON.stringify(subscriptionPayload, null, 2))
+
     const subscriptionResponse = await fetch('https://api.razorpay.com/v1/subscriptions', {
       method: 'POST',
       headers: {
-        'Authorization': `Basic ${authHeader}`,
+        'Authorization': `Basic ${authBasic}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        plan_id: selectedPlan.razorpay_plan_id,
-        customer_notify: 1,
-        quantity: 1,
-        total_count: 12, // 12 months
-        start_at: Math.floor(Date.now() / 1000) + 300, // Start 5 minutes from now
-        notes: {
-          user_id: user.id,
-          user_email: user.email,
-          plan_type: planId
-        }
-      })
+      body: JSON.stringify(subscriptionPayload)
     })
+
+    console.log('Razorpay response status:', subscriptionResponse.status)
 
     if (!subscriptionResponse.ok) {
       const errorData = await subscriptionResponse.text()
       console.error('Razorpay subscription creation failed:', errorData)
-      throw new Error(`Failed to create subscription with Razorpay: ${errorData}`)
+      console.error('Response status:', subscriptionResponse.status)
+      console.error('Response headers:', Object.fromEntries(subscriptionResponse.headers.entries()))
+      throw new Error(`Failed to create subscription with Razorpay (${subscriptionResponse.status}): ${errorData}`)
     }
 
     const subscription = await subscriptionResponse.json()
-    console.log('Razorpay subscription created:', subscription.id)
+    console.log('Razorpay subscription created successfully:', subscription.id)
 
     // Store subscription info in database
+    const dbPayload = {
+      user_id: user.id,
+      email: user.email!,
+      razorpay_subscription_id: subscription.id,
+      plan_id: planId,
+      subscription_tier: selectedPlan.name,
+      subscribed: false, // Will be true after payment confirmation
+      updated_at: new Date().toISOString()
+    }
+
+    console.log('Storing subscription in database:', dbPayload)
+
     const { error: insertError } = await supabase
       .from('subscribers')
-      .upsert({
-        user_id: user.id,
-        email: user.email!,
-        razorpay_subscription_id: subscription.id,
-        plan_id: planId,
-        subscription_tier: selectedPlan.name,
-        subscribed: false, // Will be true after payment confirmation
-        updated_at: new Date().toISOString()
-      })
+      .upsert(dbPayload)
 
     if (insertError) {
       console.error('Database insert error:', insertError)
-      throw new Error('Failed to store subscription data')
+      throw new Error(`Failed to store subscription data: ${insertError.message}`)
     }
 
+    console.log('Subscription stored in database successfully')
+
+    const responseData = { 
+      subscription_id: subscription.id,
+      amount: selectedPlan.amount,
+      plan_name: selectedPlan.name
+    }
+
+    console.log('Returning success response:', responseData)
+
     return new Response(
-      JSON.stringify({ 
-        subscription_id: subscription.id,
-        amount: selectedPlan.amount,
-        plan_name: selectedPlan.name
-      }),
+      JSON.stringify(responseData),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 
@@ -162,9 +181,15 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Error creating subscription:', error)
+    console.error('=== Error in razorpay-create-subscription ===')
+    console.error('Error message:', error.message)
+    console.error('Error stack:', error.stack)
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: 'Check edge function logs for more details'
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400 
