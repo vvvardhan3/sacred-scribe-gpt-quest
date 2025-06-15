@@ -17,32 +17,6 @@ const Billing = () => {
 
   const plans = [
     {
-      id: 'free',
-      name: 'Free Trial',
-      price: 0,
-      period: 'forever',
-      description: 'Perfect for exploring Hindu scriptures and getting started',
-      features: [
-        '10 AI chat messages daily',
-        'Create 1 quiz total',
-        'Access to Vedas, Puranas & Upanishads',
-        'Basic scripture guidance',
-        'Community support',
-        'Sanskrit translations',
-        'Daily spiritual quotes'
-      ],
-      limitations: [
-        'No Mahabharata access',
-        'No Bhagavad Gita access', 
-        'No Ramayana access',
-        'Limited daily interactions',
-        'No advanced AI insights',
-        'No custom learning paths'
-      ],
-      popular: false,
-      color: 'from-gray-400 to-gray-600'
-    },
-    {
       id: 'devotee',
       name: 'Devotee Plan',
       price: 999,
@@ -53,13 +27,8 @@ const Billing = () => {
         '200 AI chat messages daily',
         'Create up to 5 quizzes',
         'Complete scripture library access',
-        'Vedas, Puranas & Upanishads',
-        'Mahabharata & Ramayana', 
-        'Bhagavad Gita with commentary',
         'Advanced AI explanations',
-        'Personalized study plans',
-        'Priority email support',
-        'Progress tracking & analytics'
+        'Personalized study plans'
       ],
       limitations: [],
       popular: true,
@@ -76,15 +45,8 @@ const Billing = () => {
         'Unlimited AI conversations',
         'Unlimited quiz creation',
         'Complete scripture collection',
-        'All Vedas with commentaries',
-        'Complete Mahabharata & Ramayana',
-        'Bhagavad Gita with multiple translations',
         'Advanced AI philosophical insights',
-        'Custom learning path creation',
-        'White-glove support',
-        'Early access to new features',
-        'Export & share content',
-        'API access for integration'
+        'White-glove support & API access'
       ],
       limitations: [],
       popular: false,
@@ -96,10 +58,10 @@ const Billing = () => {
     if (subscriptionLoading) return null;
     
     if (!subscription?.subscribed) {
-      return plans.find(p => p.id === 'free');
+      return { id: 'free', name: 'Free Trial', price: 0, period: 'forever', description: 'Perfect for exploring Hindu scriptures and getting started' };
     }
     
-    return plans.find(p => p.id === subscription.plan_id) || plans.find(p => p.id === 'free');
+    return plans.find(p => p.id === subscription.plan_id) || { id: 'free', name: 'Free Trial', price: 0, period: 'forever', description: 'Perfect for exploring Hindu scriptures and getting started' };
   };
 
   const currentPlan = getCurrentPlan();
@@ -112,8 +74,8 @@ const Billing = () => {
           <div className="max-w-6xl mx-auto">
             <Skeleton className="h-8 w-48 mb-8" />
             <Skeleton className="h-32 w-full mb-8" />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[1, 2, 3].map((i) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[1, 2].map((i) => (
                 <Skeleton key={i} className="h-96 w-full" />
               ))}
             </div>
@@ -172,7 +134,7 @@ const Billing = () => {
           {/* Available Plans */}
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Choose Your Spiritual Learning Path</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {plans.map((plan) => (
                 <Card key={plan.name} className={`relative bg-white border-2 ${plan.popular ? 'border-orange-500 shadow-lg' : 'border-gray-200'} hover:shadow-md transition-shadow`}>
                   {plan.popular && (
@@ -184,7 +146,6 @@ const Billing = () => {
                   )}
                   <CardHeader className="text-center">
                     <div className={`w-16 h-16 mx-auto rounded-full bg-gradient-to-r ${plan.color} flex items-center justify-center mb-4`}>
-                      {plan.name === 'Free Trial' && <Star className="w-8 h-8 text-white" />}
                       {plan.name === 'Devotee Plan' && <Crown className="w-8 h-8 text-white" />}
                       {plan.name === 'Guru Plan' && <Infinity className="w-8 h-8 text-white" />}
                     </div>
@@ -218,34 +179,10 @@ const Billing = () => {
                           ))}
                         </ul>
                       </div>
-
-                      {plan.limitations.length > 0 && (
-                        <div>
-                          <h4 className="font-semibold text-red-700 mb-3 flex items-center">
-                            <X className="w-4 h-4 mr-2" />
-                            Not Included:
-                          </h4>
-                          <ul className="space-y-2">
-                            {plan.limitations.map((limitation, limitIndex) => (
-                              <li key={limitIndex} className="flex items-start text-sm text-gray-600">
-                                <X className="w-4 h-4 text-red-500 mr-2 flex-shrink-0 mt-0.5" />
-                                <span>{limitation}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
                     </div>
                     
                     <div className="mt-6">
-                      {plan.id === 'free' ? (
-                        <Button 
-                          className="w-full bg-gray-200 text-gray-700"
-                          disabled={!subscription?.subscribed}
-                        >
-                          {!subscription?.subscribed ? 'Current Plan' : 'Downgrade to Free'}
-                        </Button>
-                      ) : subscription?.plan_id === plan.id ? (
+                      {subscription?.plan_id === plan.id ? (
                         <Button 
                           className="w-full bg-gray-200 text-gray-700"
                           disabled
