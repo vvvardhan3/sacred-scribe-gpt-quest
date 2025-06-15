@@ -26,9 +26,6 @@ const ScriptureCard: React.FC<ScriptureCardProps> = ({ category, isNavigatable =
               {category.name}
             </h3>
           </div>
-          <div className="w-12 h-12 bg-gradient-to-r from-orange-100 to-red-100 rounded-full flex items-center justify-center ml-4">
-            <BookOpen className="w-6 h-6 text-orange-600" />
-          </div>
         </div>
         
         <p className="text-gray-600 leading-relaxed text-sm mb-6">
