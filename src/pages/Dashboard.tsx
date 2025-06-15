@@ -5,7 +5,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { 
   MessageCircle, 
   ArrowRight,
-  Lock,
   Crown,
   Star
 } from 'lucide-react';
@@ -106,17 +105,13 @@ const Dashboard = () => {
         {lockedCategories.length > 0 && (
           <>
             <div className="mb-6">
-              <h3 className="text-xl font-semibold text-gray-700 mb-4 flex items-center gap-2">
-                <Lock className="w-5 h-5 text-gray-500" />
+              <h3 className="text-xl font-semibold text-gray-700 mb-4">
                 Premium Scriptures
               </h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {lockedCategories.map((category, index) => (
                 <Card key={`${category.name}-${index}`} className="h-full transition-all duration-300 border-0 bg-white/60 opacity-75 relative overflow-hidden cursor-not-allowed">
-                  <div className="absolute top-4 right-4 z-10">
-                    <Lock className="w-6 h-6 text-gray-500" />
-                  </div>
                   <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${category.color} opacity-50`} />
                   
                   <div className="p-6">
