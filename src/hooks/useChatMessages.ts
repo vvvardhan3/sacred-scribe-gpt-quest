@@ -61,7 +61,7 @@ export const useChatMessages = (
       } catch (error) {
         console.error('Error auto-saving messages:', error);
       }
-    }, 1000); // Increased debounce time to 1 second
+    }, 2000); // Increased debounce time to 2 seconds to avoid race conditions
 
     return () => clearTimeout(timeoutId);
   }, [messages, activeConversationId, titleGenerated, getActiveConversation, updateConversation, setTitleGenerated]);

@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Message } from '@/types/chat';
 import { conversationDb } from '@/utils/conversationDatabase';
 
@@ -7,6 +6,7 @@ export const useMessageState = (activeConversationId: string | null) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [titleGenerated, setTitleGenerated] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const loadedConversationRef = useRef<string | null>(null);
 
   // Load messages when active conversation changes
   useEffect(() => {
@@ -17,6 +17,13 @@ export const useMessageState = (activeConversationId: string | null) => {
         console.log('No active conversation, clearing messages');
         setMessages([]);
         setTitleGenerated(false);
+        loadedConversationRef.current = null;
+        return;
+      }
+
+      // Don't reload if we're already showing this conversation
+      if (loadedConversationRef.current === activeConversationId) {
+        console.log('Already loaded conversation:', activeConversationId);
         return;
       }
 
@@ -39,12 +46,18 @@ export const useMessageState = (activeConversationId: string | null) => {
           setTitleGenerated(true);
         } else {
           console.log('No messages found in database for conversation:', activeConversationId);
-          setMessages([]);
+          // Only clear messages if this is not a brand new conversation
+          // If there are messages in state but none in DB, keep the state (new conversation case)
+          if (loadedConversationRef.current !== null) {
+            setMessages([]);
+          }
           setTitleGenerated(false);
         }
+        
+        loadedConversationRef.current = activeConversationId;
       } catch (error) {
         console.error('Error loading messages:', error);
-        setMessages([]);
+        // Don't clear messages on error
         setTitleGenerated(false);
       } finally {
         setIsLoadingMessages(false);
@@ -67,6 +80,7 @@ export const useMessageState = (activeConversationId: string | null) => {
     console.log('Resetting messages');
     setMessages([]);
     setTitleGenerated(false);
+    loadedConversationRef.current = null;
   };
 
   return {
