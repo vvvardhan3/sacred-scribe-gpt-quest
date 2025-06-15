@@ -90,9 +90,9 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-100">
       <Navigation />
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Profile Settings</h1>
+      <div className="min-h-screen px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-4xl font-bold text-gray-900 mb-8 text-center">Profile Settings</h1>
           {profile && user && (
             <ProfileForm 
               profile={profile} 
