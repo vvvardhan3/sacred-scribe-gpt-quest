@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -114,7 +115,7 @@ const Index = () => {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {scriptureCategories.map((category, index) => (
-              <ScriptureCard key={index} category={category} />
+              <ScriptureCard key={index} category={category} isNavigatable={false} />
             ))}
           </div>
         </div>
