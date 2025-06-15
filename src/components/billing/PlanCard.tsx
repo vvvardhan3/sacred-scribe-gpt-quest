@@ -1,9 +1,11 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Crown, Infinity, Check } from 'lucide-react';
+import { Crown, Infinity, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import RazorpayPayment from '@/components/RazorpayPayment';
 
 interface Plan {
@@ -25,6 +27,8 @@ interface PlanCardProps {
 }
 
 export const PlanCard: React.FC<PlanCardProps> = ({ plan, isCurrentPlan, onPaymentSuccess }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <Card className={`relative bg-white border-2 ${plan.popular ? 'border-orange-500 shadow-lg' : 'border-gray-200'} hover:shadow-md transition-shadow h-full flex flex-col`}>
       {plan.popular && (
@@ -56,18 +60,46 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, isCurrentPlan, onPayme
       <CardContent className="flex-grow flex flex-col">
         <div className="flex-grow space-y-4">
           <div className="text-center mx-auto">
-            <h4 className="font-semibold text-green-700 mb-3 flex items-center justify-center">
-              <Check className="w-4 h-4 mr-2" />
-              What's Included:
-            </h4>
-            <ul className="space-y-3 mx-auto">
-              {plan.features.map((feature, featureIndex) => (
-                <li key={featureIndex} className="flex items-start text-sm text-gray-700">
-                  <Check className="w-4 h-4 text-green-500 mr-3 flex-shrink-0 mt-0.5" />
-                  <span className="text-left">{feature}</span>
-                </li>
-              ))}
-            </ul>
+            <HoverCard>
+              <HoverCardTrigger asChild>
+                <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+                  <CollapsibleTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      className="font-semibold text-green-700 hover:text-green-800 hover:bg-green-50 border-green-200 mx-auto"
+                    >
+                      <Check className="w-4 h-4 mr-2" />
+                      What's Included
+                      {isOpen ? <ChevronUp className="w-4 h-4 ml-2" /> : <ChevronDown className="w-4 h-4 ml-2" />}
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-3">
+                    <ul className="space-y-3 mx-auto">
+                      {plan.features.map((feature, featureIndex) => (
+                        <li key={featureIndex} className="flex items-start text-sm text-gray-700">
+                          <Check className="w-4 h-4 text-green-500 mr-3 flex-shrink-0 mt-0.5" />
+                          <span className="text-left">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CollapsibleContent>
+                </Collapsible>
+              </HoverCardTrigger>
+              <HoverCardContent className="w-80 p-4">
+                <h4 className="font-semibold text-green-700 mb-3 flex items-center">
+                  <Check className="w-4 h-4 mr-2" />
+                  What's Included:
+                </h4>
+                <ul className="space-y-2">
+                  {plan.features.map((feature, featureIndex) => (
+                    <li key={featureIndex} className="flex items-start text-sm text-gray-700">
+                      <Check className="w-4 h-4 text-green-500 mr-3 flex-shrink-0 mt-0.5" />
+                      <span className="text-left">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </HoverCardContent>
+            </HoverCard>
           </div>
         </div>
         
