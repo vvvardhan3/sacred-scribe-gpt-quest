@@ -36,7 +36,13 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
   const [showImageCropper, setShowImageCropper] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [currentProfilePicture, setCurrentProfilePicture] = useState(profile.profile_picture_url);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Update local profile picture when profile prop changes
+  React.useEffect(() => {
+    setCurrentProfilePicture(profile.profile_picture_url);
+  }, [profile.profile_picture_url]);
 
   const form = useForm<FormData>({
     defaultValues: {
@@ -99,7 +105,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
     try {
       console.log('Uploading cropped image...');
       const fileExt = selectedImage?.name.split('.').pop() || 'jpg';
-      const fileName = `${user.id}/profile.${fileExt}`;
+      const fileName = `${user.id}/profile-${Date.now()}.${fileExt}`;
 
       // Upload the cropped image
       const { error: uploadError } = await supabase.storage
@@ -114,15 +120,19 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
         throw uploadError;
       }
 
-      // Get the public URL
+      // Get the public URL with timestamp to avoid caching
       const { data: { publicUrl } } = supabase.storage
         .from('profile-pictures')
         .getPublicUrl(fileName);
 
-      console.log('Image uploaded successfully, URL:', publicUrl);
+      const finalUrl = `${publicUrl}?t=${Date.now()}`;
+      console.log('Image uploaded successfully, URL:', finalUrl);
 
       // Update the profile with the new image URL
-      await onUpdateProfile({ profile_picture_url: publicUrl });
+      await onUpdateProfile({ profile_picture_url: finalUrl });
+      
+      // Update local state immediately
+      setCurrentProfilePicture(finalUrl);
 
       toast({
         title: "Success",
@@ -139,6 +149,10 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
       setUploading(false);
       setShowImageCropper(false);
       setSelectedImage(null);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -174,13 +188,22 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
       <div className="flex flex-col items-center space-y-4">
         <div className="relative">
           <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center shadow-lg border-4 border-white">
-            {profile.profile_picture_url ? (
+            {currentProfilePicture ? (
               <img
-                src={profile.profile_picture_url}
+                src={currentProfilePicture}
                 alt="Profile"
                 className="w-full h-full object-cover"
+                key={currentProfilePicture} // Force re-render when URL changes
+                onError={(e) => {
+                  console.error('Image failed to load:', currentProfilePicture);
+                  // Fallback to initials if image fails to load
+                  e.currentTarget.style.display = 'none';
+                }}
               />
             ) : (
+              <span className="text-3xl font-bold text-white">{getInitials()}</span>
+            )}
+            {!currentProfilePicture && (
               <span className="text-3xl font-bold text-white">{getInitials()}</span>
             )}
           </div>
@@ -201,6 +224,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
           onChange={handleImageSelect}
           className="hidden"
         />
+        {uploading && (
+          <p className="text-sm text-gray-600">Uploading...</p>
+        )}
       </div>
 
       {/* Form Section */}
@@ -290,6 +316,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
             console.log('Cropping cancelled');
             setShowImageCropper(false);
             setSelectedImage(null);
+            if (fileInputRef.current) {
+              fileInputRef.current.value = '';
+            }
           }}
         />
       )}

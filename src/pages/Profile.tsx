@@ -30,6 +30,7 @@ const Profile = () => {
     if (!user) return;
 
     try {
+      console.log('Fetching profile for user:', user.id);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -37,6 +38,7 @@ const Profile = () => {
         .single();
 
       if (error) throw error;
+      console.log('Profile fetched:', data);
       setProfile(data);
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -54,6 +56,7 @@ const Profile = () => {
     if (!user) return;
 
     try {
+      console.log('Updating profile with data:', updatedData);
       const { error } = await supabase
         .from('profiles')
         .update(updatedData)
@@ -61,7 +64,19 @@ const Profile = () => {
 
       if (error) throw error;
 
-      setProfile(prev => prev ? { ...prev, ...updatedData } : null);
+      // Update local state immediately
+      setProfile(prev => {
+        const newProfile = prev ? { ...prev, ...updatedData } : null;
+        console.log('Updated profile state:', newProfile);
+        return newProfile;
+      });
+
+      // If profile picture was updated, refetch to ensure we have the latest data
+      if (updatedData.profile_picture_url) {
+        console.log('Profile picture updated, refetching profile...');
+        setTimeout(() => fetchProfile(), 500); // Small delay to ensure database is updated
+      }
+
       toast({
         title: "Success",
         description: "Profile updated successfully",
