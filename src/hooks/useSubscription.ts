@@ -73,7 +73,6 @@ export const useSubscription = () => {
         body: { planId, userId: user.id },
         headers: {
           Authorization: `Bearer ${session.data.session.access_token}`,
-          'Content-Type': 'application/json',
         },
       });
 
