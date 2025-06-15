@@ -19,28 +19,25 @@ const ScriptureCard: React.FC<ScriptureCardProps> = ({ category, isNavigatable =
   // Landing page design (non-navigatable)
   const landingPageCard = (
     <Card className="h-full border-0 bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden group hover:-translate-y-2 hover:scale-105">
-      {/* Gradient header with icon */}
-      <div className={`h-24 bg-gradient-to-r ${category.color} relative overflow-hidden`}>
-        <div className="absolute inset-0 bg-black/10"></div>
-        <div className="absolute top-4 right-4">
-          <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-            <BookOpen className="w-6 h-6 text-white" />
+      <CardContent className="p-8">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-1">
+            <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-orange-600 transition-colors duration-300">
+              {category.name}
+            </h3>
+          </div>
+          <div className="w-12 h-12 bg-gradient-to-r from-orange-100 to-red-100 rounded-full flex items-center justify-center ml-4">
+            <BookOpen className="w-6 h-6 text-orange-600" />
           </div>
         </div>
-        <div className="absolute bottom-0 left-0 w-full h-6 bg-gradient-to-t from-black/20 to-transparent"></div>
-      </div>
-      
-      <CardContent className="p-6">
-        <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-orange-600 transition-colors duration-300">
-          {category.name}
-        </h3>
-        <p className="text-gray-600 leading-relaxed text-sm">
+        
+        <p className="text-gray-600 leading-relaxed text-sm mb-6">
           {category.description}
         </p>
         
         {/* Decorative element */}
-        <div className="mt-6 flex items-center justify-between">
-          <div className={`w-12 h-1 bg-gradient-to-r ${category.color} rounded-full`}></div>
+        <div className="flex items-center justify-between">
+          <div className={`w-16 h-1 bg-gradient-to-r ${category.color} rounded-full`}></div>
           <div className="text-xs text-gray-400 font-medium uppercase tracking-wider">
             Sacred Text
           </div>
