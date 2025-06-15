@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -17,6 +16,10 @@ import {
 
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const handleLogoClick = () => {
+    window.location.reload();
+  };
 
   // Define scripture categories with orange-themed gradients
   const scriptureCategories = [
@@ -58,7 +61,7 @@ const Index = () => {
       <header className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 cursor-pointer" onClick={handleLogoClick}>
               <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full flex items-center justify-center">
                 <span className="text-white font-bold text-sm">हिं</span>
               </div>
