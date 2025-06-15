@@ -74,6 +74,18 @@ export const conversationDb = {
 
   // Delete a conversation and its messages
   async deleteConversation(id: string): Promise<void> {
+    // First delete messages
+    const { error: messagesError } = await supabase
+      .from('messages')
+      .delete()
+      .eq('conversation_id', id);
+
+    if (messagesError) {
+      console.error('Error deleting messages:', messagesError);
+      throw messagesError;
+    }
+
+    // Then delete conversation
     const { error } = await supabase
       .from('conversations')
       .delete()
@@ -102,7 +114,6 @@ export const conversationDb = {
 
     console.log('Retrieved messages from database:', data);
     
-    // Type cast the role field to ensure it matches our expected type
     return (data || []).map(msg => ({
       ...msg,
       role: msg.role as 'user' | 'assistant',
@@ -114,20 +125,21 @@ export const conversationDb = {
   async saveMessages(conversationId: string, messages: any[]): Promise<void> {
     console.log('Saving messages to database:', conversationId, messages);
     
-    // Delete existing messages for this conversation
-    const { error: deleteError } = await supabase
+    if (messages.length === 0) return;
+
+    // Get existing messages
+    const { data: existingMessages } = await supabase
       .from('messages')
-      .delete()
+      .select('id')
       .eq('conversation_id', conversationId);
 
-    if (deleteError) {
-      console.error('Error deleting existing messages:', deleteError);
-      throw deleteError;
-    }
+    const existingIds = existingMessages?.map(msg => msg.id) || [];
+    const newMessages = messages.filter(msg => !existingIds.includes(msg.id));
 
-    // Insert new messages
-    if (messages.length > 0) {
-      const messagesToInsert = messages.map(msg => ({
+    // Only insert new messages
+    if (newMessages.length > 0) {
+      const messagesToInsert = newMessages.map(msg => ({
+        id: msg.id,
         conversation_id: conversationId,
         role: msg.role,
         content: msg.content,
@@ -135,7 +147,7 @@ export const conversationDb = {
         created_at: msg.timestamp?.toISOString() || new Date().toISOString()
       }));
 
-      console.log('Inserting messages:', messagesToInsert);
+      console.log('Inserting new messages:', messagesToInsert);
 
       const { error: insertError } = await supabase
         .from('messages')

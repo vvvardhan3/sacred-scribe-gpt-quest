@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Message } from '@/types/chat';
 import { useMessageState } from './useMessageState';
@@ -7,9 +7,10 @@ import {
   sendMessageToAPI, 
   createUserMessage, 
   createAssistantMessage, 
-  createErrorMessage,
-  handleTitleGeneration 
+  createErrorMessage 
 } from '@/utils/messageOperations';
+import { conversationDb } from '@/utils/conversationDatabase';
+import { generateTitle } from '@/utils/titleGenerator';
 
 export const useChatMessages = (
   activeConversationId: string | null,
@@ -30,27 +31,46 @@ export const useChatMessages = (
     setTitleGenerated,
     resetMessages,
     isLoadingMessages
-  } = useMessageState(activeConversationId, getActiveConversation);
+  } = useMessageState(activeConversationId);
 
-  // Save messages to active conversation whenever messages change
+  // Save messages to database whenever messages change
   useEffect(() => {
-    if (activeConversationId && messages.length > 0) {
-      console.log('Saving messages to conversation:', activeConversationId, messages);
-      
-      handleTitleGeneration(
-        messages,
-        activeConversationId,
-        titleGenerated,
-        setTitleGenerated,
-        updateConversation,
-        getActiveConversation
-      );
-    }
-  }, [messages, activeConversationId]);
+    const saveMessages = async () => {
+      if (!activeConversationId || messages.length === 0) return;
 
-  const sendMessage = async () => {
+      try {
+        console.log('Saving messages to database:', activeConversationId, messages);
+        await conversationDb.saveMessages(activeConversationId, messages);
+
+        // Generate title for first message if needed
+        if (messages.length >= 2 && !titleGenerated) {
+          const currentConv = getActiveConversation();
+          if (currentConv?.title === 'New Conversation') {
+            console.log('Generating title for first message');
+            setTitleGenerated(true);
+            try {
+              const generatedTitle = await generateTitle(messages[0].content);
+              console.log('Generated title:', generatedTitle);
+              await conversationDb.updateConversation(activeConversationId, { title: generatedTitle });
+              updateConversation(activeConversationId, { title: generatedTitle });
+            } catch (error) {
+              console.error('Error generating title:', error);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error saving messages:', error);
+      }
+    };
+
+    // Debounce the save operation
+    const timeoutId = setTimeout(saveMessages, 500);
+    return () => clearTimeout(timeoutId);
+  }, [messages, activeConversationId, titleGenerated, getActiveConversation, updateConversation, setTitleGenerated]);
+
+  const sendMessage = useCallback(async () => {
     const trimmedInput = input.trim();
-    if (!trimmedInput) return;
+    if (!trimmedInput || loading) return;
 
     console.log('Sending message:', trimmedInput);
 
@@ -74,7 +94,6 @@ export const useChatMessages = (
     
     // Add user message immediately
     addMessage(userMessage);
-    
     setInput('');
     setLoading(true);
 
@@ -86,10 +105,9 @@ export const useChatMessages = (
       
       // Set this message as streaming
       setStreamingMessageId(assistantMessage.id);
-      
       addMessage(assistantMessage);
 
-      // Stop streaming after a delay (simulating the time it takes to stream)
+      // Stop streaming after a delay
       setTimeout(() => {
         setStreamingMessageId(undefined);
       }, data.answer.length * 20 + 1000);
@@ -107,27 +125,27 @@ export const useChatMessages = (
     } finally {
       setLoading(false);
     }
-  };
+  }, [input, loading, activeConversationId, addMessage, createNewConversation, toast]);
 
-  const toggleCitations = (messageId: string) => {
+  const toggleCitations = useCallback((messageId: string) => {
     setExpandedCitations(prev => ({
       ...prev,
       [messageId]: !prev[messageId]
     }));
-  };
+  }, []);
 
-  const handleSuggestionClick = (suggestion: string) => {
+  const handleSuggestionClick = useCallback((suggestion: string) => {
     console.log('Setting input from suggestion:', suggestion);
     setInput(suggestion);
-  };
+  }, []);
 
-  const resetChat = () => {
+  const resetChat = useCallback(() => {
     console.log('Resetting chat');
     resetMessages();
     setInput('');
     setExpandedCitations({});
     setStreamingMessageId(undefined);
-  };
+  }, [resetMessages]);
 
   return {
     messages,

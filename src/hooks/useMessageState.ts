@@ -1,12 +1,9 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Message } from '@/types/chat';
 import { conversationDb } from '@/utils/conversationDatabase';
 
-export const useMessageState = (
-  activeConversationId: string | null,
-  getActiveConversation: () => any
-) => {
+export const useMessageState = (activeConversationId: string | null) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [titleGenerated, setTitleGenerated] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
@@ -25,7 +22,6 @@ export const useMessageState = (
 
       setIsLoadingMessages(true);
       try {
-        // Load messages directly from database
         const dbMessages = await conversationDb.getMessages(activeConversationId);
         
         if (dbMessages && dbMessages.length > 0) {
@@ -38,10 +34,7 @@ export const useMessageState = (
           }));
           console.log('Loaded messages from database:', messagesWithDates);
           setMessages(messagesWithDates);
-          
-          // Check if conversation has a custom title
-          const activeConv = getActiveConversation();
-          setTitleGenerated(!!activeConv?.title && activeConv.title !== 'New Conversation');
+          setTitleGenerated(true); // If messages exist, title should be generated
         } else {
           console.log('No messages found in database for conversation:', activeConversationId);
           setMessages([]);
@@ -59,29 +52,19 @@ export const useMessageState = (
     loadMessages();
   }, [activeConversationId]);
 
-  const addMessage = (message: Message) => {
+  const addMessage = useCallback((message: Message) => {
     console.log('Adding message to state:', message);
-    setMessages(prev => {
-      const newMessages = [...prev, message];
-      console.log('Updated messages after adding:', newMessages);
-      return newMessages;
-    });
-  };
+    setMessages(prev => [...prev, message]);
+  }, []);
 
-  const updateMessages = (newMessages: Message[]) => {
-    console.log('Updating all messages:', newMessages);
-    setMessages(newMessages);
-  };
-
-  const resetMessages = () => {
+  const resetMessages = useCallback(() => {
     console.log('Resetting messages');
     setMessages([]);
     setTitleGenerated(false);
-  };
+  }, []);
 
   return {
     messages,
-    setMessages: updateMessages,
     addMessage,
     titleGenerated,
     setTitleGenerated,
