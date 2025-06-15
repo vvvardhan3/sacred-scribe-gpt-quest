@@ -16,29 +16,45 @@ interface ScriptureCardProps {
 }
 
 const ScriptureCard: React.FC<ScriptureCardProps> = ({ category, isNavigatable = true }) => {
-  // Landing page design (non-navigatable)
+  // Landing page design (non-navigatable) with enhanced animations and styling
   const landingPageCard = (
-    <Card className="h-full border-0 bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden group hover:-translate-y-2 hover:scale-105">
-      <CardContent className="p-8">
+    <Card className="h-full border-0 bg-gradient-to-br from-white via-orange-50/30 to-amber-50/50 backdrop-blur-sm shadow-lg hover:shadow-2xl transition-all duration-700 overflow-hidden group hover:-translate-y-4 hover:scale-105 hover:rotate-1 relative">
+      {/* Animated background gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-orange-100/20 to-red-100/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      
+      {/* Animated border glow */}
+      <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-orange-400/20 via-red-400/20 to-amber-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm"></div>
+      
+      <CardContent className="p-8 relative z-10">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-orange-600 transition-colors duration-300">
-              {category.name}
-            </h3>
+            {/* Enhanced title with gradient background and animation */}
+            <div className="relative">
+              <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-orange-600 group-hover:via-red-600 group-hover:to-amber-600 group-hover:bg-clip-text transition-all duration-500 transform group-hover:scale-110 group-hover:-translate-y-1">
+                {category.name}
+              </h3>
+              {/* Animated underline */}
+              <div className={`absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r ${category.color} w-0 group-hover:w-full transition-all duration-500 delay-200`}></div>
+            </div>
           </div>
         </div>
         
-        <p className="text-gray-600 leading-relaxed text-sm mb-6">
+        <p className="text-gray-600 leading-relaxed text-sm mb-6 group-hover:text-gray-700 transition-colors duration-300 transform group-hover:translate-x-2">
           {category.description}
         </p>
         
-        {/* Decorative element */}
+        {/* Enhanced decorative elements with animations */}
         <div className="flex items-center justify-between">
-          <div className={`w-16 h-1 bg-gradient-to-r ${category.color} rounded-full`}></div>
-          <div className="text-xs text-gray-400 font-medium uppercase tracking-wider">
+          <div className={`w-16 h-1 bg-gradient-to-r ${category.color} rounded-full group-hover:w-24 transition-all duration-500 transform group-hover:scale-y-150`}></div>
+          <div className="text-xs text-gray-400 font-medium uppercase tracking-wider group-hover:text-orange-600 transition-colors duration-300 transform group-hover:scale-110">
             Sacred Text
           </div>
         </div>
+        
+        {/* Floating particles effect */}
+        <div className="absolute top-4 right-4 w-2 h-2 bg-orange-400/30 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-ping transition-opacity duration-300"></div>
+        <div className="absolute top-8 right-8 w-1 h-1 bg-red-400/40 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-pulse transition-opacity duration-500 delay-100"></div>
+        <div className="absolute bottom-6 left-6 w-1.5 h-1.5 bg-amber-400/50 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-bounce transition-opacity duration-400 delay-200"></div>
       </CardContent>
     </Card>
   );
