@@ -31,11 +31,11 @@ const MessageList: React.FC<MessageListProps> = ({
   }, [messages]);
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 space-y-6">
+    <div className="flex-1 overflow-y-auto">
       {messages.length === 0 ? (
         <WelcomeScreen onSuggestionClick={onSuggestionClick} />
       ) : (
-        <>
+        <div className="p-6 pt-8">
           {messages.map((message) => (
             <ChatMessage
               key={message.id}
@@ -47,7 +47,7 @@ const MessageList: React.FC<MessageListProps> = ({
           
           {loading && <LoadingMessage />}
           <div ref={messagesEndRef} />
-        </>
+        </div>
       )}
     </div>
   );

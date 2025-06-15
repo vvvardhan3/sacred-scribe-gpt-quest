@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Message } from '@/types/chat';
+import { Bot, User } from 'lucide-react';
 
 interface ChatMessageProps {
   message: Message;
@@ -74,63 +75,73 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   };
 
   return (
-    <div className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-      <div className={`flex items-start space-x-3 max-w-[85%] ${message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
+    <div className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} mb-6`}>
+      <div className={`flex items-start space-x-4 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
         {/* Avatar */}
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+        <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm ${
           message.role === 'user' 
-            ? 'bg-gradient-to-br from-blue-500 to-purple-500' 
-            : 'bg-gradient-to-br from-orange-500 to-red-500'
+            ? 'bg-blue-600' 
+            : 'bg-orange-600'
         }`}>
-          <span className="text-white text-sm font-medium">
-            {message.role === 'user' ? 'U' : 'AI'}
-          </span>
+          {message.role === 'user' ? (
+            <User className="w-5 h-5 text-white" />
+          ) : (
+            <Bot className="w-5 h-5 text-white" />
+          )}
         </div>
         
         {/* Message Content */}
-        <div className={`rounded-2xl px-4 py-3 ${
-          message.role === 'user' 
-            ? 'bg-gradient-to-br from-blue-500 to-purple-500 text-white' 
-            : 'bg-gray-50 border border-gray-200 text-gray-900'
-        }`}>
-          <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
-          
-          {/* Citations */}
-          {message.citations && message.citations.length > 0 && (
-            <div className="mt-3">
-              <button
-                onClick={() => onToggleCitations(message.id)}
-                className="flex items-center text-xs text-gray-500 hover:text-gray-700 transition-colors"
-              >
-                <span className="mr-1">
-                  {expandedCitations[message.id] ? '▼' : '▶'}
-                </span>
-                References ({message.citations.length})
-              </button>
-              
-              {expandedCitations[message.id] && (
-                <div className="mt-2 p-3 bg-white rounded-lg border text-xs text-gray-700">
-                  {message.citations.map((citation, index) => (
-                    <div key={index} className="mb-2 last:mb-0 leading-relaxed">
-                      <span className="font-medium">#{index + 1}:</span> {citation}
-                      <br />
-                      <a 
-                        href={getCitationLink(citation)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800 underline text-xs mt-1 inline-block"
-                      >
-                        Read online →
-                      </a>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+        <div className="flex flex-col space-y-2">
+          <div className={`rounded-2xl px-5 py-4 shadow-sm ${
+            message.role === 'user' 
+              ? 'bg-blue-600 text-white' 
+              : 'bg-white border border-gray-200 text-gray-900'
+          }`}>
+            <p className="text-base leading-relaxed whitespace-pre-wrap">{message.content}</p>
+            
+            {/* Citations */}
+            {message.citations && message.citations.length > 0 && (
+              <div className="mt-4 pt-3 border-t border-gray-200/20">
+                <button
+                  onClick={() => onToggleCitations(message.id)}
+                  className={`flex items-center text-sm transition-colors ${
+                    message.role === 'user' 
+                      ? 'text-blue-100 hover:text-white' 
+                      : 'text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  <span className="mr-2 text-xs">
+                    {expandedCitations[message.id] ? '▼' : '▶'}
+                  </span>
+                  References ({message.citations.length})
+                </button>
+                
+                {expandedCitations[message.id] && (
+                  <div className="mt-3 p-4 bg-gray-50 rounded-xl border text-sm text-gray-700 space-y-3">
+                    {message.citations.map((citation, index) => (
+                      <div key={index} className="leading-relaxed">
+                        <div className="font-medium text-gray-900 mb-1">#{index + 1}</div>
+                        <div className="text-gray-700 mb-2">{citation}</div>
+                        <a 
+                          href={getCitationLink(citation)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors"
+                        >
+                          Read online →
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
           
           {/* Timestamp */}
-          <div className={`text-xs mt-2 ${message.role === 'user' ? 'text-blue-100' : 'text-gray-500'}`}>
+          <div className={`text-xs px-1 ${
+            message.role === 'user' ? 'text-right text-gray-500' : 'text-left text-gray-500'
+          }`}>
             {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </div>
         </div>
