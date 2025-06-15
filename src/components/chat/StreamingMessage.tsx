@@ -13,20 +13,28 @@ const StreamingMessage: React.FC<StreamingMessageProps> = ({ message, isStreamin
 
   useEffect(() => {
     if (isStreaming && message.content) {
-      const interval = setInterval(() => {
-        if (currentIndex < message.content.length) {
+      if (currentIndex < message.content.length) {
+        const timer = setTimeout(() => {
           setDisplayedContent(prev => prev + message.content[currentIndex]);
           setCurrentIndex(prev => prev + 1);
-        } else {
-          clearInterval(interval);
-        }
-      }, 20); // Adjust speed as needed
+        }, 30); // Slightly slower for better readability
 
-      return () => clearInterval(interval);
+        return () => clearTimeout(timer);
+      }
     } else {
+      // If not streaming, show full content immediately
       setDisplayedContent(message.content);
+      setCurrentIndex(message.content.length);
     }
   }, [message.content, currentIndex, isStreaming]);
+
+  // Reset when message changes
+  useEffect(() => {
+    if (isStreaming) {
+      setDisplayedContent('');
+      setCurrentIndex(0);
+    }
+  }, [message.id, isStreaming]);
 
   // Function to generate online links for citations
   const getCitationLink = (citation: string) => {
@@ -130,10 +138,16 @@ const StreamingMessage: React.FC<StreamingMessageProps> = ({ message, isStreamin
 
   return (
     <div className="rounded-2xl px-5 py-4 shadow-sm bg-white border border-gray-200 text-gray-900">
-      {formatMessageWithCitations(displayedContent, message.citations)}
-      {isStreaming && currentIndex < message.content.length && (
-        <span className="inline-block w-2 h-5 bg-orange-500 ml-1 animate-pulse"></span>
-      )}
+      <div className="flex items-start">
+        <div className="flex-1">
+          {formatMessageWithCitations(displayedContent, message.citations)}
+        </div>
+        {isStreaming && currentIndex < message.content.length && (
+          <div className="ml-1 mt-1">
+            <div className="w-0.5 h-4 bg-orange-500 animate-pulse"></div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
