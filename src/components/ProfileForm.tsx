@@ -2,10 +2,9 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
-import { Camera, Save, User, Eye, EyeOff } from 'lucide-react';
+import { Camera, Save, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -27,19 +26,13 @@ interface ProfileFormProps {
 
 interface FormData {
   display_name: string;
-  first_name: string;
-  last_name: string;
   email: string;
-  new_password: string;
-  confirm_password: string;
 }
 
 const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateProfile }) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showImageCropper, setShowImageCropper] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -48,18 +41,26 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
   const form = useForm<FormData>({
     defaultValues: {
       display_name: profile.display_name || '',
-      first_name: profile.first_name || '',
-      last_name: profile.last_name || '',
       email: userEmail,
-      new_password: '',
-      confirm_password: '',
     },
   });
 
   const getInitials = () => {
     const firstName = profile.first_name || '';
     const lastName = profile.last_name || '';
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U';
+    const displayName = profile.display_name || '';
+    
+    if (firstName && lastName) {
+      return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+    } else if (displayName) {
+      const names = displayName.split(' ');
+      if (names.length >= 2) {
+        return `${names[0].charAt(0)}${names[1].charAt(0)}`.toUpperCase();
+      }
+      return displayName.charAt(0).toUpperCase();
+    }
+    
+    return user?.email?.charAt(0).toUpperCase() || 'U';
   };
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -119,8 +120,6 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
       // Update profile data
       await onUpdateProfile({
         display_name: data.display_name,
-        first_name: data.first_name,
-        last_name: data.last_name,
       });
 
       // Update email if changed
@@ -129,28 +128,6 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
           email: data.email,
         });
         if (emailError) throw emailError;
-      }
-
-      // Update password if provided
-      if (data.new_password) {
-        if (data.new_password !== data.confirm_password) {
-          toast({
-            title: "Error",
-            description: "Passwords do not match",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        const { error: passwordError } = await supabase.auth.updateUser({
-          password: data.new_password,
-        });
-        if (passwordError) throw passwordError;
-
-        toast({
-          title: "Success",
-          description: "Password updated successfully",
-        });
       }
 
       setIsEditing(false);
@@ -169,7 +146,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
       {/* Profile Picture Section */}
       <div className="flex flex-col items-center space-y-4">
         <div className="relative">
-          <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center shadow-lg">
+          <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
             {profile.profile_picture_url ? (
               <img
                 src={profile.profile_picture_url}
@@ -183,7 +160,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
           <Button
             type="button"
             size="sm"
-            className="absolute bottom-0 right-0 rounded-full w-10 h-10 p-0"
+            className="absolute bottom-0 right-0 rounded-full w-10 h-10 p-0 bg-blue-600 hover:bg-blue-700"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
           >
@@ -202,55 +179,17 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
       {/* Form Section */}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              control={form.control}
-              name="first_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>First Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      disabled={!isEditing}
-                      className={!isEditing ? "bg-gray-50" : ""}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="last_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Last Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      disabled={!isEditing}
-                      className={!isEditing ? "bg-gray-50" : ""}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
           <FormField
             control={form.control}
             name="display_name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Display Name</FormLabel>
+                <FormLabel className="text-white">Display Name</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
                     disabled={!isEditing}
-                    className={!isEditing ? "bg-gray-50" : ""}
+                    className={!isEditing ? "bg-gray-700 text-white border-gray-600" : "bg-white text-gray-900"}
                   />
                 </FormControl>
                 <FormMessage />
@@ -263,13 +202,13 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel className="text-white">Email</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
                     type="email"
                     disabled={!isEditing}
-                    className={!isEditing ? "bg-gray-50" : ""}
+                    className={!isEditing ? "bg-gray-700 text-white border-gray-600" : "bg-white text-gray-900"}
                   />
                 </FormControl>
                 <FormMessage />
@@ -277,80 +216,12 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
             )}
           />
 
-          {isEditing && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="new_password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>New Password (optional)</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input 
-                          {...field} 
-                          type={showPassword ? "text" : "password"} 
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="confirm_password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input 
-                          {...field} 
-                          type={showConfirmPassword ? "text" : "password"} 
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        >
-                          {showConfirmPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          )}
-
           <div className="flex justify-end space-x-4">
             {!isEditing ? (
               <Button
                 type="button"
                 onClick={() => setIsEditing(true)}
-                className="bg-orange-500 hover:bg-orange-600"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <User className="w-4 h-4 mr-2" />
                 Edit Profile
@@ -364,12 +235,13 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
                     setIsEditing(false);
                     form.reset();
                   }}
+                  className="border-gray-500 text-white hover:bg-gray-700"
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-orange-500 hover:bg-orange-600"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   <Save className="w-4 h-4 mr-2" />
                   Save Changes

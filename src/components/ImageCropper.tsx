@@ -29,20 +29,28 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
   }, [image]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
     setIsDragging(true);
-    setDragStart({ x: e.clientX - crop.x, y: e.clientY - crop.y });
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (rect) {
+      setDragStart({ 
+        x: e.clientX - rect.left - crop.x, 
+        y: e.clientY - rect.top - crop.y 
+      });
+    }
   };
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isDragging || !containerRef.current) return;
 
     const rect = containerRef.current.getBoundingClientRect();
-    const newX = e.clientX - dragStart.x;
-    const newY = e.clientY - dragStart.y;
+    const newX = e.clientX - rect.left - dragStart.x;
+    const newY = e.clientY - rect.top - dragStart.y;
 
     // Constrain the crop area within the container
-    const maxX = rect.width - 200; // 200 is the crop area size
-    const maxY = rect.height - 200;
+    const cropSize = 200;
+    const maxX = rect.width - cropSize;
+    const maxY = rect.height - cropSize;
 
     setCrop({
       x: Math.max(0, Math.min(newX, maxX)),
@@ -67,7 +75,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
   }, [isDragging, handleMouseMove, handleMouseUp]);
 
   const getCroppedImage = async () => {
-    if (!imageRef.current || !canvasRef.current) return;
+    if (!imageRef.current || !canvasRef.current || !containerRef.current) return;
 
     const image = imageRef.current;
     const canvas = canvasRef.current;
@@ -76,24 +84,28 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
     if (!ctx) return;
 
     // Set canvas size to the desired output size (circular)
-    const size = 200;
-    canvas.width = size;
-    canvas.height = size;
+    const outputSize = 300;
+    canvas.width = outputSize;
+    canvas.height = outputSize;
 
     // Calculate the source rectangle based on the crop position and scale
-    const containerRect = containerRef.current?.getBoundingClientRect();
-    if (!containerRect) return;
+    const containerRect = containerRef.current.getBoundingClientRect();
+    const imageRect = image.getBoundingClientRect();
+    
+    // Calculate scale factors
+    const scaleX = image.naturalWidth / imageRect.width;
+    const scaleY = image.naturalHeight / imageRect.height;
 
-    const scaleX = image.naturalWidth / (containerRect.width * scale);
-    const scaleY = image.naturalHeight / (containerRect.height * scale);
-
+    // Calculate crop area in image coordinates
+    const cropSize = 200;
     const sourceX = crop.x * scaleX;
     const sourceY = crop.y * scaleY;
-    const sourceSize = size * Math.max(scaleX, scaleY);
+    const sourceSize = cropSize * Math.max(scaleX, scaleY);
 
     // Create circular clip path
+    ctx.save();
     ctx.beginPath();
-    ctx.arc(size / 2, size / 2, size / 2, 0, 2 * Math.PI);
+    ctx.arc(outputSize / 2, outputSize / 2, outputSize / 2, 0, 2 * Math.PI);
     ctx.clip();
 
     // Draw the cropped image
@@ -105,9 +117,11 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
       sourceSize,
       0,
       0,
-      size,
-      size
+      outputSize,
+      outputSize
     );
+
+    ctx.restore();
 
     // Convert canvas to blob
     canvas.toBlob((blob) => {
@@ -127,9 +141,8 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
         <div className="space-y-4">
           <div
             ref={containerRef}
-            className="relative w-full h-96 bg-gray-100 rounded-lg overflow-hidden"
+            className="relative w-full h-96 bg-gray-100 rounded-lg overflow-hidden select-none"
             style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
-            onMouseDown={handleMouseDown}
           >
             {imageSrc && (
               <>
@@ -137,16 +150,16 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
                   ref={imageRef}
                   src={imageSrc}
                   alt="Crop preview"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                   style={{
-                    transform: `scale(${scale}) translate(${-crop.x}px, ${-crop.y}px)`,
-                    transformOrigin: 'top left',
+                    transform: `scale(${scale})`,
+                    transformOrigin: 'center center',
                   }}
                   draggable={false}
                 />
                 {/* Crop overlay */}
                 <div
-                  className="absolute border-4 border-white rounded-full shadow-lg"
+                  className="absolute border-4 border-white rounded-full shadow-lg pointer-events-none"
                   style={{
                     width: '200px',
                     height: '200px',
@@ -154,6 +167,18 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCrop, onCancel }) 
                     top: `${crop.y}px`,
                     boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.5)',
                   }}
+                  onMouseDown={handleMouseDown}
+                />
+                {/* Draggable area */}
+                <div
+                  className="absolute cursor-move"
+                  style={{
+                    width: '200px',
+                    height: '200px',
+                    left: `${crop.x}px`,
+                    top: `${crop.y}px`,
+                  }}
+                  onMouseDown={handleMouseDown}
                 />
               </>
             )}
