@@ -18,7 +18,7 @@ interface ScriptureCardProps {
 const ScriptureCard: React.FC<ScriptureCardProps> = ({ category, isNavigatable = true }) => {
   // Landing page design (non-navigatable) with enhanced animations and styling
   const landingPageCard = (
-    <Card className="h-full border-0 bg-gradient-to-br from-white via-orange-50/30 to-amber-50/50 backdrop-blur-sm shadow-lg hover:shadow-2xl transition-all duration-700 overflow-hidden group hover:scale-105 hover:rotate-1 relative">
+    <Card className="h-full border-0 bg-gradient-to-br from-white via-orange-50/30 to-amber-50/50 backdrop-blur-sm shadow-lg hover:shadow-2xl transition-all duration-700 overflow-hidden group hover:scale-105 relative">
       {/* Animated background gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-transparent via-orange-100/20 to-red-100/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
       
