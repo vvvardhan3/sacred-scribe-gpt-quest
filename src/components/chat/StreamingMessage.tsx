@@ -12,58 +12,77 @@ const StreamingMessage: React.FC<StreamingMessageProps> = ({ message, isStreamin
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const isStreamingRef = useRef(false);
 
-  // Reset state when message changes or streaming starts
+  // Initialize content based on streaming state
   useEffect(() => {
-    console.log('StreamingMessage: Message or streaming state changed', { 
+    console.log('StreamingMessage: Effect triggered', { 
       messageId: message.id, 
       isStreaming, 
-      contentLength: message.content.length 
+      contentLength: message.content.length,
+      currentStreaming: isStreamingRef.current
     });
 
-    if (isStreaming) {
-      console.log('StreamingMessage: Starting streaming for message', message.id);
+    // Clear any existing intervals first
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    if (isStreaming && !isStreamingRef.current) {
+      console.log('StreamingMessage: Starting new streaming session for', message.id);
+      isStreamingRef.current = true;
       setDisplayedContent('');
       setCurrentIndex(0);
       setIsComplete(false);
-    } else {
-      console.log('StreamingMessage: Not streaming, showing full content immediately');
+      
+      // Start streaming immediately
+      startStreaming();
+    } else if (!isStreaming) {
+      console.log('StreamingMessage: Showing complete content immediately');
+      isStreamingRef.current = false;
       setDisplayedContent(message.content);
       setCurrentIndex(message.content.length);
       setIsComplete(true);
     }
 
-    // Clear any existing interval
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-  }, [message.id, isStreaming, message.content]);
-
-  // Handle streaming animation
-  useEffect(() => {
-    if (!isStreaming || isComplete) {
-      return;
-    }
-
-    if (currentIndex < message.content.length) {
-      intervalRef.current = setTimeout(() => {
-        const nextChar = message.content[currentIndex];
-        setDisplayedContent(prev => prev + nextChar);
-        setCurrentIndex(prev => prev + 1);
-      }, 30);
-    } else {
-      console.log('StreamingMessage: Streaming complete for message', message.id);
-      setIsComplete(true);
-    }
-
     return () => {
       if (intervalRef.current) {
-        clearTimeout(intervalRef.current);
+        clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
     };
-  }, [currentIndex, message.content, isStreaming, isComplete]);
+  }, [message.id, isStreaming]);
+
+  const startStreaming = () => {
+    if (!isStreamingRef.current || intervalRef.current) return;
+
+    const streamNextChar = () => {
+      setCurrentIndex(prevIndex => {
+        const newIndex = prevIndex + 1;
+        
+        if (newIndex <= message.content.length) {
+          setDisplayedContent(message.content.substring(0, newIndex));
+          
+          if (newIndex < message.content.length && isStreamingRef.current) {
+            intervalRef.current = setTimeout(streamNextChar, 30);
+          } else {
+            console.log('StreamingMessage: Streaming complete for', message.id);
+            setIsComplete(true);
+            isStreamingRef.current = false;
+            if (intervalRef.current) {
+              clearTimeout(intervalRef.current);
+              intervalRef.current = null;
+            }
+          }
+        }
+        
+        return newIndex;
+      });
+    };
+
+    streamNextChar();
+  };
 
   // Function to generate online links for citations
   const getCitationLink = (citation: string) => {

@@ -110,6 +110,9 @@ export const useChatMessages = (
     setInput('');
     setLoading(true);
 
+    // Clear any existing streaming state
+    setStreamingMessageId(undefined);
+
     // Save user message immediately to database
     try {
       await conversationDb.saveMessage(currentConvId, userMessage);
@@ -121,12 +124,25 @@ export const useChatMessages = (
       const data = await sendMessageToAPI(trimmedInput);
       const assistantMessage = createAssistantMessage(data.answer, data.citations);
 
-      console.log('Adding assistant message:', assistantMessage);
-      console.log('Setting streaming message ID:', assistantMessage.id);
+      console.log('API response received, creating assistant message:', assistantMessage.id);
       
-      // Set this message as streaming BEFORE adding it
-      setStreamingMessageId(assistantMessage.id);
+      // Add message first, then start streaming
       addMessage(assistantMessage);
+      
+      // Small delay to ensure message is rendered before starting streaming
+      setTimeout(() => {
+        console.log('Starting streaming for message:', assistantMessage.id);
+        setStreamingMessageId(assistantMessage.id);
+        
+        // Stop streaming after calculated duration
+        const streamingDuration = Math.max(2000, data.answer.length * 30);
+        console.log('Streaming will stop after:', streamingDuration + 'ms');
+        
+        setTimeout(() => {
+          console.log('Stopping streaming for message:', assistantMessage.id);
+          setStreamingMessageId(undefined);
+        }, streamingDuration);
+      }, 100);
 
       // Save assistant message to database
       try {
@@ -137,15 +153,6 @@ export const useChatMessages = (
 
       // Increment message count after successful API call
       await incrementMessageCount();
-
-      // Stop streaming after the message content length determines duration
-      const streamingDuration = Math.max(2000, data.answer.length * 30);
-      console.log('Streaming duration calculated:', streamingDuration);
-      
-      setTimeout(() => {
-        console.log('Stopping streaming for message:', assistantMessage.id);
-        setStreamingMessageId(undefined);
-      }, streamingDuration);
 
     } catch (error) {
       console.error('Error sending message:', error);
