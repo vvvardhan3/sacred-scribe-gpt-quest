@@ -31,7 +31,15 @@ const MessageList: React.FC<MessageListProps> = ({
   }, [messages]);
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto scrollbar-hide" style={{
+      scrollbarWidth: 'none',
+      msOverflowStyle: 'none'
+    }}>
+      <style jsx>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
       {messages.length === 0 ? (
         <WelcomeScreen onSuggestionClick={onSuggestionClick} />
       ) : (
