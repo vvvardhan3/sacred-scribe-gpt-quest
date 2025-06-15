@@ -10,10 +10,7 @@ import {
   LogOut, 
   ArrowRight
 } from 'lucide-react';
-import { useLazyLoading } from '@/hooks/useLazyLoading';
-import { useScrollObserver } from '@/hooks/useScrollObserver';
 import ScriptureCard from '@/components/ScriptureCard';
-import LoadingSkeleton from '@/components/LoadingSkeleton';
 import Navigation from '@/components/Navigation';
 
 const Dashboard = () => {
@@ -64,16 +61,6 @@ const Dashboard = () => {
     }
   ];
 
-  const { displayedItems, hasMore, isLoading, loadMore } = useLazyLoading({
-    items: categories,
-    itemsPerLoad: 2,
-    initialLoad: 4
-  });
-
-  const observerRef = useScrollObserver({
-    onIntersect: loadMore,
-  });
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50">
       {/* Header */}
@@ -105,7 +92,7 @@ const Dashboard = () => {
       </div>
 
       {/* Hero Section */}
-      <section className="max-w-6xl mx-auto px-6 py-12 text-center">
+      <section className="max-w-6xl mx-auto px-6 py-8 text-center">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
           Master Ancient 
           <span className="bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent"> Wisdom</span>
@@ -145,28 +132,10 @@ const Dashboard = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {displayedItems.map((category, index) => (
+          {categories.map((category, index) => (
             <ScriptureCard key={`${category.name}-${index}`} category={category} />
           ))}
-          
-          {isLoading && (
-            <>
-              <LoadingSkeleton />
-              <LoadingSkeleton />
-            </>
-          )}
         </div>
-        
-        {hasMore && (
-          <div ref={observerRef} className="h-10 flex items-center justify-center mt-8">
-            {isLoading && (
-              <div className="text-gray-500 text-sm flex items-center space-x-2">
-                <div className="w-4 h-4 border-2 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
-                <span>Loading more categories...</span>
-              </div>
-            )}
-          </div>
-        )}
       </section>
 
       {/* AI Chat CTA */}

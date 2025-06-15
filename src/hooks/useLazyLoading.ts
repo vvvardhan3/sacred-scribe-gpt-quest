@@ -11,11 +11,13 @@ export const useLazyLoading = ({ items, itemsPerLoad, initialLoad }: UseLazyLoad
   const [displayedItems, setDisplayedItems] = useState<any[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     // Initialize with first batch
     const initialItems = items.slice(0, initialLoad);
     setDisplayedItems(initialItems);
+    setCurrentIndex(initialLoad);
     setHasMore(items.length > initialLoad);
   }, [items, initialLoad]);
 
@@ -26,14 +28,15 @@ export const useLazyLoading = ({ items, itemsPerLoad, initialLoad }: UseLazyLoad
     
     // Simulate loading delay
     setTimeout(() => {
-      const currentLength = displayedItems.length;
-      const nextItems = items.slice(currentLength, currentLength + itemsPerLoad);
+      const nextItems = items.slice(currentIndex, currentIndex + itemsPerLoad);
       
       setDisplayedItems(prev => [...prev, ...nextItems]);
-      setHasMore(currentLength + nextItems.length < items.length);
+      const newIndex = currentIndex + nextItems.length;
+      setCurrentIndex(newIndex);
+      setHasMore(newIndex < items.length);
       setIsLoading(false);
     }, 500);
-  }, [items, displayedItems.length, itemsPerLoad, isLoading, hasMore]);
+  }, [items, currentIndex, itemsPerLoad, isLoading, hasMore]);
 
   return { displayedItems, hasMore, isLoading, loadMore };
 };
