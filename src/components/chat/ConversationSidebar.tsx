@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   Sidebar, 
   SidebarContent, 
@@ -28,8 +29,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Plus, Edit2, Trash2, MessageSquare, MoreHorizontal, Search, Library, Bot } from 'lucide-react';
+import { Plus, Edit2, Trash2, MessageSquare, MoreHorizontal, X, LogOut, Bot } from 'lucide-react';
 import { Conversation } from '@/hooks/useConversations';
+import { useAuth } from '@/contexts/AuthContext';
+import { useSidebar } from '@/components/ui/sidebar';
 
 interface ConversationSidebarProps {
   conversations: Conversation[];
@@ -52,6 +55,9 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
   const [editTitle, setEditTitle] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [openPopoverId, setOpenPopoverId] = useState<string | null>(null);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const { toggleSidebar } = useSidebar();
 
   const startEdit = (conv: Conversation) => {
     setEditingId(conv.id);
@@ -77,41 +83,59 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
     setOpenPopoverId(null);
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+    setUserMenuOpen(false);
+  };
+
+  const getUserInitials = () => {
+    if (!user?.email) return 'U';
+    return user.email.charAt(0).toUpperCase();
+  };
+
+  const getDisplayName = () => {
+    return user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'User';
+  };
+
   return (
     <>
-      <Sidebar className="border-r border-gray-200 bg-gray-50 w-64">
-        <SidebarHeader className="p-3 border-b border-gray-200">
-          <Button 
-            onClick={onCreateNew}
-            className="w-full justify-start text-left bg-white hover:bg-gray-100 text-gray-900 border border-gray-300 shadow-none h-10"
-            variant="outline"
-          >
-            <Plus className="h-4 w-4 mr-3" />
-            New chat
-          </Button>
+      <Sidebar className="border-r border-gray-200 bg-white w-80">
+        <SidebarHeader className="p-4 border-b border-gray-100">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+                <Bot className="w-5 h-5 text-white" />
+              </div>
+              <span className="font-semibold text-xl text-gray-900">HinduGPT</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleSidebar}
+              className="h-8 w-8 p-0 hover:bg-gray-100"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </SidebarHeader>
         
         <SidebarContent className="p-0">
-          <div className="p-3 space-y-1">
-            <SidebarMenuButton className="w-full justify-start h-10 px-3 text-gray-700 hover:bg-gray-200 rounded-lg">
-              <Search className="h-4 w-4 mr-3" />
-              Search chats
-            </SidebarMenuButton>
-            <SidebarMenuButton className="w-full justify-start h-10 px-3 text-gray-700 hover:bg-gray-200 rounded-lg">
-              <Library className="h-4 w-4 mr-3" />
-              Library
-            </SidebarMenuButton>
+          <div className="p-4">
+            <Button 
+              onClick={onCreateNew}
+              className="w-full justify-start text-left bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 shadow-none h-11 rounded-lg"
+              variant="outline"
+            >
+              <Plus className="h-4 w-4 mr-3" />
+              New chat
+            </Button>
           </div>
 
-          <div className="border-t border-gray-200 pt-3">
-            <div className="px-3 mb-2">
-              <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider">Chats</h3>
-            </div>
-            
-            <ScrollArea className="h-[calc(100vh-200px)]">
+          <div className="flex-1">
+            <ScrollArea className="h-[calc(100vh-240px)]">
               <SidebarGroup>
                 <SidebarGroupContent>
-                  <SidebarMenu className="px-3 space-y-1">
+                  <SidebarMenu className="px-4 space-y-1">
                     {conversations.length === 0 ? (
                       <div className="text-center py-8">
                         <MessageSquare className="h-8 w-8 text-gray-400 mx-auto mb-2" />
@@ -124,10 +148,10 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
                             <SidebarMenuButton
                               isActive={activeConversationId === conv.id}
                               onClick={() => onSelectConversation(conv.id)}
-                              className={`flex-1 justify-start h-10 px-3 rounded-lg text-sm font-medium transition-colors ${
+                              className={`flex-1 justify-start h-10 px-3 rounded-lg text-sm transition-colors ${
                                 activeConversationId === conv.id 
-                                  ? 'bg-gray-200 text-gray-900' 
-                                  : 'text-gray-700 hover:bg-gray-200'
+                                  ? 'bg-gray-100 text-gray-900' 
+                                  : 'text-gray-700 hover:bg-gray-50'
                               }`}
                             >
                               <div className="flex-1 min-w-0 text-left">
@@ -197,6 +221,60 @@ const ConversationSidebar: React.FC<ConversationSidebarProps> = ({
                 </SidebarGroupContent>
               </SidebarGroup>
             </ScrollArea>
+          </div>
+
+          {/* User Profile Section */}
+          <div className="border-t border-gray-100 p-4">
+            <Popover open={userMenuOpen} onOpenChange={setUserMenuOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start h-12 px-3 hover:bg-gray-50 rounded-lg"
+                >
+                  <Avatar className="h-8 w-8 mr-3">
+                    <AvatarFallback className="bg-gray-100 text-gray-700 text-sm font-medium">
+                      {getUserInitials()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 text-left min-w-0">
+                    <div className="text-sm font-medium text-gray-900 truncate">
+                      {getDisplayName()}
+                    </div>
+                    <div className="text-xs text-gray-500 truncate">
+                      {user?.email}
+                    </div>
+                  </div>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-2" align="start" side="top">
+                <div className="flex items-center space-x-3 p-2 mb-2">
+                  <Avatar className="h-10 w-10">
+                    <AvatarFallback className="bg-gray-100 text-gray-700 font-medium">
+                      {getUserInitials()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-gray-900 truncate">
+                      {getDisplayName()}
+                    </div>
+                    <div className="text-xs text-gray-500 truncate">
+                      {user?.email}
+                    </div>
+                  </div>
+                </div>
+                <div className="border-t border-gray-100 pt-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start h-9 px-2 text-gray-700 hover:bg-gray-50"
+                    onClick={handleSignOut}
+                  >
+                    <LogOut className="h-4 w-4 mr-3" />
+                    Sign out
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </SidebarContent>
       </Sidebar>

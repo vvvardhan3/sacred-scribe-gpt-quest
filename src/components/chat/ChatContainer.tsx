@@ -27,7 +27,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 }) => {
   return (
     <div className="flex flex-col h-full bg-white">
-      <div className="flex-1 min-h-0 flex flex-col max-w-3xl mx-auto w-full">
+      <div className="flex-1 min-h-0 flex flex-col max-w-4xl mx-auto w-full">
         <MessageList
           messages={messages}
           loading={loading}
@@ -37,7 +37,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         />
       </div>
 
-      <div className="max-w-3xl mx-auto w-full">
+      <div className="max-w-4xl mx-auto w-full">
         <ChatInput
           input={input}
           loading={loading}
