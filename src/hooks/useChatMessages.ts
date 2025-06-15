@@ -124,25 +124,11 @@ export const useChatMessages = (
       const data = await sendMessageToAPI(trimmedInput);
       const assistantMessage = createAssistantMessage(data.answer, data.citations);
 
-      console.log('API response received, creating assistant message:', assistantMessage.id);
+      console.log('API response received, adding assistant message with streaming:', assistantMessage.id);
       
-      // Add message first, then start streaming
+      // Add message and immediately start streaming
       addMessage(assistantMessage);
-      
-      // Small delay to ensure message is rendered before starting streaming
-      setTimeout(() => {
-        console.log('Starting streaming for message:', assistantMessage.id);
-        setStreamingMessageId(assistantMessage.id);
-        
-        // Stop streaming after calculated duration
-        const streamingDuration = Math.max(2000, data.answer.length * 30);
-        console.log('Streaming will stop after:', streamingDuration + 'ms');
-        
-        setTimeout(() => {
-          console.log('Stopping streaming for message:', assistantMessage.id);
-          setStreamingMessageId(undefined);
-        }, streamingDuration);
-      }, 100);
+      setStreamingMessageId(assistantMessage.id);
 
       // Save assistant message to database
       try {

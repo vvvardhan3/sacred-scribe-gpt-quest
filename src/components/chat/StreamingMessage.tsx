@@ -10,78 +10,68 @@ interface StreamingMessageProps {
 const StreamingMessage: React.FC<StreamingMessageProps> = ({ message, isStreaming = false }) => {
   const [displayedContent, setDisplayedContent] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isComplete, setIsComplete] = useState(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const isStreamingRef = useRef(false);
+  const [isComplete, setIsComplete] = useState(!isStreaming);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasStartedStreaming = useRef(false);
 
-  // Initialize content based on streaming state
+  // Initialize and handle streaming
   useEffect(() => {
-    console.log('StreamingMessage: Effect triggered', { 
+    console.log('StreamingMessage effect:', { 
       messageId: message.id, 
       isStreaming, 
       contentLength: message.content.length,
-      currentStreaming: isStreamingRef.current
+      hasStarted: hasStartedStreaming.current
     });
 
-    // Clear any existing intervals first
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
 
-    if (isStreaming && !isStreamingRef.current) {
-      console.log('StreamingMessage: Starting new streaming session for', message.id);
-      isStreamingRef.current = true;
+    if (isStreaming && !hasStartedStreaming.current) {
+      console.log('Starting streaming for message:', message.id);
+      hasStartedStreaming.current = true;
       setDisplayedContent('');
       setCurrentIndex(0);
       setIsComplete(false);
       
-      // Start streaming immediately
-      startStreaming();
+      // Start streaming with initial delay
+      streamCharacters();
     } else if (!isStreaming) {
-      console.log('StreamingMessage: Showing complete content immediately');
-      isStreamingRef.current = false;
+      console.log('Showing complete content for message:', message.id);
+      hasStartedStreaming.current = false;
       setDisplayedContent(message.content);
       setCurrentIndex(message.content.length);
       setIsComplete(true);
     }
 
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
       }
     };
-  }, [message.id, isStreaming]);
+  }, [isStreaming, message.id]);
 
-  const startStreaming = () => {
-    if (!isStreamingRef.current || intervalRef.current) return;
-
-    const streamNextChar = () => {
-      setCurrentIndex(prevIndex => {
-        const newIndex = prevIndex + 1;
+  const streamCharacters = () => {
+    let index = 0;
+    
+    const streamNext = () => {
+      if (index < message.content.length) {
+        setDisplayedContent(message.content.substring(0, index + 1));
+        setCurrentIndex(index + 1);
+        index++;
         
-        if (newIndex <= message.content.length) {
-          setDisplayedContent(message.content.substring(0, newIndex));
-          
-          if (newIndex < message.content.length && isStreamingRef.current) {
-            intervalRef.current = setTimeout(streamNextChar, 30);
-          } else {
-            console.log('StreamingMessage: Streaming complete for', message.id);
-            setIsComplete(true);
-            isStreamingRef.current = false;
-            if (intervalRef.current) {
-              clearTimeout(intervalRef.current);
-              intervalRef.current = null;
-            }
-          }
-        }
-        
-        return newIndex;
-      });
+        timeoutRef.current = setTimeout(streamNext, 30);
+      } else {
+        console.log('Streaming complete for message:', message.id);
+        setIsComplete(true);
+        hasStartedStreaming.current = false;
+      }
     };
 
-    streamNextChar();
+    streamNext();
   };
 
   // Function to generate online links for citations
