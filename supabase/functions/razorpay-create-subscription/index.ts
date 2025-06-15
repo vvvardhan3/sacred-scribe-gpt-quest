@@ -28,7 +28,16 @@ serve(async (req) => {
       console.log('Request body received:', requestBody)
     } catch (error) {
       console.error('Failed to parse request body:', error)
-      throw new Error('Invalid request body')
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid request body - must be valid JSON',
+          details: error.message 
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400 
+        }
+      )
     }
 
     const { planId, userId } = requestBody
@@ -36,7 +45,16 @@ serve(async (req) => {
 
     if (!planId || !userId) {
       console.error('Missing required parameters:', { planId, userId })
-      throw new Error('Missing required parameters: planId and userId')
+      return new Response(
+        JSON.stringify({ 
+          error: 'Missing required parameters: planId and userId are required',
+          received: { planId, userId }
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400 
+        }
+      )
     }
 
     // Get user data
@@ -44,7 +62,17 @@ serve(async (req) => {
     console.log('Auth header present:', !!authHeader)
     
     if (!authHeader) {
-      throw new Error('No authorization header provided')
+      console.error('No authorization header provided')
+      return new Response(
+        JSON.stringify({ 
+          error: 'No authorization header provided',
+          details: 'Authorization header is required'
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401 
+        }
+      )
     }
 
     const token = authHeader.replace('Bearer ', '')
@@ -54,12 +82,30 @@ serve(async (req) => {
 
     if (authError) {
       console.error('Auth error:', authError)
-      throw new Error(`Authentication failed: ${authError.message}`)
+      return new Response(
+        JSON.stringify({ 
+          error: `Authentication failed: ${authError.message}`,
+          details: 'Invalid or expired authentication token'
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401 
+        }
+      )
     }
 
     if (!user) {
-      console.error('No user found')
-      throw new Error('User not authenticated')
+      console.error('No user found after auth')
+      return new Response(
+        JSON.stringify({ 
+          error: 'User not authenticated',
+          details: 'No user found with the provided token'
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401 
+        }
+      )
     }
 
     console.log('User authenticated successfully:', user.id)
@@ -69,7 +115,16 @@ serve(async (req) => {
     
     if (!razorpayKeySecret) {
       console.error('Razorpay key secret not found in environment')
-      throw new Error('Razorpay configuration missing')
+      return new Response(
+        JSON.stringify({ 
+          error: 'Razorpay configuration missing',
+          details: 'RAZORPAY_KEY_SECRET environment variable not set'
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500 
+        }
+      )
     }
 
     console.log('Razorpay credentials configured')
@@ -92,7 +147,16 @@ serve(async (req) => {
     const selectedPlan = plans[planId as keyof typeof plans]
     if (!selectedPlan) {
       console.error('Invalid plan selected:', planId)
-      throw new Error('Invalid plan selected')
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid plan selected',
+          details: `Plan '${planId}' not found. Available plans: ${Object.keys(plans).join(', ')}`
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400 
+        }
+      )
     }
 
     console.log('Selected plan:', selectedPlan)
@@ -105,7 +169,7 @@ serve(async (req) => {
       receipt: `receipt_${Date.now()}`,
       notes: {
         user_id: user.id,
-        user_email: user.email,
+        user_email: user.email || '',
         plan_type: planId,
         plan_name: selectedPlan.name
       }
@@ -127,7 +191,17 @@ serve(async (req) => {
     if (!orderResponse.ok) {
       const errorData = await orderResponse.text()
       console.error('Razorpay order creation failed:', errorData)
-      throw new Error(`Failed to create order with Razorpay: ${errorData}`)
+      return new Response(
+        JSON.stringify({ 
+          error: `Failed to create order with Razorpay`,
+          details: errorData,
+          status: orderResponse.status
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400 
+        }
+      )
     }
 
     const order = await orderResponse.json()
@@ -152,7 +226,16 @@ serve(async (req) => {
 
     if (insertError) {
       console.error('Database insert error:', insertError)
-      throw new Error(`Failed to store subscription data: ${insertError.message}`)
+      return new Response(
+        JSON.stringify({ 
+          error: `Failed to store subscription data: ${insertError.message}`,
+          details: insertError
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500 
+        }
+      )
     }
 
     console.log('Subscription stored in database successfully')
@@ -181,12 +264,13 @@ serve(async (req) => {
     
     return new Response(
       JSON.stringify({ 
-        error: error.message,
-        details: 'Check edge function logs for more details'
+        error: error.message || 'Internal server error',
+        details: 'Check edge function logs for more details',
+        stack: error.stack
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400 
+        status: 500 
       }
     )
   }

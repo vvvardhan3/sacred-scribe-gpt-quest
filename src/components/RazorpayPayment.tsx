@@ -123,9 +123,25 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
 
     } catch (error) {
       console.error('Payment initiation failed:', error);
+      
+      let errorMessage = "Failed to initiate payment. Please try again.";
+      
+      if (error instanceof Error) {
+        // Extract more specific error messages
+        if (error.message.includes('authentication') || error.message.includes('auth')) {
+          errorMessage = "Authentication failed. Please log in again.";
+        } else if (error.message.includes('Razorpay')) {
+          errorMessage = "Payment gateway error. Please try again later.";
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = "Network error. Please check your connection and try again.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to initiate payment. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
       setIsLoading(false);

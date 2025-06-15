@@ -62,11 +62,18 @@ export const useSubscription = () => {
 
     try {
       console.log('Creating subscription for plan:', planId);
+      console.log('User ID:', user.id);
       
+      const session = await supabase.auth.getSession();
+      if (!session.data.session?.access_token) {
+        throw new Error('No valid session found. Please log in again.');
+      }
+
       const { data, error } = await supabase.functions.invoke('razorpay-create-subscription', {
         body: { planId, userId: user.id },
         headers: {
-          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          Authorization: `Bearer ${session.data.session.access_token}`,
+          'Content-Type': 'application/json',
         },
       });
 
@@ -74,7 +81,13 @@ export const useSubscription = () => {
 
       if (error) {
         console.error('Subscription creation error:', error);
-        throw new Error(error.message || 'Failed to create subscription');
+        // Try to extract more specific error message
+        const errorMessage = error.message || 'Failed to create subscription';
+        throw new Error(errorMessage);
+      }
+      
+      if (!data) {
+        throw new Error('No data returned from subscription creation');
       }
       
       return data;
