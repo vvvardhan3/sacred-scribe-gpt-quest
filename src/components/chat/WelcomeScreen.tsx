@@ -1,7 +1,6 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Bot, Sparkles, MessageCircle, BookOpen } from 'lucide-react';
+import { BookOpen, Sparkles, MessageCircle } from 'lucide-react';
 
 interface WelcomeScreenProps {
   onSuggestionClick: (suggestion: string) => void;
@@ -35,16 +34,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSuggestionClick }) => {
     <div className="flex flex-col items-center justify-center h-full min-h-[70vh] text-center px-8 py-12">
       {/* Header Section */}
       <div className="mb-12">
-        <div className="relative mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center mx-auto shadow-lg">
-            <Bot className="w-8 h-8 text-white" />
-          </div>
-          <div className="absolute -top-1 -right-1 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center">
-            <Sparkles className="w-3 h-3 text-white" />
-          </div>
-        </div>
-        
-        <h1 className="text-4xl font-bold text-gray-900 mb-3 tracking-tight">
+        <h1 className="text-4xl font-bold text-gray-900 mb-4 tracking-tight">
           What can I help with?
         </h1>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -53,7 +43,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSuggestionClick }) => {
       </div>
 
       {/* Suggestions Grid */}
-      <div className="w-full max-w-4xl mb-8">
+      <div className="w-full max-w-4xl">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {suggestions.map((suggestion, index) => {
             const IconComponent = suggestion.icon;
@@ -79,27 +69,6 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSuggestionClick }) => {
               </div>
             );
           })}
-        </div>
-      </div>
-
-      {/* Footer Info */}
-      <div className="text-center">
-        <p className="text-sm text-gray-500 mb-4">
-          Get started by selecting a question above or ask your own
-        </p>
-        <div className="flex items-center justify-center space-x-6 text-xs text-gray-400">
-          <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-            <span>AI-Powered</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-            <span>Authentic Sources</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-            <span>Instant Answers</span>
-          </div>
         </div>
       </div>
     </div>
