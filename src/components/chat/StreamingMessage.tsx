@@ -63,14 +63,7 @@ const StreamingMessage: React.FC<StreamingMessageProps> = ({ message, isStreamin
         setDisplayedContent(nextContent);
         indexRef.current = currentIndex + 1;
 
-        // Scroll into view as content updates
-        if (componentRef.current) {
-          componentRef.current.scrollIntoView({ 
-            behavior: "auto", 
-            block: "end",
-            inline: "nearest" 
-          });
-        }
+        // Removed individual scrolling - let MessageList handle it
       } else {
         // Streaming complete
         console.log('Streaming animation complete for message:', message.id);
