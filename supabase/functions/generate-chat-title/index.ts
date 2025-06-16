@@ -17,8 +17,6 @@ serve(async (req) => {
 
   try {
     const { message } = await req.json();
-    
-    console.log('Generating title for message:', message);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -42,8 +40,6 @@ serve(async (req) => {
 
     const data = await response.json();
     const title = data.choices[0].message.content.trim();
-
-    console.log('Generated title:', title);
 
     return new Response(JSON.stringify({ title }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

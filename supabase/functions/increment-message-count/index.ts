@@ -14,8 +14,6 @@ serve(async (req) => {
   }
 
   try {
-    console.log('=== Increment Message Count Function Started ===')
-    
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -34,8 +32,6 @@ serve(async (req) => {
       throw new Error('User not authenticated')
     }
 
-    console.log('Incrementing message count for user:', user.id)
-
     // Reset daily messages if needed first
     await supabase.rpc('reset_daily_messages_if_needed', { p_user_id: user.id })
 
@@ -53,8 +49,6 @@ serve(async (req) => {
 
     // If upsert doesn't work as expected, try direct increment
     if (updateError) {
-      console.log('Upsert failed, trying direct increment:', updateError)
-      
       const { error: incrementError } = await supabase
         .from('user_usage')
         .update({
@@ -68,8 +62,6 @@ serve(async (req) => {
         throw new Error('Failed to increment message count')
       }
     }
-
-    console.log('Message count incremented successfully')
 
     return new Response(
       JSON.stringify({ success: true }),

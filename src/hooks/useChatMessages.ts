@@ -43,18 +43,15 @@ export const useChatMessages = (
 
     const timeoutId = setTimeout(async () => {
       try {
-        console.log('Auto-saving messages to database');
         await conversationDb.saveMessages(activeConversationId, messages);
 
         // Generate title for first message if needed
         if (messages.length >= 2 && !titleGenerated) {
           const currentConv = getActiveConversation();
           if (currentConv?.title === 'New Conversation') {
-            console.log('Generating title for first message');
             setTitleGenerated(true);
             try {
               const generatedTitle = await generateTitle(messages[0].content);
-              console.log('Generated title:', generatedTitle);
               await conversationDb.updateConversation(activeConversationId, { title: generatedTitle });
               updateConversation(activeConversationId, { title: generatedTitle });
             } catch (error) {
@@ -85,12 +82,9 @@ export const useChatMessages = (
       return;
     }
 
-    console.log('Sending message:', trimmedInput);
-
     // Create new conversation if none is active
     let currentConvId = activeConversationId;
     if (!currentConvId) {
-      console.log('Creating new conversation');
       currentConvId = await createNewConversation();
       if (!currentConvId) {
         toast({
@@ -103,7 +97,6 @@ export const useChatMessages = (
     }
 
     const userMessage = createUserMessage(trimmedInput);
-    console.log('Adding user message:', userMessage);
     
     // Add user message immediately
     addMessage(userMessage);
@@ -123,8 +116,6 @@ export const useChatMessages = (
     try {
       const data = await sendMessageToAPI(trimmedInput);
       const assistantMessage = createAssistantMessage(data.answer, data.citations);
-
-      console.log('API response received, adding assistant message:', assistantMessage.id);
       
       // Stop loading and start streaming
       setLoading(false);
@@ -166,12 +157,10 @@ export const useChatMessages = (
   };
 
   const handleSuggestionClick = (suggestion: string) => {
-    console.log('Setting input from suggestion:', suggestion);
     setInput(suggestion);
   };
 
   const resetChat = () => {
-    console.log('Resetting chat');
     resetMessages();
     setInput('');
     setExpandedCitations({});

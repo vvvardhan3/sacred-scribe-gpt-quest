@@ -14,10 +14,6 @@ serve(async (req) => {
   }
 
   try {
-    console.log('=== Razorpay Create Subscription Function Started ===')
-    console.log('Request method:', req.method)
-    console.log('Request headers:', Object.fromEntries(req.headers.entries()))
-    
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -27,9 +23,7 @@ serve(async (req) => {
     let requestBody
     try {
       const bodyText = await req.text()
-      console.log('Raw request body:', bodyText)
       requestBody = JSON.parse(bodyText)
-      console.log('Parsed request body:', requestBody)
     } catch (error) {
       console.error('Failed to parse request body:', error)
       return new Response(
@@ -45,7 +39,6 @@ serve(async (req) => {
     }
 
     const { planId, userId } = requestBody
-    console.log('Creating subscription for user:', userId, 'plan:', planId)
 
     if (!planId || !userId) {
       console.error('Missing required parameters:', { planId, userId })
@@ -63,7 +56,6 @@ serve(async (req) => {
 
     // Get user data
     const authHeader = req.headers.get('Authorization')
-    console.log('Auth header present:', !!authHeader)
     
     if (!authHeader) {
       console.error('No authorization header provided')
@@ -80,7 +72,6 @@ serve(async (req) => {
     }
 
     const token = authHeader.replace('Bearer ', '')
-    console.log('Token extracted, length:', token.length)
 
     let user
     try {
@@ -115,7 +106,6 @@ serve(async (req) => {
       }
 
       user = authUser
-      console.log('User authenticated successfully:', user.id)
     } catch (error) {
       console.error('Authentication exception:', error)
       return new Response(
@@ -147,7 +137,6 @@ serve(async (req) => {
       )
     }
 
-    console.log('Razorpay credentials configured')
     const authBasic = btoa(`${razorpayKeyId}:${razorpayKeySecret}`)
 
     // Plan configurations with amounts for order creation
@@ -179,10 +168,7 @@ serve(async (req) => {
       )
     }
 
-    console.log('Selected plan:', selectedPlan)
-
     // Create a simple order instead of subscription for now
-    console.log('Creating order with Razorpay...')
     const orderPayload = {
       amount: selectedPlan.amount,
       currency: selectedPlan.currency,
@@ -195,8 +181,6 @@ serve(async (req) => {
       }
     }
 
-    console.log('Order payload:', JSON.stringify(orderPayload, null, 2))
-
     let orderResponse
     try {
       orderResponse = await fetch('https://api.razorpay.com/v1/orders', {
@@ -208,8 +192,6 @@ serve(async (req) => {
         body: JSON.stringify(orderPayload)
       })
 
-      console.log('Razorpay order response status:', orderResponse.status)
-      console.log('Razorpay order response headers:', Object.fromEntries(orderResponse.headers.entries()))
     } catch (error) {
       console.error('Network error calling Razorpay:', error)
       return new Response(
@@ -247,8 +229,6 @@ serve(async (req) => {
     let order
     try {
       order = await orderResponse.json()
-      console.log('Razorpay order created successfully:', order.id)
-      console.log('Order details:', JSON.stringify(order, null, 2))
     } catch (error) {
       console.error('Failed to parse Razorpay response:', error)
       return new Response(
@@ -274,8 +254,6 @@ serve(async (req) => {
       updated_at: new Date().toISOString()
     }
 
-    console.log('Storing subscription in database:', dbPayload)
-
     try {
       const { error: insertError } = await supabase
         .from('subscribers')
@@ -295,7 +273,6 @@ serve(async (req) => {
         )
       }
 
-      console.log('Subscription stored in database successfully')
     } catch (error) {
       console.error('Database operation failed:', error)
       return new Response(
@@ -317,8 +294,6 @@ serve(async (req) => {
       currency: selectedPlan.currency
     }
 
-    console.log('Returning success response:', responseData)
-
     return new Response(
       JSON.stringify(responseData),
       { 
@@ -328,10 +303,7 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('=== Unexpected Error in razorpay-create-subscription ===')
-    console.error('Error message:', error.message)
-    console.error('Error stack:', error.stack)
-    console.error('Error name:', error.name)
+    console.error('Unexpected Error in razorpay-create-subscription:', error.message)
     
     return new Response(
       JSON.stringify({ 

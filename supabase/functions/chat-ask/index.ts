@@ -359,8 +359,6 @@ serve(async (req) => {
       ],
     };
 
-    console.log('Sending request to OpenAI with max_tokens:', maxTokens);
-
     const openaiRes = await fetch(
       "https://api.openai.com/v1/chat/completions",
       {
@@ -380,7 +378,6 @@ serve(async (req) => {
     }
 
     const data = await openaiRes.json();
-    console.log('OpenAI response received, content length:', data.choices[0].message.content.length);
     
     const content = data.choices[0].message.content;
     

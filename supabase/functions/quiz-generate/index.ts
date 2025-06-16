@@ -38,8 +38,6 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    console.log(`Starting quiz generation for category: ${category}`);
-
     // Create Supabase client with service role key for database operations
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -54,7 +52,6 @@ serve(async (req) => {
 
     // Extract the JWT token
     const token = authHeader.replace('Bearer ', '');
-    console.log('Authorization token received, verifying user...');
 
     // Verify JWT token using service role client
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
@@ -62,8 +59,6 @@ serve(async (req) => {
       console.error('Error getting user:', userError);
       throw new Error('User authentication failed');
     }
-
-    console.log(`User authenticated: ${user.id}`);
 
     // Get user's subscription details to check limits
     const { data: subscriptionData, error: subError } = await supabase
@@ -80,8 +75,6 @@ serve(async (req) => {
     const subscriptionTier = subscriptionData?.subscribed 
       ? subscriptionData.subscription_tier 
       : 'free';
-    
-    console.log('User subscription tier:', subscriptionTier);
 
     // Get subscription limits for this tier
     const userLimits = SUBSCRIPTION_LIMITS[subscriptionTier as keyof typeof SUBSCRIPTION_LIMITS] || SUBSCRIPTION_LIMITS.free;
@@ -118,8 +111,6 @@ serve(async (req) => {
     }
 
     const quizNumber = (existingQuizzes?.length || 0) + 1;
-    console.log(`This will be quiz #${quizNumber} for category ${category} for user ${user.id}`);
-    console.log(`Existing quizzes:`, existingQuizzes?.map(q => q.title));
 
     // Create a simple, focused prompt for OpenAI
     const prompt = `Create 10 multiple-choice questions about ${category} from Hindu scriptures. This is quiz number ${quizNumber}, so make questions different from previous quizzes.
@@ -141,8 +132,6 @@ Return only valid JSON in this exact format:
     }
   ]
 }`;
-
-    console.log('Making request to OpenAI...');
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -171,10 +160,8 @@ Return only valid JSON in this exact format:
     }
 
     const data = await response.json();
-    console.log('OpenAI response received');
     
     let content = data.choices[0].message.content;
-    console.log('Raw OpenAI response:', content.substring(0, 200) + '...');
     
     // Clean up the response more aggressively
     content = content.trim();
@@ -192,12 +179,10 @@ Return only valid JSON in this exact format:
     }
     
     content = content.substring(jsonStart, jsonEnd + 1);
-    console.log('Cleaned JSON:', content.substring(0, 200) + '...');
     
     let questionsData;
     try {
       questionsData = JSON.parse(content);
-      console.log('Successfully parsed JSON response');
     } catch (e) {
       console.error('Failed to parse cleaned JSON:', content);
       console.error('Parse error:', e.message);
@@ -215,8 +200,6 @@ Return only valid JSON in this exact format:
       throw new Error('No questions generated');
     }
 
-    console.log(`Generated ${questionsData.questions.length} questions`);
-
     // Validate each question
     for (let i = 0; i < questionsData.questions.length; i++) {
       const q = questionsData.questions[i];
@@ -233,7 +216,6 @@ Return only valid JSON in this exact format:
 
     // Create quiz in database with user_id
     const quizTitle = `${category} Quiz #${quizNumber}`;
-    console.log('Creating quiz in database:', quizTitle);
     
     const { data: quiz, error: quizError } = await supabase
       .from('quizzes')
@@ -251,8 +233,6 @@ Return only valid JSON in this exact format:
       throw new Error(`Failed to create quiz: ${quizError.message}`);
     }
 
-    console.log('Quiz created successfully:', quiz.id);
-
     // Insert questions
     const questionsToInsert = questionsData.questions.map((q: any, index: number) => ({
       quiz_id: quiz.id,
@@ -262,7 +242,6 @@ Return only valid JSON in this exact format:
       explanation: q.explanation
     }));
 
-    console.log('Inserting questions...');
     const { error: questionsError } = await supabase
       .from('questions')
       .insert(questionsToInsert);
@@ -282,8 +261,6 @@ Return only valid JSON in this exact format:
         quizzes_created_total: currentQuizCount + 1,
         updated_at: new Date().toISOString()
       }, { onConflict: 'user_id' });
-
-    console.log(`Successfully created ${questionsToInsert.length} questions and incremented quiz count`);
 
     return new Response(
       JSON.stringify({ 

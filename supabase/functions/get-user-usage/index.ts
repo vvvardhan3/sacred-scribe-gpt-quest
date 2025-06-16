@@ -14,8 +14,6 @@ serve(async (req) => {
   }
 
   try {
-    console.log('=== Get User Usage Function Started ===')
-    
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -34,8 +32,6 @@ serve(async (req) => {
       throw new Error('User not authenticated')
     }
 
-    console.log('User authenticated:', user.id)
-
     // Reset daily messages if needed
     await supabase.rpc('reset_daily_messages_if_needed', { p_user_id: user.id })
 
@@ -48,8 +44,6 @@ serve(async (req) => {
       console.error('Error getting usage data:', usageError)
       throw new Error('Failed to get usage data')
     }
-
-    console.log('Usage data retrieved:', usageData)
 
     // Return the first record from the function result
     const usage = usageData && usageData.length > 0 ? usageData[0] : {

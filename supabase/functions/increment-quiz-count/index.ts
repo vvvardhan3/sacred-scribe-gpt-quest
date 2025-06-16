@@ -14,8 +14,6 @@ serve(async (req) => {
   }
 
   try {
-    console.log('=== Increment Quiz Count Function Started ===')
-    
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -34,8 +32,6 @@ serve(async (req) => {
       throw new Error('User not authenticated')
     }
 
-    console.log('Incrementing quiz count for user:', user.id)
-
     // Increment quiz count
     const { error: incrementError } = await supabase
       .from('user_usage')
@@ -50,8 +46,6 @@ serve(async (req) => {
 
     // If upsert doesn't work as expected, try direct increment
     if (incrementError) {
-      console.log('Upsert failed, trying direct increment:', incrementError)
-      
       const { error: updateError } = await supabase
         .from('user_usage')
         .update({
@@ -65,8 +59,6 @@ serve(async (req) => {
         throw new Error('Failed to increment quiz count')
       }
     }
-
-    console.log('Quiz count incremented successfully')
 
     return new Response(
       JSON.stringify({ success: true }),
