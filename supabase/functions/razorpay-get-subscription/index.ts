@@ -36,7 +36,6 @@ serve(async (req) => {
       .maybeSingle()
 
     if (dbError) {
-      console.error('Database error:', dbError)
       throw new Error('Failed to fetch subscription data')
     }
 
@@ -56,7 +55,6 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Error getting subscription:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 

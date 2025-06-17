@@ -17,7 +17,7 @@ export interface SubscriptionLimits {
   subscriptionTier: string;
 }
 
-// Define subscription limits based on tier
+// Define subscription limits based on plan_id from database
 const SUBSCRIPTION_LIMITS = {
   free: {
     maxDailyMessages: 10,
@@ -25,17 +25,17 @@ const SUBSCRIPTION_LIMITS = {
     allowedCategories: ['Vedas', 'Puranas', 'Upanishads'],
     subscriptionTier: 'Free Trial'
   },
-  'Devotee Plan': {
+  devotee: {
     maxDailyMessages: 200,
     maxQuizzes: 5,
     allowedCategories: ['Vedas', 'Puranas', 'Upanishads', 'Mahabharata', 'Bhagavad Gita', 'Ramayana'],
-    subscriptionTier: 'Devotee'
+    subscriptionTier: 'Devotee Plan'
   },
-  'Guru Plan': {
+  guru: {
     maxDailyMessages: Infinity,
     maxQuizzes: Infinity,
     allowedCategories: ['Vedas', 'Puranas', 'Upanishads', 'Mahabharata', 'Bhagavad Gita', 'Ramayana'],
-    subscriptionTier: 'Guru'
+    subscriptionTier: 'Guru Plan'
   }
 };
 
@@ -45,10 +45,16 @@ export const useUserLimits = () => {
   const { user } = useAuth();
   const { subscription } = useSubscription();
 
-  // Get current subscription limits based on user's subscription tier
+  // Get current subscription limits based on user's plan_id from database
   const getCurrentLimits = (): SubscriptionLimits => {
-    const tier = subscription?.subscribed ? subscription.subscription_tier : 'free';
-    return SUBSCRIPTION_LIMITS[tier as keyof typeof SUBSCRIPTION_LIMITS] || SUBSCRIPTION_LIMITS.free;
+    // Check if user has active subscription and plan_id
+    if (subscription?.subscribed && subscription?.plan_id) {
+      const planKey = subscription.plan_id as keyof typeof SUBSCRIPTION_LIMITS;
+      return SUBSCRIPTION_LIMITS[planKey] || SUBSCRIPTION_LIMITS.free;
+    }
+    
+    // Default to free plan
+    return SUBSCRIPTION_LIMITS.free;
   };
 
   // Fetch user usage from database
@@ -67,13 +73,11 @@ export const useUserLimits = () => {
       });
 
       if (error) {
-        console.error('Error fetching usage:', error);
         setUsage(null);
       } else {
         setUsage(data);
       }
     } catch (error) {
-      console.error('Error fetching usage:', error);
       setUsage(null);
     } finally {
       setLoading(false);
@@ -114,7 +118,7 @@ export const useUserLimits = () => {
       // Refresh usage after incrementing
       fetchUsage();
     } catch (error) {
-      console.error('Error incrementing message count:', error);
+      // Handle error silently
     }
   };
 
@@ -132,7 +136,7 @@ export const useUserLimits = () => {
       // Refresh usage after incrementing
       fetchUsage();
     } catch (error) {
-      console.error('Error incrementing quiz count:', error);
+      // Handle error silently
     }
   };
 

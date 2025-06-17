@@ -30,7 +30,6 @@ export const useSubscription = () => {
       });
 
       if (error) {
-        // console.error('Error fetching subscription:', error);
         setSubscription({
           subscribed: false,
           subscription_tier: null,
@@ -41,7 +40,6 @@ export const useSubscription = () => {
         setSubscription(data);
       }
     } catch (error) {
-      // console.error('Error fetching subscription:', error);
       setSubscription({
         subscribed: false,
         subscription_tier: null,
@@ -53,17 +51,10 @@ export const useSubscription = () => {
     }
   };
 
-  useEffect(() => {
-    fetchSubscription();
-  }, [user]);
-
   const createSubscription = async (planId: string) => {
     if (!user) throw new Error('User not authenticated');
 
     try {
-      // console.log('Creating subscription for plan:', planId);
-      // console.log('User ID:', user.id);
-      
       const session = await supabase.auth.getSession();
       if (!session.data.session?.access_token) {
         throw new Error('No valid session found. Please log in again.');
@@ -76,11 +67,7 @@ export const useSubscription = () => {
         },
       });
 
-      // console.log('Subscription creation response:', { data, error });
-
       if (error) {
-        // console.error('Subscription creation error:', error);
-        // Try to extract more specific error message
         const errorMessage = error.message || 'Failed to create subscription';
         throw new Error(errorMessage);
       }
@@ -91,7 +78,6 @@ export const useSubscription = () => {
       
       return data;
     } catch (error) {
-      // console.error('Error in createSubscription:', error);
       throw error;
     }
   };
@@ -112,10 +98,13 @@ export const useSubscription = () => {
       
       return data;
     } catch (error) {
-      // console.error('Error in verifyPayment:', error);
       throw error;
     }
   };
+
+  useEffect(() => {
+    fetchSubscription();
+  }, [user]);
 
   return {
     subscription,

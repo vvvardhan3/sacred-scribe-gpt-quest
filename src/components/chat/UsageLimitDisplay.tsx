@@ -30,33 +30,33 @@ export const UsageLimitDisplay = () => {
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Crown className="w-4 h-4 text-orange-500" />
-            <span className="font-semibold text-sm">{limits.subscriptionTier} Plan</span>
+            <span className="font-semibold text-sm">{limits.subscriptionTier}</span>
           </div>
-          {(limits.subscriptionTier === 'Free Trial' || limits.subscriptionTier === 'Devotee') && (
+          {(limits.subscriptionTier === 'Free Trial' || limits.subscriptionTier === 'Devotee Plan') && (
             <div className="flex gap-2">
               {limits.subscriptionTier === 'Free Trial' && (
                 <>
                   <RazorpayPayment 
                     planId="devotee"
                     planName="Devotee Plan"
-                    price={999}
+                    price={499}
                     buttonText="Upgrade"
                     className="text-xs px-2 py-1 h-auto"
                   />
                   <RazorpayPayment 
                     planId="guru"
                     planName="Guru Plan"
-                    price={2999}
+                    price={999}
                     buttonText="Go Pro"
                     className="text-xs px-2 py-1 h-auto"
                   />
                 </>
               )}
-              {limits.subscriptionTier === 'Devotee' && (
+              {limits.subscriptionTier === 'Devotee Plan' && (
                 <RazorpayPayment 
                   planId="guru"
                   planName="Guru Plan"
-                  price={2999}
+                  price={999}
                   buttonText="Go Pro"
                   className="text-xs px-2 py-1 h-auto"
                 />
