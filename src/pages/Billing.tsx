@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
@@ -25,16 +24,14 @@ const Billing = () => {
     {
       id: 'devotee',
       name: 'Devotee Plan',
-      price: 999,
-      originalPrice: 1499,
+      price: 499,
+      originalPrice: 999,
       period: 'month',
       description: 'Comprehensive access for dedicated learners of Hindu philosophy',
       features: [
         '200 AI chat messages daily',
         'Create up to 5 quizzes',
-        'Complete scripture library access',
-        'Advanced AI explanations',
-        'Personalized study plans'
+        'Complete scripture library access'
       ],
       limitations: [],
       popular: true,
@@ -43,16 +40,14 @@ const Billing = () => {
     {
       id: 'guru',
       name: 'Guru Plan',
-      price: 2999,
-      originalPrice: 3999,
+      price: 999,
+      originalPrice: 1999,
       period: 'month',
       description: 'Ultimate package for the teachers, scholars & spiritual guides',
       features: [
         'Unlimited AI conversations',
         'Unlimited quiz creation',
-        'Complete scripture collection',
-        'Advanced AI philosophical insights',
-        'White-glove support & API access'
+        'Complete scripture collection'
       ],
       limitations: [],
       popular: false,
@@ -80,7 +75,6 @@ const Billing = () => {
 
   const handlePaymentSuccess = () => {
     // Refresh subscription and payment data after successful payment
-    // console.log('Payment successful, refreshing data...');
     refetch();
   };
 

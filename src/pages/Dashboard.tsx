@@ -141,15 +141,15 @@ const Dashboard = () => {
                     <RazorpayPayment 
                       planId="devotee"
                       planName="Devotee Plan"
-                      price={999}
-                      buttonText="Upgrade to Devotee - ₹999/month"
+                      price={499}
+                      buttonText="Upgrade to Devotee - ₹499/month"
                       className="px-8 py-3 text-lg bg-orange-500 hover:bg-orange-600"
                     />
                     <RazorpayPayment 
                       planId="guru"
                       planName="Guru Plan"
-                      price={2999}
-                      buttonText="Go Pro with Guru - ₹2999/month"
+                      price={999}
+                      buttonText="Go Pro with Guru - ₹999/month"
                       className="px-8 py-3 text-lg bg-purple-500 hover:bg-purple-600"
                     />
                   </div>

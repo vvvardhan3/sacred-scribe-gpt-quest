@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -143,12 +142,12 @@ serve(async (req) => {
     const plans = {
       'devotee': {
         name: 'Devotee Plan',
-        amount: 99900, // ₹999 in paise
+        amount: 49900, // ₹499 in paise
         currency: 'INR'
       },
       'guru': {
         name: 'Guru Plan', 
-        amount: 299900, // ₹2999 in paise
+        amount: 99900, // ₹999 in paise
         currency: 'INR'
       }
     }

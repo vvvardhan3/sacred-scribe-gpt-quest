@@ -22,9 +22,7 @@ export const createPricingPlans = (subscription: any): PricingPlan[] => [
     features: [
       "10 AI chat messages daily",
       "Create 1 quiz total",
-      "Access to Vedas, Puranas & Upanishads",
-      "Basic scripture guidance",
-      "Community support"
+      "Access to Vedas, Puranas & Upanishads"
     ],
     limitations: [],
     buttonText: "Choose Free",
@@ -34,16 +32,14 @@ export const createPricingPlans = (subscription: any): PricingPlan[] => [
   },
   {
     name: "Devotee Plan",
-    price: "₹999",
+    price: "₹499",
     period: "month",
-    originalPrice: "₹1,499",
+    originalPrice: "₹999",
     description: "Comprehensive access for dedicated learners of Hindu philosophy",
     features: [
       "200 AI chat messages daily",
       "Create up to 5 quizzes",
-      "Complete scripture library access",
-      "Advanced AI explanations",
-      "Personalized study plans"
+      "Complete scripture library access"
     ],
     limitations: [],
     buttonText: subscription?.subscription_tier === 'Devotee Plan' ? "Current Plan" : "Choose Devotee",
@@ -53,16 +49,14 @@ export const createPricingPlans = (subscription: any): PricingPlan[] => [
   },
   {
     name: "Guru Plan",
-    price: "₹2,999",
+    price: "₹999",
     period: "month", 
-    originalPrice: "₹3,999",
+    originalPrice: "₹1,999",
     description: "Ultimate package for the teachers, scholars & spiritual guides",
     features: [
       "Unlimited AI conversations",
       "Unlimited quiz creation",
-      "Complete scripture collection",
-      "Advanced AI philosophical insights",
-      "White-glove support & API access"
+      "Complete scripture collection"
     ],
     limitations: [],
     buttonText: subscription?.subscription_tier === 'Guru Plan' ? "Current Plan" : "Choose Guru",
