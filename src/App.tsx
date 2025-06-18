@@ -17,6 +17,7 @@ import QuizPlay from "./pages/QuizPlay";
 import QuizResults from "./pages/QuizResults";
 import Billing from "./pages/Billing";
 import Notifications from "./pages/Notifications";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -70,6 +71,11 @@ const App = () => (
             <Route path="/notifications" element={
               <AuthGuard>
                 <Notifications />
+              </AuthGuard>
+            } />
+            <Route path="/admin" element={
+              <AuthGuard>
+                <Admin />
               </AuthGuard>
             } />
             <Route path="*" element={<NotFound />} />

@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -15,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import Navigation from '@/components/Navigation';
 import { useUserLimits } from '@/hooks/useUserLimits';
 import RazorpayPayment from '@/components/RazorpayPayment';
+import FeedbackButton from '@/components/FeedbackButton';
 
 // Move categories outside component to prevent recreation on every render
 const SCRIPTURE_CATEGORIES = [
@@ -206,6 +206,11 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </section>
+
+      {/* Fixed Feedback Button */}
+      <div className="fixed bottom-6 right-6">
+        <FeedbackButton />
+      </div>
     </div>
   );
 };
