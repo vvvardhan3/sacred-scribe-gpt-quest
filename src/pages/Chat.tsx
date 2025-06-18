@@ -25,11 +25,19 @@ const Chat = () => {
     loading: messagesLoading,
     streamingMessageId,
     expandedCitations,
+    showWarningModal,
     setInput,
     sendMessage,
     toggleCitations,
     handleSuggestionClick,
-    resetChat
+    resetChat,
+    handleWarningModalContinue,
+    setShowWarningModal,
+    canSendMessage,
+    isAtLimit,
+    remainingMessages,
+    limits,
+    usage
   } = useChatMessages(
     activeConversationId,
     getActiveConversation,
@@ -60,9 +68,14 @@ const Chat = () => {
     console.log('Chat component state:', {
       activeConversationId,
       messagesCount: messages.length,
-      messages: messages.map(m => ({ id: m.id, role: m.role, content: m.content.substring(0, 50) + '...' }))
+      messages: messages.map(m => ({ id: m.id, role: m.role, content: m.content.substring(0, 50) + '...' })),
+      isAtLimit,
+      remainingMessages,
+      canSendMessage,
+      dailyUsage: usage?.messages_sent_today,
+      maxDaily: limits?.maxDailyMessages
     });
-  }, [activeConversationId, messages]);
+  }, [activeConversationId, messages, isAtLimit, remainingMessages, canSendMessage, usage, limits]);
 
   if (loading) {
     return (
@@ -97,10 +110,16 @@ const Chat = () => {
               loading={messagesLoading}
               streamingMessageId={streamingMessageId}
               expandedCitations={expandedCitations}
+              showWarningModal={showWarningModal}
+              isAtLimit={isAtLimit}
+              remainingMessages={remainingMessages}
+              limits={limits}
               onInputChange={setInput}
               onSendMessage={sendMessage}
               onToggleCitations={toggleCitations}
               onSuggestionClick={handleSuggestionClick}
+              onWarningModalContinue={handleWarningModalContinue}
+              onCloseWarningModal={() => setShowWarningModal(false)}
             />
           </SidebarInset>
         </div>

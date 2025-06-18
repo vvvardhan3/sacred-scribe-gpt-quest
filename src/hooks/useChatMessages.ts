@@ -23,6 +23,7 @@ export const useChatMessages = (
   const [loading, setLoading] = useState(false);
   const [streamingMessageId, setStreamingMessageId] = useState<string | undefined>();
   const [expandedCitations, setExpandedCitations] = useState<{ [key: string]: boolean }>({});
+  const [showWarningModal, setShowWarningModal] = useState(false);
   const { toast } = useToast();
 
   // Add user limits hook for subscription-based restrictions
@@ -67,13 +68,30 @@ export const useChatMessages = (
     return () => clearTimeout(timeoutId);
   }, [messages, activeConversationId, titleGenerated, getActiveConversation, updateConversation, setTitleGenerated]);
 
+  // Calculate remaining messages
+  const getRemainingMessages = () => {
+    if (!usage || limits.maxDailyMessages === Infinity) return Infinity;
+    return Math.max(0, limits.maxDailyMessages - usage.messages_sent_today);
+  };
+
+  // Check if user should see warning (when 3 or fewer messages remain)
+  const shouldShowWarning = () => {
+    const remaining = getRemainingMessages();
+    return remaining <= 3 && remaining > 0 && limits.maxDailyMessages !== Infinity;
+  };
+
+  // Check if user is at limit
+  const isAtLimit = () => {
+    return !canSendMessage();
+  };
+
   const sendMessage = async () => {
     const trimmedInput = input.trim();
     if (!trimmedInput || loading) return;
 
     // Check if user can send messages based on subscription limits
     if (!canSendMessage()) {
-      const remainingMessages = limits.maxDailyMessages - (usage?.messages_sent_today || 0);
+      const remainingMessages = getRemainingMessages();
       toast({
         title: "Message Limit Reached",
         description: `You've reached your daily message limit of ${limits.maxDailyMessages} for ${limits.subscriptionTier} plan. ${remainingMessages > 0 ? `You have ${remainingMessages} messages remaining.` : 'Upgrade your subscription to send more messages.'}`,
@@ -81,6 +99,19 @@ export const useChatMessages = (
       });
       return;
     }
+
+    // Show warning modal if user is close to limit
+    if (shouldShowWarning()) {
+      setShowWarningModal(true);
+      return;
+    }
+
+    await executeSendMessage();
+  };
+
+  const executeSendMessage = async () => {
+    const trimmedInput = input.trim();
+    if (!trimmedInput || loading) return;
 
     // Create new conversation if none is active
     let currentConvId = activeConversationId;
@@ -149,6 +180,11 @@ export const useChatMessages = (
     }
   };
 
+  const handleWarningModalContinue = () => {
+    setShowWarningModal(false);
+    executeSendMessage();
+  };
+
   const toggleCitations = (messageId: string) => {
     setExpandedCitations(prev => ({
       ...prev,
@@ -166,6 +202,7 @@ export const useChatMessages = (
     setExpandedCitations({});
     setStreamingMessageId(undefined);
     setLoading(false);
+    setShowWarningModal(false);
   };
 
   return {
@@ -174,13 +211,18 @@ export const useChatMessages = (
     loading,
     streamingMessageId,
     expandedCitations,
+    showWarningModal,
     setInput,
     sendMessage,
     toggleCitations,
     handleSuggestionClick,
     resetChat,
+    handleWarningModalContinue,
+    setShowWarningModal,
     // Expose limits for UI components
     canSendMessage: canSendMessage(),
+    isAtLimit: isAtLimit(),
+    remainingMessages: getRemainingMessages(),
     limits,
     usage
   };

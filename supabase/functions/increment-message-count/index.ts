@@ -35,36 +35,39 @@ serve(async (req) => {
     // Reset daily messages if needed first
     await supabase.rpc('reset_daily_messages_if_needed', { p_user_id: user.id })
 
-    // Increment message count
+    // Get current usage
+    const { data: currentUsage, error: fetchError } = await supabase
+      .from('user_usage')
+      .select('messages_sent_today')
+      .eq('user_id', user.id)
+      .single()
+
+    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is "not found"
+      console.error('Error fetching current usage:', fetchError)
+      throw new Error('Failed to fetch current usage')
+    }
+
+    const currentCount = currentUsage?.messages_sent_today || 0
+
+    // Increment message count using proper SQL increment
     const { error: updateError } = await supabase
       .from('user_usage')
       .upsert({
         user_id: user.id,
-        messages_sent_today: 1,
+        messages_sent_today: currentCount + 1,
+        messages_reset_date: new Date().toISOString().split('T')[0],
         updated_at: new Date().toISOString()
       }, {
-        onConflict: 'user_id',
-        ignoreDuplicates: false
+        onConflict: 'user_id'
       })
 
-    // If upsert doesn't work as expected, try direct increment
     if (updateError) {
-      const { error: incrementError } = await supabase
-        .from('user_usage')
-        .update({
-          messages_sent_today: supabase.sql`messages_sent_today + 1`,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', user.id)
-
-      if (incrementError) {
-        console.error('Error incrementing message count:', incrementError)
-        throw new Error('Failed to increment message count')
-      }
+      console.error('Error incrementing message count:', updateError)
+      throw new Error('Failed to increment message count')
     }
 
     return new Response(
-      JSON.stringify({ success: true }),
+      JSON.stringify({ success: true, new_count: currentCount + 1 }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 
