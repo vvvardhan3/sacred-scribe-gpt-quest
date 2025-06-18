@@ -1,63 +1,94 @@
 
 import React from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { MessageSquare, Sparkles, BookOpen, Heart } from 'lucide-react';
 
 interface WelcomeScreenProps {
+  onCreateNew: () => void;
   onSuggestionClick: (suggestion: string) => void;
 }
 
-const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSuggestionClick }) => {
+const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
+  onCreateNew,
+  onSuggestionClick
+}) => {
   const suggestions = [
-    {
-      text: "What does the Bhagavad Gita say about dharma?",
-      category: "Scripture"
-    },
-    {
-      text: "Explain the concept of moksha in Hindu philosophy",
-      category: "Philosophy"
-    },
-    {
-      text: "What are the main teachings of the Upanishads?",
-      category: "Scripture"
-    },
-    {
-      text: "How does karma work according to Hindu scriptures?",
-      category: "Concept"
-    }
+    "What is the significance of Om in Hindu philosophy?",
+    "Explain the concept of Dharma in everyday life",
+    "What are the main teachings of the Bhagavad Gita?",
+    "How can I practice mindfulness through Hindu traditions?"
   ];
 
   return (
-    <div className="flex flex-col items-center justify-center h-full min-h-[70vh] text-center px-8 py-12">
-      {/* Header Section */}
-      <div className="mb-12">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4 tracking-tight">
-          What can I help with?
-        </h1>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Discover the wisdom of Hindu scriptures and philosophy through our AI-powered assistant
-        </p>
-      </div>
+    <div className="flex-1 flex flex-col items-center justify-center p-8 bg-gradient-to-br from-orange-50 to-amber-50">
+      <div className="max-w-2xl mx-auto text-center space-y-8">
+        {/* Logo and Title */}
+        <div className="space-y-4">
+          <div className="w-20 h-20 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full flex items-center justify-center mx-auto">
+            <span className="text-white font-bold text-2xl">हिं</span>
+          </div>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+            Welcome to HinduGPT
+          </h1>
+          <p className="text-lg text-gray-600 max-w-md mx-auto">
+            Your AI companion for exploring Hindu philosophy, scriptures, and spiritual wisdom
+          </p>
+        </div>
 
-      {/* Suggestions Section */}
-      <div className="w-full max-w-4xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {suggestions.map((suggestion, index) => {
-            return (
-              <div
+        {/* Features */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-8">
+          <Card className="bg-white/70 backdrop-blur-sm border-orange-100">
+            <CardContent className="p-4 text-center">
+              <BookOpen className="w-8 h-8 text-orange-500 mx-auto mb-2" />
+              <h3 className="font-semibold text-gray-800">Sacred Texts</h3>
+              <p className="text-sm text-gray-600">Explore Vedas, Upanishads, and Puranas</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white/70 backdrop-blur-sm border-orange-100">
+            <CardContent className="p-4 text-center">
+              <Sparkles className="w-8 h-8 text-orange-500 mx-auto mb-2" />
+              <h3 className="font-semibold text-gray-800">Philosophy</h3>
+              <p className="text-sm text-gray-600">Understand complex spiritual concepts</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white/70 backdrop-blur-sm border-orange-100">
+            <CardContent className="p-4 text-center">
+              <Heart className="w-8 h-8 text-orange-500 mx-auto mb-2" />
+              <h3 className="font-semibold text-gray-800">Guidance</h3>
+              <p className="text-sm text-gray-600">Get spiritual guidance for daily life</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Start Conversation Button */}
+        <Button
+          onClick={onCreateNew}
+          size="lg"
+          className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-lg"
+        >
+          <MessageSquare className="w-5 h-5 mr-2" />
+          Start Conversation
+        </Button>
+
+        {/* Suggestion Cards */}
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold text-gray-700">Try asking about:</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {suggestions.map((suggestion, index) => (
+              <Card 
                 key={index}
-                className="bg-white border border-gray-200 rounded-xl p-6 hover:border-orange-200 hover:shadow-md transition-all duration-200 cursor-pointer group"
-                onClick={() => onSuggestionClick(suggestion.text)}
+                className="cursor-pointer hover:shadow-md transition-shadow bg-white/50 backdrop-blur-sm border-orange-100 hover:border-orange-200"
+                onClick={() => onSuggestionClick(suggestion)}
               >
-                <div className="text-left">
-                  <div className="text-xs font-medium text-orange-600 uppercase tracking-wide mb-2">
-                    {suggestion.category}
-                  </div>
-                  <div className="text-sm font-medium text-gray-800 leading-relaxed">
-                    {suggestion.text}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+                <CardContent className="p-4">
+                  <p className="text-sm text-gray-700 text-left">{suggestion}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
     </div>

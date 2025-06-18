@@ -1,142 +1,171 @@
 
 import React, { useState, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  Shield, 
-  MessageSquare, 
-  Users, 
-  Activity,
-  TrendingUp,
-  AlertCircle,
-  CheckCircle,
-  Clock,
-  X
-} from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import Navigation from '@/components/Navigation';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Users, MessageSquare, Star, TrendingUp, AlertCircle } from 'lucide-react';
 
 interface FeedbackItem {
   id: string;
+  user_id: string;
   type: string;
   title: string;
   description: string;
+  page_url: string;
   status: string;
   priority: string;
-  page_url?: string;
   created_at: string;
-  user_id: string;
-  profiles?: {
-    display_name: string;
-  };
+  updated_at: string;
+  user_email?: string;
+  user_display_name?: string;
 }
 
 interface UserStats {
   totalUsers: number;
   activeUsers: number;
-  totalQuizzes: number;
   totalMessages: number;
+  totalQuizzes: number;
+  totalFeedback: number;
 }
 
 const Admin = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [feedback, setFeedback] = useState<FeedbackItem[]>([]);
   const [userStats, setUserStats] = useState<UserStats>({
     totalUsers: 0,
     activeUsers: 0,
+    totalMessages: 0,
     totalQuizzes: 0,
-    totalMessages: 0
+    totalFeedback: 0
   });
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // Check if user is admin
   useEffect(() => {
-    const checkAdminStatus = async () => {
-      if (!user) return;
-      
-      const { data } = await supabase
+    checkAdminAccess();
+  }, [user]);
+
+  const checkAdminAccess = async () => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const { data: profile } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', user.id)
         .single();
-      
-      setIsAdmin(data?.role === 'admin');
-    };
 
-    checkAdminStatus();
-  }, [user]);
-
-  // Load feedback and stats
-  useEffect(() => {
-    const loadData = async () => {
-      if (!isAdmin) return;
-
-      try {
-        // Load feedback with user profiles
-        const { data: feedbackData } = await supabase
-          .from('feedback')
-          .select(`
-            *,
-            profiles:user_id (
-              display_name
-            )
-          `)
-          .order('created_at', { ascending: false });
-
-        if (feedbackData) {
-          setFeedback(feedbackData);
-        }
-
-        // Load user stats
-        const { count: totalUsers } = await supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true });
-
-        const { count: totalQuizzes } = await supabase
-          .from('quizzes')
-          .select('*', { count: 'exact', head: true });
-
-        const { count: totalMessages } = await supabase
-          .from('messages')
-          .select('*', { count: 'exact', head: true });
-
-        setUserStats({
-          totalUsers: totalUsers || 0,
-          activeUsers: totalUsers || 0, // For now, same as total users
-          totalQuizzes: totalQuizzes || 0,
-          totalMessages: totalMessages || 0
+      if (profile?.role !== 'admin') {
+        toast({
+          title: "Access Denied",
+          description: "You don't have permission to access this page.",
+          variant: "destructive"
         });
-
-      } catch (error) {
-        console.error('Error loading admin data:', error);
-      } finally {
-        setLoading(false);
+        navigate('/dashboard');
+        return;
       }
-    };
 
-    loadData();
-  }, [isAdmin]);
+      setIsAdmin(true);
+      fetchAdminData();
+    } catch (error) {
+      console.error('Error checking admin access:', error);
+      navigate('/dashboard');
+    }
+  };
 
-  const updateFeedbackStatus = async (id: string, status: string) => {
+  const fetchAdminData = async () => {
+    try {
+      // Fetch feedback with user information
+      const { data: feedbackData, error: feedbackError } = await supabase
+        .from('feedback')
+        .select(`
+          *,
+          profiles!feedback_user_id_fkey (
+            display_name
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (feedbackError) throw feedbackError;
+
+      // Transform the data to match our interface
+      const transformedFeedback: FeedbackItem[] = (feedbackData || []).map(item => ({
+        id: item.id,
+        user_id: item.user_id,
+        type: item.type,
+        title: item.title,
+        description: item.description,
+        page_url: item.page_url,
+        status: item.status,
+        priority: item.priority,
+        created_at: item.created_at,
+        updated_at: item.updated_at,
+        user_display_name: item.profiles?.display_name || 'Unknown User'
+      }));
+
+      setFeedback(transformedFeedback);
+
+      // Fetch user statistics
+      const { count: totalUsers } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+
+      const { count: totalMessages } = await supabase
+        .from('user_usage')
+        .select('messages_sent_today', { count: 'exact', head: true });
+
+      const { count: totalQuizzes } = await supabase
+        .from('quizzes')
+        .select('*', { count: 'exact', head: true });
+
+      setUserStats({
+        totalUsers: totalUsers || 0,
+        activeUsers: 0, // You can implement this based on recent activity
+        totalMessages: totalMessages || 0,
+        totalQuizzes: totalQuizzes || 0,
+        totalFeedback: feedbackData?.length || 0
+      });
+
+    } catch (error) {
+      console.error('Error fetching admin data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load admin data",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateFeedbackStatus = async (feedbackId: string, newStatus: string) => {
     try {
       const { error } = await supabase
         .from('feedback')
-        .update({ status, updated_at: new Date().toISOString() })
-        .eq('id', id);
+        .update({ 
+          status: newStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', feedbackId);
 
       if (error) throw error;
 
       setFeedback(prev => 
         prev.map(item => 
-          item.id === id ? { ...item, status } : item
+          item.id === feedbackId 
+            ? { ...item, status: newStatus, updated_at: new Date().toISOString() }
+            : item
         )
       );
 
@@ -145,56 +174,34 @@ const Admin = () => {
         description: "Feedback status has been updated successfully.",
       });
     } catch (error) {
-      console.error('Error updating status:', error);
+      console.error('Error updating feedback status:', error);
       toast({
         title: "Error",
-        description: "Failed to update feedback status.",
+        description: "Failed to update feedback status",
         variant: "destructive"
       });
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      open: { color: 'bg-blue-100 text-blue-800', icon: AlertCircle },
-      in_progress: { color: 'bg-yellow-100 text-yellow-800', icon: Clock },
-      resolved: { color: 'bg-green-100 text-green-800', icon: CheckCircle },
-      closed: { color: 'bg-gray-100 text-gray-800', icon: X }
-    };
-
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.open;
-    const IconComponent = config.icon;
-
-    return (
-      <Badge className={config.color}>
-        <IconComponent className="w-3 h-3 mr-1" />
-        {status.replace('_', ' ')}
-      </Badge>
-    );
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'urgent': return 'bg-red-500';
+      case 'high': return 'bg-orange-500';
+      case 'medium': return 'bg-yellow-500';
+      case 'low': return 'bg-green-500';
+      default: return 'bg-gray-500';
+    }
   };
 
-  const getPriorityBadge = (priority: string) => {
-    const priorityColors = {
-      low: 'bg-gray-100 text-gray-800',
-      medium: 'bg-blue-100 text-blue-800',
-      high: 'bg-orange-100 text-orange-800',
-      urgent: 'bg-red-100 text-red-800'
-    };
-
-    return (
-      <Badge className={priorityColors[priority as keyof typeof priorityColors] || priorityColors.medium}>
-        {priority}
-      </Badge>
-    );
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'open': return 'bg-blue-500';
+      case 'in_progress': return 'bg-yellow-500';
+      case 'resolved': return 'bg-green-500';
+      case 'closed': return 'bg-gray-500';
+      default: return 'bg-gray-500';
+    }
   };
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (!isAdmin) {
-    return <Navigate to="/dashboard" replace />;
-  }
 
   if (loading) {
     return (
@@ -204,19 +211,29 @@ const Admin = () => {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50">
-      <Navigation />
-      
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-8">
-          <Shield className="w-8 h-8 text-orange-600" />
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-        </div>
+  if (!isAdmin) {
+    return null;
+  }
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between py-4">
+            <div className="flex items-center space-x-3">
+              <Button variant="ghost" onClick={() => navigate('/dashboard')}>
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Dashboard
+              </Button>
+              <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Users</CardTitle>
@@ -224,16 +241,6 @@ const Admin = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{userStats.totalUsers}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Quizzes</CardTitle>
-              <Activity className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{userStats.totalQuizzes}</div>
             </CardContent>
           </Card>
 
@@ -249,97 +256,116 @@ const Admin = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Feedback</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Quizzes</CardTitle>
+              <Star className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{userStats.totalQuizzes}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Feedback</CardTitle>
+              <AlertCircle className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{userStats.totalFeedback}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Growth</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {feedback.filter(f => f.status === 'open').length}
-              </div>
+              <div className="text-2xl font-bold">+12%</div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Feedback Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="w-5 h-5" />
-              User Feedback & Suggestions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Title</TableHead>
-                    <TableHead>User</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Priority</TableHead>
-                    <TableHead>Page</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {feedback.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell>
-                        <Badge variant="secondary">
-                          {item.type.replace('_', ' ')}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        <div className="max-w-xs">
-                          <div className="font-semibold">{item.title}</div>
-                          <div className="text-sm text-gray-500 truncate">
-                            {item.description}
+        {/* Feedback Management */}
+        <Tabs defaultValue="feedback" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="feedback">Feedback Management</TabsTrigger>
+            <TabsTrigger value="users">User Management</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="feedback">
+            <Card>
+              <CardHeader>
+                <CardTitle>User Feedback & Suggestions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {feedback.length === 0 ? (
+                    <p className="text-gray-500 text-center py-8">No feedback submitted yet.</p>
+                  ) : (
+                    feedback.map((item) => (
+                      <div key={item.id} className="border rounded-lg p-4 space-y-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <Badge variant="outline" className="capitalize">
+                                {item.type.replace('_', ' ')}
+                              </Badge>
+                              <Badge 
+                                className={`text-white ${getPriorityColor(item.priority)}`}
+                              >
+                                {item.priority}
+                              </Badge>
+                              <Badge 
+                                className={`text-white ${getStatusColor(item.status)}`}
+                              >
+                                {item.status.replace('_', ' ')}
+                              </Badge>
+                            </div>
+                            <h3 className="font-semibold text-gray-900">{item.title}</h3>
+                            <p className="text-gray-600 mt-1">{item.description}</p>
+                            <div className="text-sm text-gray-500 mt-2">
+                              <p>From: {item.user_display_name}</p>
+                              <p>Page: {item.page_url}</p>
+                              <p>Created: {new Date(item.created_at).toLocaleDateString()}</p>
+                            </div>
+                          </div>
+                          <div className="ml-4">
+                            <Select
+                              value={item.status}
+                              onValueChange={(value) => updateFeedbackStatus(item.id, value)}
+                            >
+                              <SelectTrigger className="w-32">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="open">Open</SelectItem>
+                                <SelectItem value="in_progress">In Progress</SelectItem>
+                                <SelectItem value="resolved">Resolved</SelectItem>
+                                <SelectItem value="closed">Closed</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        {item.profiles?.display_name || 'Unknown User'}
-                      </TableCell>
-                      <TableCell>
-                        {getStatusBadge(item.status)}
-                      </TableCell>
-                      <TableCell>
-                        {getPriorityBadge(item.priority)}
-                      </TableCell>
-                      <TableCell>
-                        <code className="text-xs bg-gray-100 px-2 py-1 rounded">
-                          {item.page_url || '/'}
-                        </code>
-                      </TableCell>
-                      <TableCell>
-                        {new Date(item.created_at).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          value={item.status}
-                          onValueChange={(value) => updateFeedbackStatus(item.id, value)}
-                        >
-                          <SelectTrigger className="w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="open">Open</SelectItem>
-                            <SelectItem value="in_progress">In Progress</SelectItem>
-                            <SelectItem value="resolved">Resolved</SelectItem>
-                            <SelectItem value="closed">Closed</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="users">
+            <Card>
+              <CardHeader>
+                <CardTitle>User Management</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-500">User management features will be implemented here.</p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </main>
     </div>
   );
 };

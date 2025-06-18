@@ -1,5 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import ChatContainer from '@/components/chat/ChatContainer';
 import ConversationSidebar from '@/components/chat/ConversationSidebar';
 import WelcomeScreen from '@/components/chat/WelcomeScreen';
@@ -11,7 +13,6 @@ import { useUserLimits } from '@/hooks/useUserLimits';
 const Chat = () => {
   const { conversationId } = useParams();
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showWarningModal, setShowWarningModal] = useState(false);
   
   const {
@@ -22,6 +23,7 @@ const Chat = () => {
     updateConversation,
     deleteConversation,
     renameConversation,
+    getActiveConversation,
     loading: conversationsLoading
   } = useConversations();
 
@@ -35,10 +37,16 @@ const Chat = () => {
     setInput,
     toggleCitations,
     handleSuggestionClick,
-    loadMessages
-  } = useChatMessages(activeConversationId);
+    showWarningModal: hookShowWarningModal,
+    handleWarningModalContinue,
+    setShowWarningModal: setHookShowWarningModal,
+    canSendMessage,
+    remainingMessages,
+    limits,
+    usage
+  } = useChatMessages(activeConversationId, getActiveConversation, updateConversation, createNewConversation);
 
-  const { limits, usage, isAtLimit, remainingMessages } = useUserLimits();
+  const { canSendMessage: userCanSendMessage } = useUserLimits();
 
   useEffect(() => {
     if (conversationId && conversationId !== activeConversationId) {
@@ -46,23 +54,15 @@ const Chat = () => {
     }
   }, [conversationId, activeConversationId, setActiveConversationId]);
 
-  useEffect(() => {
-    if (activeConversationId) {
-      loadMessages(activeConversationId);
-    }
-  }, [activeConversationId, loadMessages]);
-
   const handleNewConversation = async () => {
     const newId = await createNewConversation();
     if (newId) {
       navigate(`/chat/${newId}`);
-      setSidebarOpen(false);
     }
   };
 
   const handleConversationSelect = (id: string) => {
     navigate(`/chat/${id}`);
-    setSidebarOpen(false);
   };
 
   const handleSendMessage = async () => {
@@ -80,7 +80,7 @@ const Chat = () => {
         return;
       }
       
-      if (isAtLimit) {
+      if (!canSendMessage) {
         return;
       }
       
@@ -97,6 +97,8 @@ const Chat = () => {
     setShowWarningModal(false);
   };
 
+  const isAtLimit = !userCanSendMessage();
+
   if (conversationsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -106,50 +108,50 @@ const Chat = () => {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 relative">
-      <ConversationSidebar
-        conversations={conversations}
-        activeConversationId={activeConversationId}
-        onNewConversation={handleNewConversation}
-        onConversationSelect={handleConversationSelect}
-        onDeleteConversation={deleteConversation}
-        onRenameConversation={renameConversation}
-        isOpen={sidebarOpen}
-        onToggle={() => setSidebarOpen(!sidebarOpen)}
-      />
-      
-      <div className="flex-1 flex flex-col">
-        {activeConversationId && messages.length > 0 ? (
-          <ChatContainer
-            messages={messages}
-            input={input}
-            loading={loading}
-            streamingMessageId={streamingMessageId}
-            expandedCitations={expandedCitations}
-            showWarningModal={showWarningModal}
-            isAtLimit={isAtLimit}
-            remainingMessages={remainingMessages}
-            limits={limits}
-            onInputChange={setInput}
-            onSendMessage={handleSendMessage}
-            onToggleCitations={toggleCitations}
-            onSuggestionClick={handleSuggestionClick}
-            onWarningModalContinue={handleWarningModalContinue}
-            onCloseWarningModal={handleCloseWarningModal}
-          />
-        ) : (
-          <WelcomeScreen 
-            onNewConversation={handleNewConversation}
-            onSuggestionClick={handleSuggestionClick}
-          />
-        )}
-      </div>
+    <SidebarProvider defaultOpen={true}>
+      <div className="flex h-screen bg-gray-50 relative w-full">
+        <ConversationSidebar
+          conversations={conversations}
+          activeConversationId={activeConversationId}
+          onSelectConversation={handleConversationSelect}
+          onCreateNew={handleNewConversation}
+          onRename={renameConversation}
+          onDelete={deleteConversation}
+        />
+        
+        <div className="flex-1 flex flex-col">
+          {activeConversationId && messages.length > 0 ? (
+            <ChatContainer
+              messages={messages}
+              input={input}
+              loading={loading}
+              streamingMessageId={streamingMessageId}
+              expandedCitations={expandedCitations}
+              showWarningModal={showWarningModal || hookShowWarningModal}
+              isAtLimit={isAtLimit}
+              remainingMessages={remainingMessages}
+              limits={limits}
+              onInputChange={setInput}
+              onSendMessage={handleSendMessage}
+              onToggleCitations={toggleCitations}
+              onSuggestionClick={handleSuggestionClick}
+              onWarningModalContinue={handleWarningModalContinue}
+              onCloseWarningModal={handleCloseWarningModal}
+            />
+          ) : (
+            <WelcomeScreen 
+              onCreateNew={handleNewConversation}
+              onSuggestionClick={handleSuggestionClick}
+            />
+          )}
+        </div>
 
-      {/* Fixed Feedback Button */}
-      <div className="fixed bottom-6 right-6 z-10">
-        <FeedbackButton />
+        {/* Fixed Feedback Button */}
+        <div className="fixed bottom-6 right-6 z-10">
+          <FeedbackButton />
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
