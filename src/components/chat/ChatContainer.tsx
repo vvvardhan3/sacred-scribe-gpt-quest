@@ -78,6 +78,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
           onClose={onCloseWarningModal}
           remainingMessages={remainingMessages}
           subscriptionTier={limits.subscriptionTier}
+          onContinue={onWarningModalContinue}
           onUpgrade={() => {
             // Handle upgrade logic if needed
             onCloseWarningModal();

@@ -17,6 +17,7 @@ interface MessageLimitWarningModalProps {
   remainingMessages: number;
   subscriptionTier: string;
   onUpgrade?: () => void;
+  onContinue?: () => void;
 }
 
 export const MessageLimitWarningModal: React.FC<MessageLimitWarningModalProps> = ({
@@ -24,9 +25,17 @@ export const MessageLimitWarningModal: React.FC<MessageLimitWarningModalProps> =
   onClose,
   remainingMessages,
   subscriptionTier,
-  onUpgrade
+  onUpgrade,
+  onContinue
 }) => {
   const isAtLimit = remainingMessages <= 0;
+  
+  const handleContinue = () => {
+    onClose();
+    if (onContinue) {
+      onContinue();
+    }
+  };
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -103,7 +112,7 @@ export const MessageLimitWarningModal: React.FC<MessageLimitWarningModalProps> =
         </DialogHeader>
         
         <div className="flex justify-end pt-4">
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={handleContinue}>
             {isAtLimit ? 'I Understand' : 'Continue Chatting'}
           </Button>
         </div>

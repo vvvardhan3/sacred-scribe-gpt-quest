@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,10 +8,10 @@ import {
   ArrowRight,
   Crown,
   Star,
-  SquareLibrary
+  SquareLibrary,
+  Lock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import ScriptureCard from '@/components/ScriptureCard';
 import Navigation from '@/components/Navigation';
 import { useUserLimits } from '@/hooks/useUserLimits';
 import RazorpayPayment from '@/components/RazorpayPayment';
@@ -52,12 +53,67 @@ const SCRIPTURE_CATEGORIES = [
 const Dashboard = () => {
   const { limits, usage, isCategoryAllowed } = useUserLimits();
 
-  // Memoize filtered categories to prevent unnecessary re-filtering
-  const { allowedCategories, lockedCategories } = useMemo(() => {
-    const allowed = SCRIPTURE_CATEGORIES.filter(category => isCategoryAllowed(category.name));
-    const locked = SCRIPTURE_CATEGORIES.filter(category => !isCategoryAllowed(category.name));
-    return { allowedCategories: allowed, lockedCategories: locked };
+  // Memoize categories with their access status
+  const categoriesWithAccess = useMemo(() => {
+    return SCRIPTURE_CATEGORIES.map(category => ({
+      ...category,
+      isAllowed: isCategoryAllowed(category.name)
+    }));
   }, [isCategoryAllowed]);
+
+  const hasLockedCategories = categoriesWithAccess.some(cat => !cat.isAllowed);
+
+  const renderScriptureCard = (category: any) => {
+    if (category.isAllowed) {
+      return (
+        <Link to={`/quiz/category/${encodeURIComponent(category.name)}`} className="group block">
+          <Card className="h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-0 bg-white overflow-hidden min-h-[200px]">
+            <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${category.color}`} />
+            
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="text-xl font-bold text-gray-900 group-hover:text-orange-600 transition-colors">
+                  {category.name}
+                </h3>
+              </div>
+              <p className="text-gray-600 text-sm leading-relaxed mb-4">
+                {category.description}
+              </p>
+              
+              <div className="flex items-center justify-end text-sm">
+                <div className="flex items-center text-orange-600 font-medium group-hover:text-orange-700">
+                  <span>Start Quiz</span>
+                  <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </div>
+          </Card>
+        </Link>
+      );
+    } else {
+      return (
+        <Card className="h-full transition-all duration-300 border-0 bg-white/60 opacity-75 relative overflow-hidden cursor-not-allowed min-h-[200px]">
+          <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${category.color} opacity-50`} />
+          
+          <div className="p-6">
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-xl font-bold text-gray-600">
+                {category.name}
+              </h3>
+              <Lock className="w-5 h-5 text-gray-400" />
+            </div>
+            <p className="text-gray-500 text-sm leading-relaxed mb-4">
+              {category.description}
+            </p>
+            <div className="flex items-center justify-center text-sm text-gray-500">
+              <Crown className="w-4 h-4 mr-1" />
+              <span>Premium Access Required</span>
+            </div>
+          </div>
+        </Card>
+      );
+    }
+  };
 
   const handleStartConversation = () => {
     // Open chat in a new window
@@ -86,77 +142,46 @@ const Dashboard = () => {
           </p>
         </div>
         
-        {/* Available Categories */}
-        {allowedCategories.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {allowedCategories.map((category) => (
-              <ScriptureCard key={category.name} category={category} />
-            ))}
+        {/* All Categories in One Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {categoriesWithAccess.map((category) => (
+            <div key={category.name}>
+              {renderScriptureCard(category)}
+            </div>
+          ))}
+        </div>
+
+        {/* Upgrade CTA - Only show if user has locked categories */}
+        {hasLockedCategories && (
+          <div className="mb-8">
+            <Card className="max-w-4xl mx-auto border-orange-200 bg-gradient-to-r from-orange-50 to-red-50">
+              <CardContent className="p-8 text-center">
+                <div className="flex items-center justify-center mb-4">
+                  <Star className="w-8 h-8 text-orange-500 mr-2" />
+                  <h3 className="text-2xl font-bold text-gray-900">Unlock All Sacred Scriptures</h3>
+                </div>
+                <p className="text-gray-600 mb-6 text-lg">
+                  Get access to all scriptures and create unlimited quizzes with our premium plans
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <RazorpayPayment 
+                    planId="devotee"
+                    planName="Devotee Plan"
+                    price={499}
+                    buttonText="Upgrade to Devotee - ₹499/month"
+                    className="px-8 py-3 text-lg bg-orange-500 hover:bg-orange-600"
+                  />
+                  <RazorpayPayment 
+                    planId="guru"
+                    planName="Guru Plan"
+                    price={999}
+                    buttonText="Go Pro with Guru - ₹999/month"
+                    className="px-8 py-3 text-lg bg-purple-500 hover:bg-purple-600"
+                  />
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        )}
-
-        {/* Locked Categories */}
-        {lockedCategories.length > 0 && (
-          <>
-            <div className="mb-6">
-              <h3 className="text-xl font-semibold text-gray-700 mb-4">
-                Premium Scriptures
-              </h3>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              {lockedCategories.map((category) => (
-                <Card key={category.name} className="h-full transition-all duration-300 border-0 bg-white/60 opacity-75 relative overflow-hidden cursor-not-allowed">
-                  <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${category.color} opacity-50`} />
-                  
-                  <div className="p-6">
-                    <div className="flex justify-between items-start mb-4">
-                      <h3 className="text-xl font-bold text-gray-600">
-                        {category.name}
-                      </h3>
-                    </div>
-                    <p className="text-gray-500 text-sm leading-relaxed mb-4">
-                      {category.description}
-                    </p>
-                    <div className="flex items-center justify-center text-sm text-gray-500">
-                      <Crown className="w-4 h-4 mr-1" />
-                      <span>Premium Access Required</span>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-
-            {/* Unlock All Sacred Scriptures CTA */}
-            <div className="mb-8">
-              <Card className="max-w-4xl mx-auto border-orange-200 bg-gradient-to-r from-orange-50 to-red-50">
-                <CardContent className="p-8 text-center">
-                  <div className="flex items-center justify-center mb-4">
-                    <Star className="w-8 h-8 text-orange-500 mr-2" />
-                    <h3 className="text-2xl font-bold text-gray-900">Unlock All Sacred Scriptures</h3>
-                  </div>
-                  <p className="text-gray-600 mb-6 text-lg">
-                    Get access to Bhagavad Gita, Mahabharata, Ramayana and create unlimited quizzes with our premium plans
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <RazorpayPayment 
-                      planId="devotee"
-                      planName="Devotee Plan"
-                      price={499}
-                      buttonText="Upgrade to Devotee - ₹499/month"
-                      className="px-8 py-3 text-lg bg-orange-500 hover:bg-orange-600"
-                    />
-                    <RazorpayPayment 
-                      planId="guru"
-                      planName="Guru Plan"
-                      price={999}
-                      buttonText="Go Pro with Guru - ₹999/month"
-                      className="px-8 py-3 text-lg bg-purple-500 hover:bg-purple-600"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </>
         )}
       </section>
 
