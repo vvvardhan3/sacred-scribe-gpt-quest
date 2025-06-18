@@ -38,7 +38,7 @@ const Chat = () => {
     toggleCitations,
     handleSuggestionClick,
     showWarningModal: hookShowWarningModal,
-    handleWarningModalContinue,
+    handleWarningModalContinue: hookHandleWarningModalContinue,
     setShowWarningModal: setHookShowWarningModal,
     canSendMessage,
     remainingMessages,
@@ -90,7 +90,11 @@ const Chat = () => {
 
   const handleWarningModalContinue = () => {
     setShowWarningModal(false);
-    sendMessage();
+    if (hookHandleWarningModalContinue) {
+      hookHandleWarningModalContinue();
+    } else {
+      sendMessage();
+    }
   };
 
   const handleCloseWarningModal = () => {

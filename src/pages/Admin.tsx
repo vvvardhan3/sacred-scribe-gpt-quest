@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -91,7 +90,7 @@ const Admin = () => {
         .from('feedback')
         .select(`
           *,
-          profiles!feedback_user_id_fkey (
+          profiles!inner (
             display_name
           )
         `)
