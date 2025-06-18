@@ -1,4 +1,3 @@
-
 // deno run -A main.ts     ← or deploy this as a Supabase Edge Function
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
@@ -83,10 +82,7 @@ const examples = [
     content: JSON.stringify({
       answer:
         "Rudra is a fierce yet healing deity in early Vedic hymns. Rig Veda 2.33 implores him for protection and medicine. The Śvetāśvatara Upanishad later hails Rudra as the one supreme reality realized by sages (3.2).",
-      citations: [
-        "Rig Veda 2.33.1-11",
-        "Svetasvatara Upanishad 3.2",
-      ],
+      citations: ["Rig Veda 2.33.1-11", "Svetasvatara Upanishad 3.2"],
     }),
   },
 
@@ -100,10 +96,7 @@ const examples = [
     content: JSON.stringify({
       answer:
         "Bhāgavata Purāṇa enumerates ten major descents: Matsya, Kūrma, Varāha, Narasiṁha, Vāmana, Paraśurāma, Rāma, Kṛṣṇa (with Balarāma or Buddha, depending on tradition) and Kalki (yet to come) (1.3.28-32). Viṣṇu Purāṇa repeats this list, noting avatāras manifest whenever dharma declines (3.1).",
-      citations: [
-        "Bhagavata Purana 1.3.28-32",
-        "Vishnu Purana 3.1.45-61",
-      ],
+      citations: ["Bhagavata Purana 1.3.28-32", "Vishnu Purana 3.1.45-61"],
     }),
   },
 
@@ -114,10 +107,7 @@ const examples = [
     content: JSON.stringify({
       answer:
         "Tapas is disciplined austerity that purifies and empowers. The Taittirīya Upanishad instructs, 'Seek to know Brahman through tapas' (3.1.1). Krishna classifies tapas of body, speech, and mind, adding it must be practiced without attachment (BhG 17.14-16).",
-      citations: [
-        "Taittiriya Upanishad 3.1.1",
-        "Bhagavad Gita 17.14-16",
-      ],
+      citations: ["Taittiriya Upanishad 3.1.1", "Bhagavad Gita 17.14-16"],
     }),
   },
 
@@ -158,10 +148,7 @@ const examples = [
     content: JSON.stringify({
       answer:
         "Hindu dharma outlines Brahmacarya (student), Gṛhastha (householder), Vānaprastha (retiree), and Sannyāsa (renunciant). Manusmṛti (6.1-3) prescribes duties for each. The Mahābhārata notes that any of these, performed selflessly, can lead to liberation (Śānti-parva 265.9).",
-      citations: [
-        "Manusmriti 6.1-3",
-        "Mahabharata, Shanti Parva 265.9",
-      ],
+      citations: ["Manusmriti 6.1-3", "Mahabharata, Shanti Parva 265.9"],
     }),
   },
 
@@ -172,10 +159,7 @@ const examples = [
     content: JSON.stringify({
       answer:
         "Prāṇa is the vital life-breath. In Praśna Upanishad, sages discover that all faculties depend on prāṇa (2.3-5). The Chandogya Upanishad calls it the deity dwelling in the body; when prāṇa departs, the senses follow (5.1.15).",
-      citations: [
-        "Prashna Upanishad 2.3-5",
-        "Chandogya Upanishad 5.1.15",
-      ],
+      citations: ["Prashna Upanishad 2.3-5", "Chandogya Upanishad 5.1.15"],
     }),
   },
 
@@ -328,7 +312,7 @@ serve(async (req) => {
     /* Cache lookup */
     const hash = await crypto.subtle.digest(
       "SHA-256",
-      new TextEncoder().encode(message),
+      new TextEncoder().encode(message)
     );
     const key = [...new Uint8Array(hash)]
       .map((b) => b.toString(16).padStart(2, "0"))
@@ -352,7 +336,7 @@ serve(async (req) => {
         {
           role: "system",
           content:
-            "You are HinduGPT – an expert on Hindu scriptures and philosophy, capable of providing detailed, nuanced, and comprehensive answers. Answer ONLY from Hindu scriptures and established philosophical schools (Darshanas) within Hinduism.When addressing complex philosophical concepts, provide explanations derived from the interpretations and elaborations found in major commentaries (bhashyas), treatises (shastras), and the established arguments of the respective Darshanas (e.g., Advaita Vedanta, Samkhya, Nyaya, Yoga, Mimamsa, etc.), *even if the direct phrasing of the concept itself isn't explicitly a single verse in a Shruti text*. Always link these elaborations back to their foundational scriptural principles.For comparative questions, clearly articulate the perspectives of each relevant school.Always respond with valid JSON containing 'answer' (string) and 'citations' (array of strings).Citations MUST be exact scripture references (e.g., Upanishad Name X.Y.Z, Bhagavad Gita X.Y, Brahma Sutra X.X.X) or references to prominent foundational texts/commentaries for a specific Darshana when elaborating a concept (e.g., Patanjali's Yoga Sutras X.Y, Nyaya Sutras X.X.X, Shankara's Brahma Sutra Bhashya). If a direct verse is not available for a specific philosophical elaboration, explain the concept's grounding in the overall philosophy/Upanishadic teaching it interprets, and cite the broader philosophical school or the primary text of that school.Ensure answers are comprehensive, addressing all parts of the question, and explain subtle distinctions clearly.",
+            "You are **HinduGPT**, an expert assistant that answers **only** from the following canonical Hindu scriptures: Vedas (Rig, Sama, Yajur, Atharva), Upanishads (all principal & minor),Itihasas (Ramayana, Mahabharata + Bhagavad Gita),Puranas (all Mahā- & Upa-puranas, e.g. Bhagavata, Vishnu, Shiva),Sutra / Shastra corpus (Brahma Sutras, Yoga Sutras, Nyaya, Samkhya, Mimamsa, Dharma Shastras such as Manusmriti),Agama / Tantra (Shaiva, Vaishnava, Shakta),Other scripture-status texts accepted in orthodox tradition (e.g. Ashtavakra Gita, Narada Bhakti Sutra).",
         },
         ...examples,
         { role: "user", content: message },
@@ -368,7 +352,7 @@ serve(async (req) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(chatReq),
-      },
+      }
     );
 
     if (!openaiRes.ok) {
@@ -378,9 +362,9 @@ serve(async (req) => {
     }
 
     const data = await openaiRes.json();
-    
+
     const content = data.choices[0].message.content;
-    
+
     // Validate JSON before parsing
     let parsed;
     try {
@@ -389,19 +373,20 @@ serve(async (req) => {
         citations: string[];
       };
     } catch (parseError) {
-      console.error('JSON parsing failed:', parseError);
-      console.error('Content that failed to parse:', content);
+      console.error("JSON parsing failed:", parseError);
+      console.error("Content that failed to parse:", content);
       // Fallback response
       parsed = {
-        answer: "I apologize, but I'm unable to process your request at the moment. Please try again.",
+        answer:
+          "I apologize, but I'm unable to process your request at the moment. Please try again.",
         citations: [],
       };
     }
 
     /* On-topic guardrail */
     if (
-      !/(Bhagavad|Upanishad|Ramayana|Mahabharata|Veda|Purana)/i.test(
-        parsed.answer,
+      /(Veda|Upanishad|Ramayana|Mahabharata|Bhagavad\\s*Gita|Purana|Sutra|Shastra|Agama|Tantra)/i.test(
+        parsed.answer
       )
     ) {
       parsed = {
@@ -426,7 +411,7 @@ serve(async (req) => {
           "I apologize, but I'm unable to process your request at the moment.",
         citations: [],
       }),
-      { status: 500, headers: { ...cors, "Content-Type": "application/json" } },
+      { status: 500, headers: { ...cors, "Content-Type": "application/json" } }
     );
   }
 });

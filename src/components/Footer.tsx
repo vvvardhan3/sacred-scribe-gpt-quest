@@ -1,63 +1,76 @@
-
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Facebook, Twitter, Instagram, Youtube, Mail, Phone } from 'lucide-react';
+import React from "react";
+import { Link } from "react-router-dom";
+import {
+  Facebook,
+  Twitter,
+  Instagram,
+  Youtube,
+  Mail,
+  Phone,
+} from "lucide-react";
 
 const Footer = () => {
   const footerLinks = {
-    'Learning': [
-      { name: 'Bhagavad Gita', href: '/quiz/category/bhagavad-gita' },
-      { name: 'Upanishads', href: '/quiz/category/upanishads' },
-      { name: 'Ramayana', href: '/quiz/category/ramayana' },
-      { name: 'Mahabharata', href: '/quiz/category/mahabharata' }
+    Support: [
+      { name: "Contact Us", href: "#contact" },
+      { name: "Privacy Policy", href: "#" },
+      { name: "Terms of Service", href: "#" },
     ],
-    'Features': [
-      { name: 'AI Assistant', href: '/chat' },
-      { name: 'Interactive Quizzes', href: '/dashboard' },
-      { name: 'Progress Tracking', href: '/dashboard' },
-      { name: 'Study Groups', href: '#' }
+    Features: [
+      { name: "AI Assistant", href: "/chat" },
+      { name: "Interactive Quizzes", href: "/dashboard" },
     ],
-    'Support': [
-      { name: 'Help Center', href: '#' },
-      { name: 'Contact Us', href: '#contact' },
-      { name: 'Privacy Policy', href: '#' },
-      { name: 'Terms of Service', href: '#' }
+
+    // 'Company': [
+    //   { name: 'About Us', href: '#' },
+    //   { name: 'Our Mission', href: '#' },
+    //   { name: 'Careers', href: '#' },
+    //   { name: 'Blog', href: '#' }
+    // ]
+    "Contact Us": [
+      {
+        name: "Email Us",
+        useHref: true,
+        href: "mailto:support@hindugpt.com",
+        icon: Mail,
+      },
+      {
+        name: "Twitter / X",
+        useHref: true,
+        href: "https://twitter.com/hindugpt",
+        icon: Twitter,
+      },
     ],
-    'Company': [
-      { name: 'About Us', href: '#' },
-      { name: 'Our Mission', href: '#' },
-      { name: 'Careers', href: '#' },
-      { name: 'Blog', href: '#' }
-    ]
   };
 
-  const socialLinks = [
-    { name: 'Facebook', icon: Facebook, href: '#' },
-    { name: 'Twitter', icon: Twitter, href: '#' },
-    { name: 'Instagram', icon: Instagram, href: '#' },
-    { name: 'YouTube', icon: Youtube, href: '#' }
-  ];
+  const socialLinks = [{ name: "Twitter", icon: Twitter, href: "#" }];
 
   return (
     <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-orange-900 text-white">
-      <div className="max-w-6xl mx-auto px-6 py-12">
+      <div className="max-w-7xl mx-auto px-6 py-6">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
           {/* Brand Section */}
           <div className="lg:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full flex items-center justify-center">
+              {/* <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full flex items-center justify-center">
                 <span className="text-white font-bold text-sm">हिं</span>
-              </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent">
+              </div> */}
+              <img
+                src="/icon.png"
+                alt="HinduGPT Logo"
+                className="w-16 h-16 rounded-full"
+              />
+              {/* <span className="text-xl font-bold bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent">
                 HinduGPT
-              </span>
+              </span> */}
             </div>
             <p className="text-gray-300 mb-4 text-sm leading-relaxed">
-              Deepen your understanding of Hindu philosophy and scriptures through AI-powered learning, 
-              interactive quizzes, and personalized guidance on your spiritual journey.
+              Deepen your understanding of Hindu philosophy and scriptures
+              through AI-powered learning, interactive quizzes on your spiritual
+              journey.
             </p>
-            <div className="flex space-x-4">
+            {/* <div className="flex space-x-4">
               {socialLinks.map((social) => (
                 <a
                   key={social.name}
@@ -68,7 +81,7 @@ const Footer = () => {
                   <social.icon className="w-4 h-4" />
                 </a>
               ))}
-            </div>
+            </div> */}
           </div>
 
           {/* Links Sections */}
@@ -94,18 +107,7 @@ const Footer = () => {
         {/* Bottom Section */}
         <div className="border-t border-gray-700 pt-6 flex flex-col md:flex-row justify-between items-center">
           <div className="text-gray-400 text-sm mb-4 md:mb-0">
-            © 2024 HinduGPT. All rights reserved. Built with devotion for spiritual learning.
-          </div>
-          <div className="flex space-x-6 text-sm">
-            <Link to="#" className="text-gray-400 hover:text-orange-400 transition-colors">
-              Privacy Policy
-            </Link>
-            <Link to="#" className="text-gray-400 hover:text-orange-400 transition-colors">
-              Terms of Service
-            </Link>
-            <Link to="#" className="text-gray-400 hover:text-orange-400 transition-colors">
-              Cookie Policy
-            </Link>
+            © 2025 HinduGPT. All rights reserved. Built with love and devotion.
           </div>
         </div>
       </div>

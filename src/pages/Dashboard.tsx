@@ -15,6 +15,7 @@ import Navigation from '@/components/Navigation';
 import { useUserLimits } from '@/hooks/useUserLimits';
 import RazorpayPayment from '@/components/RazorpayPayment';
 import FeedbackButton from '@/components/FeedbackButton';
+import Footer from '@/components/Footer';
 
 // Move categories outside component to prevent recreation on every render
 const SCRIPTURE_CATEGORIES = [
@@ -205,6 +206,10 @@ const Dashboard = () => {
             </Button>
           </CardContent>
         </Card>
+      </section>
+
+       <section>
+        <Footer/>
       </section>
 
       {/* Fixed Feedback Button */}

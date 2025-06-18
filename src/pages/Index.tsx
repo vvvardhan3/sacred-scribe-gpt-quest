@@ -56,16 +56,17 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-100">
+    <div className=" bg-gradient-to-br from-orange-50 to-red-100">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
+          <div className="flex justify-between items-center py-2">
             <div className="flex items-center space-x-2 cursor-pointer" onClick={handleLogoClick}>
-              <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full flex items-center justify-center">
+              {/* <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full flex items-center justify-center">
                 <span className="text-white font-bold text-sm">हिं</span>
-              </div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">HinduGPT</h1>
+              </div> */}
+              <img src="/icon.png" alt="HinduGPT Logo" className="w-16 h-16 rounded-full" />
+              {/* <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">HinduGPT</h1> */}
             </div>
             
             {/* Desktop Navigation */}
@@ -107,7 +108,7 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="py-20 relative overflow-hidden">
+      <section className=" py-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-orange-100/20 to-red-100/20"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
           <div className="mb-8">
@@ -116,9 +117,9 @@ const Index = () => {
             </div>
           </div>
           
-          <h2 className="text-6xl font-bold text-gray-900 mb-6 leading-tight">
+          <h2 className="text-7xl font-bold text-gray-900 mb-6 leading-tight">
             Explore Hindu Scriptures 
-            <span className="block bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+            <span className="text-6xl block bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
               with AI Guidance
             </span>
           </h2>
