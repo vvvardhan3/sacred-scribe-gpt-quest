@@ -21,6 +21,7 @@ interface ChatContainerProps {
   onSuggestionClick: (suggestion: string) => void;
   onWarningModalContinue?: () => void;
   onCloseWarningModal?: () => void;
+  onCreateNew?: () => void;
 }
 
 const ChatContainer: React.FC<ChatContainerProps> = ({
@@ -38,7 +39,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   onToggleCitations,
   onSuggestionClick,
   onWarningModalContinue,
-  onCloseWarningModal
+  onCloseWarningModal,
+  onCreateNew
 }) => {
   const getDisabledMessage = () => {
     if (isAtLimit) {
@@ -57,6 +59,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
           expandedCitations={expandedCitations}
           onToggleCitations={onToggleCitations}
           onSuggestionClick={onSuggestionClick}
+          onCreateNew={onCreateNew}
         />
       </div>
 
@@ -80,7 +83,6 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
           subscriptionTier={limits.subscriptionTier}
           onContinue={onWarningModalContinue}
           onUpgrade={() => {
-            // Handle upgrade logic if needed
             onCloseWarningModal();
           }}
         />

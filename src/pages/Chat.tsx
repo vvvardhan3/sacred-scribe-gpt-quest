@@ -141,6 +141,7 @@ const Chat = () => {
               onSuggestionClick={handleSuggestionClick}
               onWarningModalContinue={handleWarningModalContinue}
               onCloseWarningModal={handleCloseWarningModal}
+              onCreateNew={handleNewConversation}
             />
           ) : (
             <WelcomeScreen 

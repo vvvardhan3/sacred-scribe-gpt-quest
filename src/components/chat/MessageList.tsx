@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import ChatMessage from './ChatMessage';
 import LoadingMessage from './LoadingMessage';
@@ -12,6 +11,7 @@ interface MessageListProps {
   expandedCitations: { [key: string]: boolean };
   onToggleCitations: (messageId: string) => void;
   onSuggestionClick: (suggestion: string) => void;
+  onCreateNew?: () => void;
 }
 
 const MessageList: React.FC<MessageListProps> = ({
@@ -20,7 +20,8 @@ const MessageList: React.FC<MessageListProps> = ({
   streamingMessageId,
   expandedCitations,
   onToggleCitations,
-  onSuggestionClick
+  onSuggestionClick,
+  onCreateNew
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -35,23 +36,19 @@ const MessageList: React.FC<MessageListProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
   };
 
-  // Check if user is near the bottom of the chat
   const isNearBottom = () => {
     if (!containerRef.current) return true;
     const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
     return scrollHeight - scrollTop - clientHeight < 100;
   };
 
-  // Handle user scroll events
   const handleScroll = () => {
     setIsUserScrolling(true);
     
-    // Clear existing timeout
     if (scrollTimeout) {
       clearTimeout(scrollTimeout);
     }
     
-    // Reset user scrolling flag after 1 second of no scrolling
     const timeout = setTimeout(() => {
       setIsUserScrolling(false);
     }, 1000);
@@ -59,15 +56,12 @@ const MessageList: React.FC<MessageListProps> = ({
     setScrollTimeout(timeout);
   };
 
-  // Scroll when messages change (new messages added)
   useEffect(() => {
-    // Only auto-scroll if user is not manually scrolling and is near bottom
     if (!isUserScrolling && isNearBottom()) {
       scrollToBottom();
     }
   }, [messages, isUserScrolling]);
 
-  // Scroll when messages are first loaded (when opening a conversation)
   useEffect(() => {
     if (messages.length > 0) {
       setTimeout(() => {
@@ -78,20 +72,18 @@ const MessageList: React.FC<MessageListProps> = ({
     }
   }, [messages.length, isUserScrolling]);
 
-  // Scroll during streaming - but only if user is not scrolling and is near bottom
   useEffect(() => {
     if (streamingMessageId) {
       const scrollInterval = setInterval(() => {
         if (!isUserScrolling && isNearBottom()) {
           scrollToBottomImmediate();
         }
-      }, 200); // Reduced frequency to 200ms for smoother experience
+      }, 200);
 
       return () => clearInterval(scrollInterval);
     }
   }, [streamingMessageId, isUserScrolling]);
 
-  // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (scrollTimeout) {
@@ -118,7 +110,10 @@ const MessageList: React.FC<MessageListProps> = ({
         `
       }} />
       {messages.length === 0 ? (
-        <WelcomeScreen onSuggestionClick={onSuggestionClick} />
+        <WelcomeScreen 
+          onCreateNew={onCreateNew || (() => {})}
+          onSuggestionClick={onSuggestionClick} 
+        />
       ) : (
         <div className="p-6 pt-8">
           {messages.map((message) => (

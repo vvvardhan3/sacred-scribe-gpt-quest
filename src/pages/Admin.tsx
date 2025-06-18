@@ -90,11 +90,10 @@ const Admin = () => {
         .from('feedback')
         .select(`
           *,
-          profiles!inner (
+          profiles (
             display_name
           )
-        `)
-        .order('created_at', { ascending: false });
+        `);
 
       if (feedbackError) throw feedbackError;
 
