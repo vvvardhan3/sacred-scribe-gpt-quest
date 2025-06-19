@@ -26,28 +26,65 @@ const Profile = () => {
   useEffect(() => {
     if (user) {
       fetchProfile();
+    } else {
+      setLoading(false);
     }
   }, [user]);
 
   const fetchProfile = async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
     try {
       console.log('Fetching profile for user:', user.id);
-      const { data, error } = await supabase
+      
+      // First check if profile exists
+      const { data: existingProfile, error: fetchError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
-      console.log('Profile fetched:', data);
-      setProfile(data);
+      if (fetchError) {
+        console.error('Error fetching profile:', fetchError);
+        throw fetchError;
+      }
+
+      if (existingProfile) {
+        console.log('Profile found:', existingProfile);
+        setProfile(existingProfile);
+      } else {
+        // Create profile if it doesn't exist
+        console.log('Profile not found, creating new profile...');
+        const newProfile = {
+          id: user.id,
+          display_name: user.email?.split('@')[0] || 'User',
+          first_name: '',
+          last_name: '',
+          profile_picture_url: null
+        };
+
+        const { data: createdProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert([newProfile])
+          .select()
+          .single();
+
+        if (createError) {
+          console.error('Error creating profile:', createError);
+          throw createError;
+        }
+
+        console.log('Profile created:', createdProfile);
+        setProfile(createdProfile);
+      }
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('Error with profile:', error);
       toast({
         title: "Error",
-        description: "Failed to load profile data",
+        description: "Failed to load profile data. Please try refreshing the page.",
         variant: "destructive",
       });
     } finally {
@@ -56,7 +93,7 @@ const Profile = () => {
   };
 
   const updateProfile = async (updatedData: Partial<UserProfile>) => {
-    if (!user) return;
+    if (!user || !profile) return;
 
     try {
       console.log('Updating profile with data:', updatedData);
@@ -74,12 +111,6 @@ const Profile = () => {
         return newProfile;
       });
 
-      // If profile picture was updated, refetch to ensure we have the latest data
-      if (updatedData.profile_picture_url) {
-        console.log('Profile picture updated, refetching profile...');
-        setTimeout(() => fetchProfile(), 500); // Small delay to ensure database is updated
-      }
-
       toast({
         title: "Success",
         description: "Profile updated successfully",
@@ -94,12 +125,30 @@ const Profile = () => {
     }
   };
 
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <p className="text-xl text-gray-600 mb-4">Please log in to view your profile</p>
+            <Link to="/login">
+              <Button className="bg-orange-600 hover:bg-orange-700">
+                Go to Login
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navigation />
         <div className="flex items-center justify-center h-96">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-600"></div>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-600"></div>
         </div>
       </div>
     );
@@ -119,7 +168,7 @@ const Profile = () => {
             </Link>
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-8 text-center">Profile Settings</h1>
-          {profile && user && (
+          {profile && (
             <ProfileForm 
               profile={profile} 
               userEmail={user.email || ''} 
