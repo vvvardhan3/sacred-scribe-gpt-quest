@@ -5,6 +5,7 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import ChatContainer from '@/components/chat/ChatContainer';
 import ConversationSidebar from '@/components/chat/ConversationSidebar';
 import WelcomeScreen from '@/components/chat/WelcomeScreen';
+import ChatInput from '@/components/chat/ChatInput';
 import FeedbackButton from '@/components/FeedbackButton';
 import { useConversations } from '@/hooks/useConversations';
 import { useChatMessages } from '@/hooks/useChatMessages';
@@ -55,9 +56,13 @@ const Chat = () => {
   }, [conversationId, activeConversationId, setActiveConversationId]);
 
   const handleNewConversation = async () => {
+    console.log('Creating new conversation...');
     const newId = await createNewConversation();
     if (newId) {
+      console.log('New conversation created with ID:', newId);
       navigate(`/chat/${newId}`);
+    } else {
+      console.error('Failed to create new conversation');
     }
   };
 
@@ -67,6 +72,7 @@ const Chat = () => {
 
   const handleSendMessage = async () => {
     if (!activeConversationId) {
+      console.log('No active conversation, creating new one...');
       const newId = await createNewConversation();
       if (newId) {
         navigate(`/chat/${newId}`);
@@ -144,10 +150,21 @@ const Chat = () => {
               onCreateNew={handleNewConversation}
             />
           ) : (
-            <WelcomeScreen 
-              onCreateNew={handleNewConversation}
-              onSuggestionClick={handleSuggestionClick}
-            />
+            <div className="flex-1 flex flex-col">
+              <WelcomeScreen 
+                onCreateNew={handleNewConversation}
+                onSuggestionClick={handleSuggestionClick}
+              />
+              <div className="max-w-4xl mx-auto w-full">
+                <ChatInput
+                  input={input}
+                  loading={loading}
+                  disabled={isAtLimit}
+                  onInputChange={setInput}
+                  onSendMessage={handleSendMessage}
+                />
+              </div>
+            </div>
           )}
         </div>
 
