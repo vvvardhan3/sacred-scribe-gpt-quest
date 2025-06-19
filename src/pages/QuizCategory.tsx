@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -49,10 +50,18 @@ const QuizCategory = () => {
       return;
     }
 
+    // Fixed: Properly encode the category and create query parameters
+    const encodedCategory = encodeURIComponent(decodedCategory);
     const queryParams = new URLSearchParams({
-      category: decodedCategory,
+      category: encodedCategory,
       difficulty: selectedDifficulty,
       questionCount: selectedQuestionCount.toString()
+    });
+
+    console.log('Starting quiz with params:', {
+      category: encodedCategory,
+      difficulty: selectedDifficulty,
+      questionCount: selectedQuestionCount
     });
 
     navigate(`/quiz/play?${queryParams.toString()}`);
