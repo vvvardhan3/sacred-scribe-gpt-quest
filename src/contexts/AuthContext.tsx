@@ -1,15 +1,18 @@
+// src/contexts/AuthContext.tsx
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client'; // Adjust path if necessary
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, data?: { firstName?: string; lastName?: string; displayName?: string }) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  // NEW: Add signInWithGoogle function to the context type
+  signInWithGoogle: () => Promise<{ error: any | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,7 +38,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        // console.log('Auth state changed:', event, session);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -52,14 +54,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, data?: { firstName?: string; lastName?: string; displayName?: string }) => {
     const redirectUrl = `${window.location.origin}/`;
-    
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: redirectUrl
+        emailRedirectTo: redirectUrl,
+        data: {
+          first_name: data?.firstName,
+          last_name: data?.lastName,
+          display_name: data?.displayName
+        }
       }
     });
     return { error };
@@ -77,6 +84,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     await supabase.auth.signOut();
   };
 
+  // NEW: Function to sign in with Google
+  const signInWithGoogle = async () => {
+    // The redirect URL where the user will be sent after Google authentication
+    // This should match one of your "Authorized redirect URIs" in Google Cloud Console
+    // and ideally the one Supabase uses by default.
+    const redirectUrl = `${window.location.origin}/dashboard`; // Or wherever you want to redirect after successful login
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: redirectUrl,
+        // You can add scopes here if you need more user data from Google
+        // scopes: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
+      },
+    });
+
+    // Supabase signInWithOAuth initiates a redirect, so the error handling here
+    // typically won't catch redirect-related errors directly.
+    // Errors after the redirect (e.g., if session is not created) are caught by onAuthStateChange.
+    if (error) {
+      console.error("Error initiating Google sign-in:", error);
+      return { error };
+    }
+    return { error: null }; // No immediate error, redirect initiated
+  };
+
+
   const value = {
     user,
     session,
@@ -84,6 +118,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     signUp,
     signIn,
     signOut,
+    signInWithGoogle, // NEW: Include the new function in the context value
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

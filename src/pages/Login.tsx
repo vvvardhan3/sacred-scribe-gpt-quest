@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -6,12 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+// Optional: Import a Google icon if you have one, e.g., from 'lucide-react' if using shadcn/ui
+// import { Chrome } from 'lucide-react'; // Example, replace if you use different icons
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, user } = useAuth();
+  // NEW: Get signInWithGoogle from useAuth
+  const { signIn, signInWithGoogle, user } = useAuth();
   const { toast } = useToast();
   const location = useLocation();
 
@@ -42,6 +44,26 @@ const Login = () => {
 
     setLoading(false);
   };
+
+  // NEW: Handle Google sign-in
+  const handleGoogleSignIn = async () => {
+    setLoading(true); // Indicate loading state for the button
+
+    const { error } = await signInWithGoogle(); // Call the new Google sign-in function
+
+    if (error) {
+      // This error usually happens *before* the redirect (e.g., misconfiguration)
+      toast({
+        title: "Google Sign-in Failed",
+        description: error.message || "Something went wrong during Google sign-in setup.",
+        variant: "destructive"
+      });
+      setLoading(false); // Reset loading if an immediate error occurs
+    }
+    // If no immediate error, a redirect has been initiated.
+    // The loading state will remain true until the page reloads after redirect.
+  };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-red-100">
@@ -76,14 +98,35 @@ const Login = () => {
             />
           </div>
 
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             className="w-full"
             disabled={loading}
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </Button>
         </form>
+
+        {/* NEW: Google Sign-in Button */}
+        <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t"></span>
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-gray-500">Or continue with</span>
+            </div>
+        </div>
+
+        <Button
+            onClick={handleGoogleSignIn}
+            className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+            disabled={loading}
+        >
+            {/* You can add a Google icon here */}
+            {/* <Chrome className="h-5 w-5" /> */}
+            {loading ? 'Redirecting...' : 'Sign In with Google'}
+        </Button>
+
 
         <div className="text-center">
           <p className="text-sm text-gray-600">
