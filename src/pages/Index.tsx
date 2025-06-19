@@ -30,6 +30,15 @@ import HinduGPTAI from "@/components/HinduGPTAI";
 
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Features from "./features";
+import Carousel from "./Carousel";
+import AnimatedQuiz from "./Animatequiz";
+
+const handleClickScroll = (id) => {
+  const element = document.getElementById(id);
+  if (element) {
+    element.scrollIntoView({ behavior: "smooth" });
+  }
+};
 
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -77,7 +86,7 @@ const Index = () => {
   ];
 
   return (
-    <div className="bg-gradient-to-br from-orange-50 to-red-100">
+    <div className="bg-gradient-to-br from-orange-50 to-red-100 ">
       {/* Header - Updated to match design */}
       <header className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -99,17 +108,35 @@ const Index = () => {
             {/* Desktop Navigation - Added menu items */}
             <div className="hidden md:flex items-center space-x-8">
               <nav className="flex space-x-8">
-                <a className="feature text-gray-600 hover:text-orange-600 font-medium transition-colors">
+                <a
+                  className="feature text-gray-600 hover:text-orange-600 font-medium transition-colors"
+                  onClick={() => handleClickScroll("features")}
+                >
                   Features
                 </a>
-                <a className="text-gray-600 hover:text-orange-600 font-medium transition-colors">
+                <a
+                  className="text-gray-600 hover:text-orange-600 font-medium transition-colors"
+                  onClick={() => handleClickScroll("quizzes")}
+                >
                   Quizzes
                 </a>
-                <a className="text-gray-600 hover:text-orange-600 font-medium transition-colors">
+                <a
+                  className="text-gray-600 hover:text-orange-600 font-medium transition-colors"
+                  onClick={() => handleClickScroll("ai assistant")}
+                >
                   AI Assistant
                 </a>
-                <a className="text-gray-600 hover:text-orange-600 font-medium transition-colors">
+                <a
+                  className="text-gray-600 hover:text-orange-600 font-medium transition-colors"
+                  onClick={() => handleClickScroll("pricing")}
+                >
                   Pricing
+                </a>
+                 <a
+                  className="text-gray-600 hover:text-orange-600 font-medium transition-colors"
+                  onClick={() => handleClickScroll("contact")}
+                >
+                  Contact Us
                 </a>
               </nav>
             </div>
@@ -228,9 +255,7 @@ const Index = () => {
           {/* Stats Section */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto border-t-2 border-gray-200/60 pt-12">
             <div className="text-center">
-              <div className="text-4xl font-bold text-orange-600 mb-2">
-                10+
-              </div>
+              <div className="text-4xl font-bold text-orange-600 mb-2">10+</div>
               <div className="text-gray-600">Sacred Books</div>
             </div>
             <div className="text-center">
@@ -250,11 +275,18 @@ const Index = () => {
       </section>
 
       {/* Features Section - Updated to match design */}
+      <div id="features">
+        <Features />
+      </div>
 
-     <Features/>
+      <div id='quizzes'>
+      <Carousel />
+      </div>
 
       {/* HinduGPT AI Section */}
-      <HinduGPTAI />
+      <div id="ai assistant">
+        <HinduGPTAI />
+      </div>
 
       {/* Pricing Section */}
       <div id="pricing">
@@ -262,8 +294,9 @@ const Index = () => {
       </div>
 
       {/* Contact Section */}
+      <div id="contact">
       <ContactSection />
-
+      </div>
       {/* Footer */}
       <Footer />
     </div>
