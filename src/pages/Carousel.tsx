@@ -25,7 +25,7 @@ const slides = [
     title: "Puranas",
     description:
       "Stories and legends of gods, goddesses, and ancient heroes. Explore cosmic cycles, genealogies, and moral lessons through vibrant narratives.",
-    image: "public/puranas.jpg"
+    image: "/puranas.jpg"
   },
   {
     title: "Upanishads",
@@ -64,14 +64,14 @@ const Carousel = () => {
   return (
     <section className="max-w-7xl py-20 mx-auto px-4 sm:px-6 lg:px-8">
       <div className="text-center mb-6">
-        <span className="inline-block bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm font-semibold">
-          Featured Texts
+        <span className="inline-block bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm font-semibold mb-4">
+           Interactive Learning
         </span>
-        <h2 className="mt-2 text-3xl font-bold text-gray-900">
-          Explore Hindu Scriptures
+        <h2 className="text-4xl font-bold mb-4">
+          Master Hindu Scriptures with <span className="text-orange-600">Quizzes</span>
         </h2>
-        <p className="mt-2 text-gray-600">
-          Swipe through key texts and learn their core themes and teachings.
+        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          Dive deep into the heart of Hindu scriptures through fun and insightful quizzes. Explore key concepts, characters, and stories at your own pace.
         </p>
       </div>
       <div className="flex justify-center space-x-4 overflow-hidden p-4">

@@ -275,26 +275,26 @@ const Index = () => {
       </section>
 
       {/* Features Section - Updated to match design */}
-      <div id="features">
+      <div id="features" style={{ scrollMarginTop: '80px' }}>
         <Features />
       </div>
 
-      <div id='quizzes'>
+      <div id='quizzes' style={{ scrollMarginTop: '80px' }}>
       <Carousel />
       </div>
 
       {/* HinduGPT AI Section */}
-      <div id="ai assistant">
+      <div id="ai assistant" style={{ scrollMarginTop: '80px' }}>
         <HinduGPTAI />
       </div>
 
       {/* Pricing Section */}
-      <div id="pricing">
+      <div id="pricing" style={{ scrollMarginTop: '80px' }}>
         <PricingSection />
       </div>
 
       {/* Contact Section */}
-      <div id="contact">
+      <div id="contact" style={{ scrollMarginTop: '80px' }}>
       <ContactSection />
       </div>
       {/* Footer */}

@@ -18,16 +18,15 @@ const HinduGPTAI = () => {
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center bg-orange-200/20 px-4 py-2 rounded-full border border-orange-200 mb-6">
-            <span className="text-orange-700 font-medium">Powered by AI</span>
+            <span className="text-orange-700 font-medium">Your Spiritual AI Guide</span>
           </div>
 
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            Meet <span className="text-orange-600">HinduGPT AI</span>
+            Unlock Ancient Wisdom with <span className="text-orange-600">HinduGPT AI</span>
           </h2>
 
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Your intelligent companion for exploring Hindu wisdom and
-            spirituality
+            Engage in insightful conversations, get instant answers, and explore the vastness of Hindu philosophy with your personalized AI companion.
           </p>
         </div>
 
