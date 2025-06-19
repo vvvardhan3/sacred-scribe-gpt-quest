@@ -19,19 +19,19 @@ const slides = [
     title: "Vedas",
     description:
       "Ancient sacred texts - Rigveda, Samaveda, Yajurveda, and Atharvaveda. Dive into hymns, chants, and rituals that form the foundation of Hindu philosophy.",
-    image: "https://www.hinduamerican.org/wp-content/uploads/2020/09/968px-Ganesha_write_Mahabharata-e1599849933890.jpg"
+    image: "/vedas.jpg"
   },
   {
     title: "Puranas",
     description:
       "Stories and legends of gods, goddesses, and ancient heroes. Explore cosmic cycles, genealogies, and moral lessons through vibrant narratives.",
-    icon: <Zap size={48} className="text-red-500" />,
+    image: "public/puranas.jpg"
   },
   {
     title: "Upanishads",
     description:
       "Philosophical texts exploring the nature of reality and consciousness. Engage with profound dialogues on Brahman, Atman, and the means to spiritual liberation.",
-    icon: <Brain size={48} className="text-yellow-600" />,
+   image: "/upanishads.jpg"
   },
   {
     title: "Bhagavad Gita",
