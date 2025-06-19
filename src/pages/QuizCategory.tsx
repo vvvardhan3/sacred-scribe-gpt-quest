@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -55,7 +56,7 @@ const QuizCategory = () => {
       questionCount: selectedQuestionCount
     });
 
-    // Create the query string properly
+    // Navigate to quiz play with proper parameters
     const params = new URLSearchParams({
       category: decodedCategory,
       difficulty: selectedDifficulty,

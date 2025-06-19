@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
-import { Users, MessageSquare, HelpCircle, Star, BarChart3, Activity } from 'lucide-react';
+import { Users, MessageSquare, HelpCircle, Star, Shield, LogOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const Admin = () => {
   const [stats, setStats] = useState({
@@ -19,10 +20,16 @@ const Admin = () => {
   const [feedback, setFeedback] = useState([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchAdminData();
   }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('admin_authenticated');
+    navigate('/admin-login');
+  };
 
   const fetchAdminData = async () => {
     try {
@@ -31,12 +38,12 @@ const Admin = () => {
         .from('profiles')
         .select('*', { count: 'exact', head: true });
 
-      // Fetch message count - using correct table name 'messages'
+      // Fetch message count
       const { count: messageCount } = await supabase
         .from('messages')
         .select('*', { count: 'exact', head: true });
 
-      // Fetch quiz count - using correct table name 'progress'
+      // Fetch quiz count
       const { count: quizCount } = await supabase
         .from('progress')
         .select('*', { count: 'exact', head: true });
@@ -57,7 +64,8 @@ const Admin = () => {
       const { data: usersData } = await supabase
         .from('profiles')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(10);
 
       setUsers(usersData || []);
 
@@ -66,12 +74,14 @@ const Admin = () => {
         .from('feedback')
         .select(`
           *,
-          profiles!feedback_user_id_fkey (
+          profiles (
             display_name
           )
         `)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(20);
 
+      console.log('Fetched feedback data:', feedbackData);
       setFeedback(feedbackData || []);
 
     } catch (error) {
@@ -88,110 +98,107 @@ const Admin = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-red-50">
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center space-x-3">
+              <Shield className="w-8 h-8 text-orange-600" />
+              <h1 className="text-2xl font-bold text-gray-900">HinduGPT Admin</h1>
+            </div>
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              className="text-red-600 border-red-300 hover:bg-red-50"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+          </div>
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto p-8">
-        <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-2">
-            Admin Dashboard
-          </h1>
-          <p className="text-gray-600 text-lg">Monitor and manage your HinduGPT platform</p>
-        </div>
-
-        {/* Enhanced Stats Cards */}
+        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-lg hover:shadow-xl transition-shadow">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-blue-100">Total Users</CardTitle>
-              <Users className="h-6 w-6 text-blue-200" />
+              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{stats.totalUsers}</div>
-              <p className="text-xs text-blue-200 mt-1">Registered members</p>
+              <div className="text-2xl font-bold">{stats.totalUsers}</div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0 shadow-lg hover:shadow-xl transition-shadow">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-green-100">Total Messages</CardTitle>
-              <MessageSquare className="h-6 w-6 text-green-200" />
+              <CardTitle className="text-sm font-medium">Messages</CardTitle>
+              <MessageSquare className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{stats.totalMessages}</div>
-              <p className="text-xs text-green-200 mt-1">Chat interactions</p>
+              <div className="text-2xl font-bold">{stats.totalMessages}</div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transition-shadow">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-purple-100">Total Quizzes</CardTitle>
-              <HelpCircle className="h-6 w-6 text-purple-200" />
+              <CardTitle className="text-sm font-medium">Quiz Attempts</CardTitle>
+              <HelpCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{stats.totalQuizzes}</div>
-              <p className="text-xs text-purple-200 mt-1">Quiz attempts</p>
+              <div className="text-2xl font-bold">{stats.totalQuizzes}</div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 shadow-lg hover:shadow-xl transition-shadow">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-orange-100">Total Feedback</CardTitle>
-              <Star className="h-6 w-6 text-orange-200" />
+              <CardTitle className="text-sm font-medium">Feedback</CardTitle>
+              <Star className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{stats.totalFeedback}</div>
-              <p className="text-xs text-orange-200 mt-1">User submissions</p>
+              <div className="text-2xl font-bold">{stats.totalFeedback}</div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Enhanced Tabs */}
+        {/* Tabs */}
         <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 bg-white/60 backdrop-blur-sm border border-orange-200">
-            <TabsTrigger value="users" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-              Users Management
-            </TabsTrigger>
-            <TabsTrigger value="feedback" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
-              User Feedback
-            </TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="feedback">Feedback</TabsTrigger>
           </TabsList>
 
           <TabsContent value="users" className="space-y-4">
-            <Card className="bg-white/80 backdrop-blur-sm border-orange-200 shadow-lg">
+            <Card>
               <CardHeader>
-                <CardTitle className="text-2xl text-gray-900 flex items-center">
-                  <Users className="w-6 h-6 mr-3 text-orange-600" />
-                  Recent Users
-                </CardTitle>
-                <CardDescription className="text-gray-600">
-                  Latest registered users on the platform
-                </CardDescription>
+                <CardTitle>Recent Users</CardTitle>
+                <CardDescription>Latest registered users</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {users.slice(0, 10).map((user) => (
-                    <div key={user.id} className="flex items-center justify-between p-4 bg-white rounded-lg border border-orange-100 hover:shadow-md transition-shadow">
+                  {users.map((user) => (
+                    <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center text-white font-bold">
+                        <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold">
                           {user.display_name?.charAt(0)?.toUpperCase() || 'U'}
                         </div>
                         <div>
-                          <p className="font-semibold text-gray-900">{user.display_name || 'Unknown User'}</p>
-                          <p className="text-sm text-gray-500">{user.id}</p>
-                          <p className="text-xs text-gray-400">
+                          <p className="font-semibold">{user.display_name || 'Unknown User'}</p>
+                          <p className="text-sm text-gray-500">
                             Joined: {new Date(user.created_at).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
-                      <Badge variant="secondary" className="bg-orange-100 text-orange-700 hover:bg-orange-200">
-                        Active User
-                      </Badge>
+                      <Badge variant="secondary">Active</Badge>
                     </div>
                   ))}
                 </div>
@@ -200,61 +207,63 @@ const Admin = () => {
           </TabsContent>
 
           <TabsContent value="feedback" className="space-y-4">
-            <Card className="bg-white/80 backdrop-blur-sm border-orange-200 shadow-lg">
+            <Card>
               <CardHeader>
-                <CardTitle className="text-2xl text-gray-900 flex items-center">
-                  <Star className="w-6 h-6 mr-3 text-orange-600" />
-                  User Feedback & Reports
-                </CardTitle>
-                <CardDescription className="text-gray-600">
-                  Recent feedback, bug reports, and feature requests from users
-                </CardDescription>
+                <CardTitle>User Feedback</CardTitle>
+                <CardDescription>Bug reports, suggestions, and feature requests</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {feedback.slice(0, 10).map((item) => (
-                    <div key={item.id} className="p-6 bg-white rounded-lg border border-orange-100 hover:shadow-md transition-shadow">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                            {item.profiles?.display_name?.charAt(0)?.toUpperCase() || 'U'}
-                          </div>
-                          <div>
-                            <p className="font-semibold text-gray-900">
-                              {item.profiles?.display_name || 'Anonymous User'}
-                            </p>
-                            <p className="text-sm text-gray-500">{item.title}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-3">
-                          <Badge 
-                            variant={item.type === 'bug' ? 'destructive' : item.type === 'feature' ? 'default' : 'secondary'}
-                            className="capitalize"
-                          >
-                            {item.type}
-                          </Badge>
-                          <span className="text-xs text-gray-400">
-                            {new Date(item.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-                      <p className="text-gray-700 leading-relaxed mb-3">{item.description}</p>
-                      <div className="flex items-center justify-between">
-                        <Badge 
-                          variant={item.status === 'open' ? 'secondary' : item.status === 'resolved' ? 'default' : 'outline'}
-                          className="capitalize"
-                        >
-                          {item.status}
-                        </Badge>
-                        <Badge 
-                          variant={item.priority === 'high' ? 'destructive' : item.priority === 'medium' ? 'default' : 'secondary'}
-                          className="capitalize"
-                        >
-                          {item.priority} Priority
-                        </Badge>
-                      </div>
+                  {feedback.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      No feedback submissions yet
                     </div>
-                  ))}
+                  ) : (
+                    feedback.map((item) => (
+                      <div key={item.id} className="border rounded-lg p-4 space-y-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                              {item.profiles?.display_name?.charAt(0)?.toUpperCase() || 'U'}
+                            </div>
+                            <div>
+                              <p className="font-semibold text-sm">
+                                {item.profiles?.display_name || 'Anonymous User'}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {new Date(item.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Badge 
+                              variant={item.type === 'bug' ? 'destructive' : 
+                                      item.type === 'feature' ? 'default' : 'secondary'}
+                            >
+                              {item.type}
+                            </Badge>
+                            <Badge variant="outline">
+                              {item.priority}
+                            </Badge>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <h4 className="font-medium text-sm mb-1">{item.title}</h4>
+                          <p className="text-sm text-gray-700">{item.description}</p>
+                        </div>
+                        
+                        <div className="flex items-center justify-between text-xs">
+                          <Badge variant={item.status === 'open' ? 'secondary' : 'default'}>
+                            {item.status}
+                          </Badge>
+                          {item.page_url && (
+                            <span className="text-gray-500">Page: {item.page_url}</span>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
