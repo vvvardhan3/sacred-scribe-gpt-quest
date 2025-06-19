@@ -64,7 +64,7 @@ const Index = () => {
           <div className="flex justify-between items-center py-2">
             <div className="flex items-center space-x-2 cursor-pointer" onClick={handleLogoClick}>
               <img src="/icon.png" alt="HinduGPT Logo" className="w-16 h-16 rounded-full" />
-              <span className="text-xl font-bold text-gray-900">HinduGPT</span>
+              <span className="text-lg font-bold text-gray-900" >HinduGPT</span>
             </div>
             
             {/* Desktop Navigation - Added menu items */}
@@ -75,7 +75,10 @@ const Index = () => {
                 <Link to="/chat" className="text-gray-600 hover:text-orange-600 font-medium transition-colors">AI Assistant</Link>
                 <a href="#pricing" className="text-gray-600 hover:text-orange-600 font-medium transition-colors">Pricing</a>
               </nav>
-              <div className="flex space-x-4">
+             
+            </div>
+
+             <div className="flex space-x-4">
                 <Link to="/login">
                   <Button variant="outline" className="border-orange-200 hover:border-orange-300 hover:bg-orange-50">Log In</Button>
                 </Link>
@@ -83,7 +86,6 @@ const Index = () => {
                   <Button className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600">Sign Up</Button>
                 </Link>
               </div>
-            </div>
 
             {/* Mobile Navigation */}
             <div className="md:hidden">
