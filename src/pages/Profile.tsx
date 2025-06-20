@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -60,6 +59,7 @@ const Profile = () => {
         console.log('Profile not found, creating new profile...');
         const newProfile = {
           id: user.id,
+          email: user.email || '',
           display_name: user.email?.split('@')[0] || 'User',
           first_name: '',
           last_name: '',
