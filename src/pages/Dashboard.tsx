@@ -1,5 +1,6 @@
+
 import React, { useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -52,6 +53,7 @@ const SCRIPTURE_CATEGORIES = [
 ];
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const { limits, usage, isCategoryAllowed } = useUserLimits();
 
   // Memoize categories with their access status
@@ -117,8 +119,8 @@ const Dashboard = () => {
   };
 
   const handleStartConversation = () => {
-    // Open chat in a new window
-    window.open('/chat', '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+    // Navigate to chat instead of opening new window
+    navigate('/chat');
   };
 
   return (

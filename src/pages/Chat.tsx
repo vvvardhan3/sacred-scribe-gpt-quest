@@ -14,7 +14,6 @@ import { useUserLimits } from '@/hooks/useUserLimits';
 const Chat = () => {
   const { conversationId } = useParams();
   const navigate = useNavigate();
-  const [showWarningModal, setShowWarningModal] = useState(false);
   
   const {
     conversations,
@@ -76,35 +75,38 @@ const Chat = () => {
       const newId = await createNewConversation();
       if (newId) {
         navigate(`/chat/${newId}`);
+        // Wait a bit for navigation to complete, then send message
         setTimeout(() => {
           sendMessage();
         }, 100);
       }
     } else {
-      if (remainingMessages <= 3 && remainingMessages > 0 && limits?.subscriptionTier !== 'Guru Plan') {
-        setShowWarningModal(true);
-        return;
-      }
-      
-      if (!canSendMessage) {
-        return;
-      }
-      
       sendMessage();
     }
   };
 
-  const handleWarningModalContinue = () => {
-    setShowWarningModal(false);
-    if (hookHandleWarningModalContinue) {
-      hookHandleWarningModalContinue();
+  const handleSuggestionClickWithConversation = async (suggestion: string) => {
+    if (!activeConversationId) {
+      console.log('No active conversation for suggestion, creating new one...');
+      const newId = await createNewConversation();
+      if (newId) {
+        navigate(`/chat/${newId}`);
+        // Wait for navigation and set the input
+        setTimeout(() => {
+          handleSuggestionClick(suggestion);
+          // Then send the message automatically
+          setTimeout(() => {
+            sendMessage();
+          }, 50);
+        }, 100);
+      }
     } else {
-      sendMessage();
+      handleSuggestionClick(suggestion);
+      // Send the message automatically after setting the input
+      setTimeout(() => {
+        sendMessage();
+      }, 50);
     }
-  };
-
-  const handleCloseWarningModal = () => {
-    setShowWarningModal(false);
   };
 
   const isAtLimit = !userCanSendMessage();
@@ -137,23 +139,23 @@ const Chat = () => {
               loading={loading}
               streamingMessageId={streamingMessageId}
               expandedCitations={expandedCitations}
-              showWarningModal={showWarningModal || hookShowWarningModal}
+              showWarningModal={hookShowWarningModal}
               isAtLimit={isAtLimit}
               remainingMessages={remainingMessages}
               limits={limits}
               onInputChange={setInput}
               onSendMessage={handleSendMessage}
               onToggleCitations={toggleCitations}
-              onSuggestionClick={handleSuggestionClick}
-              onWarningModalContinue={handleWarningModalContinue}
-              onCloseWarningModal={handleCloseWarningModal}
+              onSuggestionClick={handleSuggestionClickWithConversation}
+              onWarningModalContinue={hookHandleWarningModalContinue}
+              onCloseWarningModal={() => setHookShowWarningModal(false)}
               onCreateNew={handleNewConversation}
             />
           ) : (
             <div className="flex-1 flex flex-col">
               <WelcomeScreen 
                 onCreateNew={handleNewConversation}
-                onSuggestionClick={handleSuggestionClick}
+                onSuggestionClick={handleSuggestionClickWithConversation}
               />
               <div className="max-w-4xl mx-auto w-full">
                 <ChatInput

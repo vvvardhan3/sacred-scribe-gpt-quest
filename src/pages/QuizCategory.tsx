@@ -35,14 +35,13 @@ const QuizCategory = () => {
   const handleCreateQuiz = () => {
     console.log('Creating quiz for category:', decodedCategory);
     
-    // Navigate to quiz play with default parameters
-    const params = new URLSearchParams({
-      category: decodedCategory,
-      difficulty: 'medium',
-      questionCount: '10'
+    // Navigate to quiz play page with the category parameter
+    navigate('/quiz/play', { 
+      state: { 
+        category: decodedCategory,
+        mode: 'generate'
+      }
     });
-
-    navigate(`/quiz/play?${params.toString()}`);
   };
 
   if (!isAllowed) {
