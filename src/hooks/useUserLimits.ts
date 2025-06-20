@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from './useSubscription';
@@ -57,7 +56,6 @@ export const useUserLimits = () => {
     return SUBSCRIPTION_LIMITS.free;
   };
 
-  // Fetch user usage from database
   const fetchUsage = async () => {
     if (!user) {
       setUsage(null);
@@ -84,27 +82,23 @@ export const useUserLimits = () => {
     }
   };
 
-  // Check if user can send a message
   const canSendMessage = (): boolean => {
     if (!usage) return false;
     const limits = getCurrentLimits();
     return usage.messages_sent_today < limits.maxDailyMessages;
   };
 
-  // Check if user can create a quiz
   const canCreateQuiz = (): boolean => {
     if (!usage) return false;
     const limits = getCurrentLimits();
     return usage.quizzes_created_total < limits.maxQuizzes;
   };
 
-  // Check if category is allowed for user's subscription
   const isCategoryAllowed = (category: string): boolean => {
     const limits = getCurrentLimits();
     return limits.allowedCategories.includes(category);
   };
 
-  // Increment message count
   const incrementMessageCount = async () => {
     if (!user) return;
 
@@ -115,14 +109,12 @@ export const useUserLimits = () => {
         },
       });
       
-      // Refresh usage after incrementing
       fetchUsage();
     } catch (error) {
       // Handle error silently
     }
   };
 
-  // Increment quiz count
   const incrementQuizCount = async () => {
     if (!user) return;
 
@@ -133,7 +125,6 @@ export const useUserLimits = () => {
         },
       });
       
-      // Refresh usage after incrementing
       fetchUsage();
     } catch (error) {
       // Handle error silently

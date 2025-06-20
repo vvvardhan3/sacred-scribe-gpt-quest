@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0';
@@ -14,11 +13,11 @@ const SUBSCRIPTION_LIMITS = {
     maxQuizzes: 1,
     allowedCategories: ['Vedas', 'Puranas', 'Upanishads']
   },
-  'Devotee Plan': {
+  devotee: {
     maxQuizzes: 5,
     allowedCategories: ['Vedas', 'Puranas', 'Upanishads', 'Mahabharata', 'Bhagavad Gita', 'Ramayana']
   },
-  'Guru Plan': {
+  guru: {
     maxQuizzes: Infinity,
     allowedCategories: ['Vedas', 'Puranas', 'Upanishads', 'Mahabharata', 'Bhagavad Gita', 'Ramayana']
   }
@@ -63,7 +62,7 @@ serve(async (req) => {
     // Get user's subscription details to check limits
     const { data: subscriptionData, error: subError } = await supabase
       .from('subscribers')
-      .select('subscribed, subscription_tier')
+      .select('subscribed, plan_id')
       .eq('user_id', user.id)
       .maybeSingle();
 
@@ -71,10 +70,13 @@ serve(async (req) => {
       console.error('Error fetching subscription:', subError);
     }
 
-    // Determine user's subscription tier
-    const subscriptionTier = subscriptionData?.subscribed 
-      ? subscriptionData.subscription_tier 
-      : 'free';
+    // Determine user's subscription tier - fix the logic here
+    let subscriptionTier = 'free';
+    if (subscriptionData?.subscribed && subscriptionData?.plan_id) {
+      subscriptionTier = subscriptionData.plan_id;
+    }
+
+    console.log('User subscription tier:', subscriptionTier);
 
     // Get subscription limits for this tier
     const userLimits = SUBSCRIPTION_LIMITS[subscriptionTier as keyof typeof SUBSCRIPTION_LIMITS] || SUBSCRIPTION_LIMITS.free;
@@ -92,8 +94,10 @@ serve(async (req) => {
 
     const currentQuizCount = usageData && usageData.length > 0 ? usageData[0].quizzes_created_total : 0;
 
+    console.log(`User quiz count: ${currentQuizCount}, Limit: ${userLimits.maxQuizzes}`);
+
     // Check if user has reached quiz limit
-    if (currentQuizCount >= userLimits.maxQuizzes) {
+    if (userLimits.maxQuizzes !== Infinity && currentQuizCount >= userLimits.maxQuizzes) {
       console.error(`User has reached quiz limit: ${currentQuizCount}/${userLimits.maxQuizzes}`);
       throw new Error(`You have reached your quiz creation limit of ${userLimits.maxQuizzes} for your subscription plan. Please upgrade to create more quizzes.`);
     }

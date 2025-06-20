@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import { useUserLimits } from '@/hooks/useUserLimits';
+import { PreviousQuizzes } from '@/components/quiz/PreviousQuizzes';
 import FeedbackButton from '@/components/FeedbackButton';
 
 const QuizCategory = () => {
@@ -135,11 +136,14 @@ const QuizCategory = () => {
               className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white px-12 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
             >
               <Play className="w-5 h-5 mr-2" />
-              Create Quiz
+              Create New Quiz
               <Sparkles className="w-5 h-5 ml-2" />
             </Button>
           </CardContent>
         </Card>
+
+        {/* Previous Quizzes */}
+        <PreviousQuizzes category={decodedCategory} />
 
         {/* Feedback Button */}
         <div className="fixed bottom-6 right-6">
