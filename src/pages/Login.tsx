@@ -7,13 +7,20 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Facebook } from "lucide-react";
 import { Chrome } from "lucide-react";
+import { Twitter } from "lucide-react";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   // NEW: Get signInWithGoogle from useAuth
-  const { signIn, signInWithGoogle, signInWithFacebook, user } = useAuth();
+  const {
+    signIn,
+    signInWithGoogle,
+    signInWithFacebook,
+    signInWithTwitter,
+    user,
+  } = useAuth();
   const { toast } = useToast();
   const location = useLocation();
 
@@ -86,6 +93,25 @@ const Login = () => {
     // The loading state will remain true until the page reloads after redirect.
   };
 
+  const handleTwitterSignIn = async () => {
+    setLoading(true); // Indicate loading state for the button
+
+    const { error } = await signInWithTwitter(); // Call the new Twitter sign-in function
+
+    if (error) {
+      // This error usually happens *before* the redirect (e.g., misconfiguration)
+      toast({
+        title: "X (Twitter) Sign-in Failed",
+        description:
+          error.message || "Something went wrong during X sign-in setup.",
+        variant: "destructive",
+      });
+      setLoading(false); // Reset loading if an immediate error occurs
+    }
+    // If no immediate error, a redirect has been initiated.
+    // The loading state will remain true until the page reloads after redirect.
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-red-100">
       <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-lg">
@@ -140,7 +166,7 @@ const Login = () => {
           className="w-full flex items-center justify-center gap-2 bg-blue-800 hover:bg-blue-900 text-white" // Adjust color for Facebook
           disabled={loading}
         >
-          {/* <Facebook className="h-5 w-5" /> */}
+          <Facebook className="h-5 w-5" />
           {loading ? "Redirecting..." : "Sign In with Facebook"}
         </Button>
 
@@ -149,9 +175,17 @@ const Login = () => {
           className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
           disabled={loading}
         >
-          {/* You can add a Google icon here */}
-          {/* <Chrome className="h-5 w-5" /> */}
+          <Chrome className="h-5 w-5" />
           {loading ? "Redirecting..." : "Sign In with Google"}
+        </Button>
+
+        <Button
+          onClick={handleTwitterSignIn}
+          className="w-full flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-900 text-white"
+          disabled={loading}
+        >
+          <Twitter className="h-5 w-5" />
+          {loading ? "Redirecting..." : "Sign In with X (Twitter)"}
         </Button>
 
         <div className="text-center">

@@ -14,6 +14,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<{ error: any | null }>;
   signInWithFacebook: () => Promise<{ error: any | null }>;
+  signInWithTwitter: () => Promise<{ error: any | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -88,7 +89,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     await supabase.auth.signOut();
   };
 
-  // NEW: Function to sign in with Google
+ 
   const signInWithGoogle = async () => {
     // The redirect URL where the user will be sent after Google authentication
     // This should match one of your "Authorized redirect URIs" in Google Cloud Console
@@ -133,6 +134,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return { error: null };
   };
 
+  const signInWithTwitter = async () => {
+    const redirectUrl = `${window.location.origin}/dashboard`; // Same redirect as others
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'twitter', // Use 'twitter' as the provider name
+      options: {
+        redirectTo: redirectUrl,
+      },
+    });
+
+    if (error) {
+      console.error("Error initiating X (Twitter) sign-in:", error);
+      return { error };
+    }
+    return { error: null };
+  };
+
 
   const value = {
     user,
@@ -142,7 +160,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     signIn,
     signOut,
     signInWithGoogle, 
-    signInWithFacebook
+    signInWithFacebook,
+    signInWithTwitter
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
