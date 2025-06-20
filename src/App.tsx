@@ -78,7 +78,12 @@ function App() {
                   <QuizPlay />
                 </AuthGuard>
               } />
-              <Route path="/quiz/results" element={
+              <Route path="/quiz/play/:quizId" element={
+                <AuthGuard>
+                  <QuizPlay />
+                </AuthGuard>
+              } />
+              <Route path="/quiz/results/:progressId" element={
                 <AuthGuard>
                   <QuizResults />
                 </AuthGuard>

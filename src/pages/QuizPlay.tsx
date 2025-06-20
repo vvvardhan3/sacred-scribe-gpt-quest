@@ -202,6 +202,7 @@ const QuizPlay = () => {
         description: `You scored ${score} out of ${questions.length}`,
       });
 
+      // Navigate to results page with progress ID
       navigate(`/quiz/results/${progressData.id}`);
     } catch (error) {
       console.error('Error submitting quiz:', error);
