@@ -23,6 +23,8 @@ import Billing from "./pages/Billing";
 import Admin from "./pages/Admin";
 import AdminLogin from "./pages/AdminLogin";
 import NotFound from "./pages/NotFound";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 // Admin Guard Component
 const AdminGuard = ({ children }: { children: React.ReactNode }) => {
@@ -47,6 +49,8 @@ function App() {
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/forgot-password" element={<ForgotPassword/>} />
+               <Route path="/reset-password" element={<ResetPassword/>} />
               <Route path="/admin-login" element={<AdminLogin />} />
               <Route path="/admin" element={
                 <AdminGuard>
