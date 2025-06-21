@@ -20,7 +20,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
-  console.log( "AuthContext: ",AuthContext);
+  // console.log( "AuthContext: ",AuthContext);
   
   const context = useContext(AuthContext);
 
