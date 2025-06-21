@@ -92,12 +92,14 @@ export const useAdminStats = () => {
 
       console.log('Admin stats data:', adminStatsData, 'Error:', adminStatsError);
 
-      // Parse the admin stats response - it should be a JSON object now
+      // Parse the admin stats response with proper type casting
       let totalUsers = 0;
       let feedbackCount = 0;
       if (adminStatsData && !adminStatsError) {
-        totalUsers = adminStatsData.total_users || 0;
-        feedbackCount = adminStatsData.feedback_submissions || 0;
+        // Cast to the expected response type
+        const statsResponse = adminStatsData as AdminStatsResponse;
+        totalUsers = statsResponse.total_users || 0;
+        feedbackCount = statsResponse.feedback_submissions || 0;
         console.log('Parsed total users:', totalUsers);
         console.log('Parsed feedback count:', feedbackCount);
       }
