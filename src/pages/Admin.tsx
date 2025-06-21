@@ -20,9 +20,7 @@ interface FeedbackItem {
   priority: string;
   created_at: string;
   updated_at: string;
-  profiles?: {
-    display_name?: string;
-  } | null;
+  user_display_name?: string;
 }
 
 const Admin = () => {
@@ -85,31 +83,42 @@ const Admin = () => {
 
       setUsers(usersData || []);
 
-      // Fetch feedback with user profiles - fix the join
+      // Fetch feedback data
       const { data: feedbackData, error: feedbackError } = await supabase
         .from('feedback')
-        .select(`
-          *,
-          profiles!feedback_user_id_fkey (
-            display_name
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(20);
 
       if (feedbackError) {
         console.error('Error fetching feedback:', feedbackError);
-        // Fallback: fetch feedback without profiles
-        const { data: simpleFeedbackData } = await supabase
-          .from('feedback')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(20);
-        
-        setFeedback(simpleFeedbackData || []);
+        setFeedback([]);
       } else {
-        console.log('Fetched feedback data:', feedbackData);
-        setFeedback(feedbackData || []);
+        // Fetch user display names for feedback items
+        const feedbackWithUsers: FeedbackItem[] = [];
+        
+        for (const item of feedbackData || []) {
+          let userDisplayName = 'Anonymous User';
+          
+          // Try to get user display name from profiles
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('display_name')
+            .eq('id', item.user_id)
+            .single();
+          
+          if (profileData?.display_name) {
+            userDisplayName = profileData.display_name;
+          }
+          
+          feedbackWithUsers.push({
+            ...item,
+            user_display_name: userDisplayName
+          });
+        }
+        
+        console.log('Fetched feedback data:', feedbackWithUsers);
+        setFeedback(feedbackWithUsers);
       }
 
     } catch (error) {
@@ -252,11 +261,11 @@ const Admin = () => {
                         <div className="flex items-start justify-between">
                           <div className="flex items-center space-x-3">
                             <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                              {item.profiles?.display_name?.charAt(0)?.toUpperCase() || 'U'}
+                              {item.user_display_name?.charAt(0)?.toUpperCase() || 'U'}
                             </div>
                             <div>
                               <p className="font-semibold text-sm">
-                                {item.profiles?.display_name || 'Anonymous User'}
+                                {item.user_display_name || 'Anonymous User'}
                               </p>
                               <p className="text-xs text-gray-500">
                                 {new Date(item.created_at).toLocaleDateString()}
