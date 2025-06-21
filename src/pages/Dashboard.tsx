@@ -17,6 +17,7 @@ import { useUserLimits } from '@/hooks/useUserLimits';
 import RazorpayPayment from '@/components/RazorpayPayment';
 import FeedbackButton from '@/components/FeedbackButton';
 import Footer from '@/components/Footer';
+import LoadingSkeleton from '@/components/LoadingSkeleton';
 
 // Move categories outside component to prevent recreation on every render
 const SCRIPTURE_CATEGORIES = [
@@ -54,7 +55,7 @@ const SCRIPTURE_CATEGORIES = [
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { limits, usage, isCategoryAllowed } = useUserLimits();
+  const { limits, usage, isCategoryAllowed, loading } = useUserLimits();
 
   // Memoize categories with their access status
   const categoriesWithAccess = useMemo(() => {
@@ -145,17 +146,25 @@ const Dashboard = () => {
           </p>
         </div>
         
-        {/* All Categories in One Grid */}
+        {/* Categories Grid with Loading State */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {categoriesWithAccess.map((category) => (
-            <div key={category.name}>
-              {renderScriptureCard(category)}
-            </div>
-          ))}
+          {loading ? (
+            // Show skeleton placeholders while loading
+            Array.from({ length: 6 }).map((_, index) => (
+              <LoadingSkeleton key={index} />
+            ))
+          ) : (
+            // Show actual categories after loading
+            categoriesWithAccess.map((category) => (
+              <div key={category.name}>
+                {renderScriptureCard(category)}
+              </div>
+            ))
+          )}
         </div>
 
-        {/* Upgrade CTA - Only show if user has locked categories */}
-        {hasLockedCategories && (
+        {/* Upgrade CTA - Only show if user has locked categories and not loading */}
+        {!loading && hasLockedCategories && (
           <div className="mb-8">
             <Card className="max-w-4xl mx-auto border-orange-200 bg-gradient-to-r from-orange-50 to-red-50">
               <CardContent className="p-8 text-center">
