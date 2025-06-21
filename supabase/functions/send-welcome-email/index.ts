@@ -41,7 +41,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send the email using Resend
     const emailResponse = await resend.emails.send({
-      from: "HinduGPT <onboarding@resend.dev>",
+      from: "<welcome@hindugpt.in>",
       to: [email],
       subject: "🕉️ Welcome to HinduGPT - Your Spiritual Journey Begins!",
       html: html,
