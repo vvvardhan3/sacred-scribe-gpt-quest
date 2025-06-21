@@ -26,7 +26,12 @@ const FeedbackButton: React.FC<FeedbackButtonProps> = ({ className = '' }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('Feedback submission started...');
+    console.log('User:', user?.id);
+    console.log('Form data:', { type, title, description });
+
     if (!user) {
+      console.log('No user found, showing auth error');
       toast({
         title: "Authentication Required",
         description: "Please log in to submit feedback.",
@@ -36,6 +41,7 @@ const FeedbackButton: React.FC<FeedbackButtonProps> = ({ className = '' }) => {
     }
 
     if (!type || !title || !description) {
+      console.log('Missing form data');
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields.",
@@ -47,17 +53,30 @@ const FeedbackButton: React.FC<FeedbackButtonProps> = ({ className = '' }) => {
     setLoading(true);
 
     try {
-      const { error } = await supabase
-        .from('feedback')
-        .insert({
-          user_id: user.id,
-          type,
-          title,
-          description,
-          page_url: window.location.pathname
-        });
+      console.log('Attempting to insert feedback...');
+      const feedbackData = {
+        user_id: user.id,
+        type,
+        title,
+        description,
+        page_url: window.location.pathname
+      };
+      
+      console.log('Feedback data to insert:', feedbackData);
 
-      if (error) throw error;
+      const { data, error } = await supabase
+        .from('feedback')
+        .insert(feedbackData)
+        .select();
+
+      console.log('Insert result:', { data, error });
+
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+
+      console.log('Feedback submitted successfully:', data);
 
       toast({
         title: "Feedback Submitted",
@@ -69,11 +88,11 @@ const FeedbackButton: React.FC<FeedbackButtonProps> = ({ className = '' }) => {
       setTitle('');
       setDescription('');
       setIsOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting feedback:', error);
       toast({
         title: "Error",
-        description: "Failed to submit feedback. Please try again.",
+        description: error.message || "Failed to submit feedback. Please try again.",
         variant: "destructive"
       });
     } finally {
