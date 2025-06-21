@@ -9,6 +9,30 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_users: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          password_hash: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          password_hash: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          password_hash?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contact_submissions: {
         Row: {
           created_at: string
@@ -458,6 +482,14 @@ export type Database = {
       reset_daily_messages_if_needed: {
         Args: { p_user_id: string }
         Returns: undefined
+      }
+      verify_admin_credentials: {
+        Args: { p_email: string; p_password: string }
+        Returns: boolean
+      }
+      verify_admin_credentials_simple: {
+        Args: { p_email: string; p_password: string }
+        Returns: boolean
       }
     }
     Enums: {

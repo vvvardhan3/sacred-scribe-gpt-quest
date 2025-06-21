@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Shield, Lock } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
@@ -32,21 +33,49 @@ const AdminLogin = () => {
     e.preventDefault();
     setLoading(true);
 
-    // Hardcoded admin credentials
-    const ADMIN_EMAIL = 'vardhanv1999@gmail.com';
-    const ADMIN_PASSWORD = 'Preethi@3108';
+    try {
+      console.log('Attempting admin login for:', email);
+      
+      // Call the database function to verify credentials
+      const { data, error } = await supabase
+        .rpc('verify_admin_credentials_simple', {
+          p_email: email,
+          p_password: password
+        });
 
-    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      localStorage.setItem('admin_authenticated', 'true');
+      console.log('Verification result:', data, 'Error:', error);
+
+      if (error) {
+        console.error('Database error during admin login:', error);
+        toast({
+          title: "Authentication Error",
+          description: "An error occurred during authentication. Please try again.",
+          variant: "destructive"
+        });
+      } else if (data === true) {
+        // Store admin authentication state
+        localStorage.setItem('admin_authenticated', 'true');
+        localStorage.setItem('admin_email', email);
+        
+        console.log('Admin login successful');
+        toast({
+          title: "Welcome Admin!",
+          description: "You have successfully logged in to the admin panel.",
+        });
+        navigate('/admin');
+      } else {
+        console.log('Invalid credentials provided');
+        toast({
+          title: "Access Denied",
+          description: "Invalid admin credentials. Please check your email and password.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error during admin login:', error);
       toast({
-        title: "Welcome Admin!",
-        description: "You have successfully logged in to the admin panel.",
-      });
-      navigate('/admin');
-    } else {
-      toast({
-        title: "Access Denied",
-        description: "Invalid admin credentials. Please check your email and password.",
+        title: "Authentication Error",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive"
       });
     }
@@ -119,7 +148,7 @@ const AdminLogin = () => {
           <div className="text-center text-sm text-gray-500 pt-4 border-t">
             <p className="flex items-center justify-center">
               <Shield className="w-4 h-4 mr-2" />
-              Restricted access only
+              Database-authenticated access
             </p>
           </div>
         </CardContent>
