@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,6 +14,7 @@ interface UserProfile {
   display_name: string;
   first_name: string | null;
   last_name: string | null;
+  email: string;
   profile_picture_url: string | null;
 }
 

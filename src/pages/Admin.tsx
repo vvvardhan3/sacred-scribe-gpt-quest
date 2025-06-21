@@ -1,311 +1,175 @@
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import React from 'react';
+import Navigation from '@/components/Navigation';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { supabase } from '@/integrations/supabase/client';
-import { Users, MessageSquare, HelpCircle, Star, Shield, LogOut } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
-
-interface FeedbackItem {
-  id: string;
-  user_id: string;
-  type: string;
-  title: string;
-  description: string;
-  page_url?: string;
-  status: string;
-  priority: string;
-  created_at: string;
-  updated_at: string;
-  user_display_name?: string;
-}
+import { 
+  Users, 
+  MessageSquare, 
+  Crown, 
+  Zap, 
+  IndianRupee,
+  RefreshCw,
+  ArrowLeft,
+  TrendingUp
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useAdminStats } from '@/hooks/useAdminStats';
 
 const Admin = () => {
-  const [stats, setStats] = useState({
-    totalUsers: 0,
-    totalMessages: 0,
-    totalQuizzes: 0,
-    totalFeedback: 0
-  });
-  const [users, setUsers] = useState([]);
-  const [feedback, setFeedback] = useState<FeedbackItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
-  const navigate = useNavigate();
+  const { stats, loading, refetch } = useAdminStats();
 
-  useEffect(() => {
-    fetchAdminData();
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem('admin_authenticated');
-    navigate('/admin-login');
-  };
-
-  const fetchAdminData = async () => {
-    try {
-      // Fetch user count
-      const { count: userCount } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true });
-
-      // Fetch message count
-      const { count: messageCount } = await supabase
-        .from('messages')
-        .select('*', { count: 'exact', head: true });
-
-      // Fetch quiz count
-      const { count: quizCount } = await supabase
-        .from('progress')
-        .select('*', { count: 'exact', head: true });
-
-      // Fetch feedback count
-      const { count: feedbackCount } = await supabase
-        .from('feedback')
-        .select('*', { count: 'exact', head: true });
-
-      setStats({
-        totalUsers: userCount || 0,
-        totalMessages: messageCount || 0,
-        totalQuizzes: quizCount || 0,
-        totalFeedback: feedbackCount || 0
-      });
-
-      // Fetch users with profile data
-      const { data: usersData } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      setUsers(usersData || []);
-
-      // Fetch feedback data
-      const { data: feedbackData, error: feedbackError } = await supabase
-        .from('feedback')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(20);
-
-      if (feedbackError) {
-        console.error('Error fetching feedback:', feedbackError);
-        setFeedback([]);
-      } else {
-        // Fetch user display names for feedback items
-        const feedbackWithUsers: FeedbackItem[] = [];
-        
-        for (const item of feedbackData || []) {
-          let userDisplayName = 'Anonymous User';
-          
-          // Try to get user display name from profiles
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('display_name')
-            .eq('id', item.user_id)
-            .single();
-          
-          if (profileData?.display_name) {
-            userDisplayName = profileData.display_name;
-          }
-          
-          feedbackWithUsers.push({
-            ...item,
-            user_display_name: userDisplayName
-          });
-        }
-        
-        console.log('Fetched feedback data:', feedbackWithUsers);
-        setFeedback(feedbackWithUsers);
-      }
-
-    } catch (error) {
-      console.error('Error fetching admin data:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch admin data",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
+  const statCards = [
+    {
+      title: 'Total Users',
+      value: stats.totalUsers.toLocaleString(),
+      icon: <Users className="w-6 h-6" />,
+      color: 'from-blue-500 to-blue-600',
+      change: '+12%'
+    },
+    {
+      title: 'Total Messages',
+      value: stats.totalMessages.toLocaleString(),
+      icon: <MessageSquare className="w-6 h-6" />,
+      color: 'from-green-500 to-green-600',
+      change: '+18%'
+    },
+    {
+      title: 'Devotee Subscribers',
+      value: stats.devoteeSubscribers.toLocaleString(),
+      icon: <Zap className="w-6 h-6" />,
+      color: 'from-orange-500 to-red-600',
+      change: '+8%'
+    },
+    {
+      title: 'Guru Subscribers',
+      value: stats.guruSubscribers.toLocaleString(),
+      icon: <Crown className="w-6 h-6" />,
+      color: 'from-purple-500 to-indigo-600',
+      change: '+15%'
+    },
+    {
+      title: 'Total Revenue',
+      value: `₹${stats.totalRevenue.toLocaleString()}`,
+      icon: <IndianRupee className="w-6 h-6" />,
+      color: 'from-emerald-500 to-teal-600',
+      change: '+25%'
+    },
+    {
+      title: 'Recent Payments',
+      value: stats.recentPayments.length.toString(),
+      icon: <TrendingUp className="w-6 h-6" />,
+      color: 'from-pink-500 to-rose-600',
+      change: '+5%'
     }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-600"></div>
-      </div>
-    );
-  }
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-3">
-              <Shield className="w-8 h-8 text-orange-600" />
-              <h1 className="text-2xl font-bold text-gray-900">HinduGPT Admin</h1>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50">
+      <Navigation />
+      <div className="min-h-screen px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center space-x-4">
+              <Link to="/dashboard">
+                <Button variant="ghost" size="sm" className="text-gray-600 hover:text-orange-600 hover:bg-orange-50">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Dashboard
+                </Button>
+              </Link>
+              <div>
+                <h1 className="text-4xl font-bold text-gray-900">Admin Dashboard</h1>
+                <p className="text-lg text-gray-600">Monitor system performance and user engagement</p>
+              </div>
             </div>
-            <Button
-              onClick={handleLogout}
-              variant="outline"
-              className="text-red-600 border-red-300 hover:bg-red-50"
+            <Button 
+              onClick={() => refetch()} 
+              disabled={loading}
+              className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white"
             >
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
             </Button>
           </div>
-        </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto p-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {statCards.map((card, index) => (
+              <Card key={index} className="relative overflow-hidden">
+                <div className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-br ${card.color} opacity-10 rounded-bl-full`}></div>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600">
+                    {card.title}
+                  </CardTitle>
+                  <div className={`p-2 rounded-lg bg-gradient-to-br ${card.color} text-white`}>
+                    {card.icon}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-gray-900">{card.value}</div>
+                  <p className="text-xs text-green-600 font-medium">
+                    {card.change} from last month
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Recent Payments Table */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <IndianRupee className="w-5 h-5 text-orange-600" />
+                Recent Payments
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalUsers}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Messages</CardTitle>
-              <MessageSquare className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalMessages}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Quiz Attempts</CardTitle>
-              <HelpCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalQuizzes}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Feedback</CardTitle>
-              <Star className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalFeedback}</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Tabs */}
-        <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="feedback">Feedback</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="users" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Users</CardTitle>
-                <CardDescription>Latest registered users</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {users.map((user) => (
-                    <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold">
-                          {user.display_name?.charAt(0)?.toUpperCase() || 'U'}
-                        </div>
-                        <div>
-                          <p className="font-semibold">{user.display_name || 'Unknown User'}</p>
-                          <p className="text-sm text-gray-500">
-                            Joined: {new Date(user.created_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                      <Badge variant="secondary">Active</Badge>
-                    </div>
-                  ))}
+              {stats.recentPayments.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-2">Payment ID</th>
+                        <th className="text-left py-2">Plan</th>
+                        <th className="text-left py-2">Amount</th>
+                        <th className="text-left py-2">Status</th>
+                        <th className="text-left py-2">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {stats.recentPayments.map((payment) => (
+                        <tr key={payment.id} className="border-b">
+                          <td className="py-2 text-sm text-gray-600">
+                            {payment.razorpay_payment_id?.slice(-8) || 'N/A'}
+                          </td>
+                          <td className="py-2">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                              {payment.plan_name}
+                            </span>
+                          </td>
+                          <td className="py-2 font-semibold">
+                            ₹{(payment.amount / 100).toFixed(2)}
+                          </td>
+                          <td className="py-2">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              {payment.status}
+                            </span>
+                          </td>
+                          <td className="py-2 text-sm text-gray-600">
+                            {new Date(payment.created_at).toLocaleDateString('en-IN')}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="feedback" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>User Feedback</CardTitle>
-                <CardDescription>Bug reports, suggestions, and feature requests</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {feedback.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
-                      No feedback submissions yet
-                    </div>
-                  ) : (
-                    feedback.map((item) => (
-                      <div key={item.id} className="border rounded-lg p-4 space-y-3">
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                              {item.user_display_name?.charAt(0)?.toUpperCase() || 'U'}
-                            </div>
-                            <div>
-                              <p className="font-semibold text-sm">
-                                {item.user_display_name || 'Anonymous User'}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {new Date(item.created_at).toLocaleDateString()}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Badge 
-                              variant={item.type === 'bug' ? 'destructive' : 
-                                      item.type === 'feature' ? 'default' : 'secondary'}
-                            >
-                              {item.type}
-                            </Badge>
-                            <Badge variant="outline">
-                              {item.priority}
-                            </Badge>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <h4 className="font-medium text-sm mb-1">{item.title}</h4>
-                          <p className="text-sm text-gray-700">{item.description}</p>
-                        </div>
-                        
-                        <div className="flex items-center justify-between text-xs">
-                          <Badge variant={item.status === 'open' ? 'secondary' : 'default'}>
-                            {item.status}
-                          </Badge>
-                          {item.page_url && (
-                            <span className="text-gray-500">Page: {item.page_url}</span>
-                          )}
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+              ) : (
+                <p className="text-gray-500 text-center py-4">No recent payments found</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

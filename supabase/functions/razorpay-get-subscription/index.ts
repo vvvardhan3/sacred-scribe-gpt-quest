@@ -19,16 +19,38 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Get user data
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      req.headers.get('Authorization')?.replace('Bearer ', '') ?? ''
-    )
-
-    if (authError || !user) {
-      throw new Error('User not authenticated')
+    // Get authorization header
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'No authorization header provided' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401 
+        }
+      )
     }
 
-    // Get subscription from database
+    // Get user data using the anon client first for auth
+    const anonSupabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    )
+
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: authError } = await anonSupabase.auth.getUser(token)
+
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'User not authenticated' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401 
+        }
+      )
+    }
+
+    // Get subscription from database using service role
     const { data: subscription, error: dbError } = await supabase
       .from('subscribers')
       .select('*')
@@ -36,7 +58,14 @@ serve(async (req) => {
       .maybeSingle()
 
     if (dbError) {
-      throw new Error('Failed to fetch subscription data')
+      console.error('Database error:', dbError)
+      return new Response(
+        JSON.stringify({ error: 'Failed to fetch subscription data' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500 
+        }
+      )
     }
 
     const subscriptionData = subscription || {
@@ -55,11 +84,12 @@ serve(async (req) => {
     )
 
   } catch (error) {
+    console.error('Unexpected error:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'Internal server error' }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400 
+        status: 500 
       }
     )
   }

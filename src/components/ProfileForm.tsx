@@ -14,6 +14,7 @@ interface UserProfile {
   display_name: string;
   first_name: string | null;
   last_name: string | null;
+  email: string;
   profile_picture_url: string | null;
 }
 
@@ -25,6 +26,8 @@ interface ProfileFormProps {
 
 interface FormData {
   display_name: string;
+  first_name: string;
+  last_name: string;
   email: string;
 }
 
@@ -36,6 +39,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
   const form = useForm<FormData>({
     defaultValues: {
       display_name: profile.display_name || '',
+      first_name: profile.first_name || '',
+      last_name: profile.last_name || '',
       email: userEmail,
     },
   });
@@ -63,6 +68,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
       // Update profile data
       await onUpdateProfile({
         display_name: data.display_name,
+        first_name: data.first_name,
+        last_name: data.last_name,
       });
 
       // Update email if changed
@@ -86,18 +93,12 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
 
   return (
     <div className="space-y-8">
-      {/* Profile Picture Section - TODO: Implement profile picture upload in future release */}
+      {/* Profile Picture Section */}
       <div className="flex flex-col items-center space-y-4">
         <div className="relative">
           <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-lg border-4 border-white">
             <span className="text-3xl font-bold text-white">{getInitials()}</span>
           </div>
-          {/* TODO: Re-implement profile picture upload functionality in future release
-              - Add camera button
-              - Implement image cropper
-              - Handle image upload to Supabase storage
-              - Display uploaded profile pictures
-          */}
         </div>
       </div>
 
@@ -111,6 +112,42 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, userEmail, onUpdateP
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-gray-700">Display Name</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      disabled={!isEditing}
+                      className={!isEditing ? "bg-gray-50 text-gray-700 border-gray-200" : "bg-white text-gray-900"}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="first_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-700">First Name</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      disabled={!isEditing}
+                      className={!isEditing ? "bg-gray-50 text-gray-700 border-gray-200" : "bg-white text-gray-900"}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="last_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-700">Last Name</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
