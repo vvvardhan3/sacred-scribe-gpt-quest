@@ -46,6 +46,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         // Send welcome email for new signups
         if (event === 'SIGNED_UP' && session?.user) {
+          console.log('New user signed up, sending welcome email...');
           try {
             const { error } = await supabase.functions.invoke('send-welcome-email', {
               body: {
