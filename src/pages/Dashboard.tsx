@@ -120,7 +120,7 @@ const Dashboard = () => {
 
   const handleStartConversation = () => {
     // Navigate to chat instead of opening new window
-    navigate('/chat');
+      window.open('/chat', '_blank');
   };
 
   return (
