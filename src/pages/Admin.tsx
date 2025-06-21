@@ -9,6 +9,22 @@ import { Users, MessageSquare, HelpCircle, Star, Shield, LogOut } from 'lucide-r
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
+interface FeedbackItem {
+  id: string;
+  user_id: string;
+  type: string;
+  title: string;
+  description: string;
+  page_url?: string;
+  status: string;
+  priority: string;
+  created_at: string;
+  updated_at: string;
+  profiles?: {
+    display_name?: string;
+  } | null;
+}
+
 const Admin = () => {
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -17,7 +33,7 @@ const Admin = () => {
     totalFeedback: 0
   });
   const [users, setUsers] = useState([]);
-  const [feedback, setFeedback] = useState([]);
+  const [feedback, setFeedback] = useState<FeedbackItem[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -69,20 +85,32 @@ const Admin = () => {
 
       setUsers(usersData || []);
 
-      // Fetch feedback with user profiles
-      const { data: feedbackData } = await supabase
+      // Fetch feedback with user profiles - fix the join
+      const { data: feedbackData, error: feedbackError } = await supabase
         .from('feedback')
         .select(`
           *,
-          profiles (
+          profiles!feedback_user_id_fkey (
             display_name
           )
         `)
         .order('created_at', { ascending: false })
         .limit(20);
 
-      console.log('Fetched feedback data:', feedbackData);
-      setFeedback(feedbackData || []);
+      if (feedbackError) {
+        console.error('Error fetching feedback:', feedbackError);
+        // Fallback: fetch feedback without profiles
+        const { data: simpleFeedbackData } = await supabase
+          .from('feedback')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(20);
+        
+        setFeedback(simpleFeedbackData || []);
+      } else {
+        console.log('Fetched feedback data:', feedbackData);
+        setFeedback(feedbackData || []);
+      }
 
     } catch (error) {
       console.error('Error fetching admin data:', error);
