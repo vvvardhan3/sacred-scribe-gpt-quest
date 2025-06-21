@@ -86,29 +86,21 @@ export const useAdminStats = () => {
 
       console.log('Subscriber counts:', subscriberCounts, 'Error:', subscriberError);
 
-      // Use the admin stats function to get data safely
+      // Use the admin stats function to get user count and other data safely
       const { data: adminStatsData, error: adminStatsError } = await supabase
         .rpc('get_admin_stats');
 
       console.log('Admin stats data:', adminStatsData, 'Error:', adminStatsError);
 
-      // Parse the admin stats response with proper type checking
+      // Parse the admin stats response - it should be a JSON object now
       let totalUsers = 0;
-      if (adminStatsData && typeof adminStatsData === 'object' && adminStatsData !== null) {
-        if (typeof adminStatsData === 'string') {
-          try {
-            const parsed = JSON.parse(adminStatsData);
-            totalUsers = parsed.total_users || 0;
-          } catch (e) {
-            console.error('Failed to parse admin stats:', e);
-          }
-        } else {
-          // adminStatsData is already an object
-          totalUsers = (adminStatsData as any).total_users || 0;
-        }
+      let feedbackCount = 0;
+      if (adminStatsData && !adminStatsError) {
+        totalUsers = adminStatsData.total_users || 0;
+        feedbackCount = adminStatsData.feedback_submissions || 0;
+        console.log('Parsed total users:', totalUsers);
+        console.log('Parsed feedback count:', feedbackCount);
       }
-
-      console.log('Parsed total users:', totalUsers);
 
       // Calculate free users (total users minus subscribers)
       const totalSubscribers = (subscriberCounts?.[0]?.devotee_count || 0) + (subscriberCounts?.[0]?.guru_count || 0);
@@ -136,14 +128,23 @@ export const useAdminStats = () => {
 
       console.log('Contact submissions:', contactData, 'Error:', contactError);
 
-      // Get feedback submissions using the security definer function approach
-      const { data: feedbackData, error: feedbackError } = await supabase
-        .from('feedback')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
+      // For feedback submissions, we'll try to get them directly but handle errors gracefully
+      let feedbackData: any[] = [];
+      try {
+        const { data: feedbackResult, error: feedbackError } = await supabase
+          .from('feedback')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(50);
 
-      console.log('Feedback submissions:', feedbackData, 'Error:', feedbackError);
+        console.log('Feedback submissions:', feedbackResult, 'Error:', feedbackError);
+        
+        if (feedbackResult && !feedbackError) {
+          feedbackData = feedbackResult;
+        }
+      } catch (error) {
+        console.log('Could not fetch feedback directly, using count from admin stats');
+      }
 
       setStats({
         totalUsers: totalUsers,
@@ -155,7 +156,7 @@ export const useAdminStats = () => {
         totalRevenue: totalRevenue / 100, // Convert from paise to rupees
         recentPayments: payments || [],
         contactSubmissions: contactData || [],
-        feedbackSubmissions: feedbackData || []
+        feedbackSubmissions: feedbackData
       });
 
     } catch (error) {
