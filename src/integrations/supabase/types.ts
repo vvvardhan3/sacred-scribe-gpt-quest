@@ -455,6 +455,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_admin_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       get_or_create_user_usage: {
         Args: { p_user_id: string }
         Returns: {
@@ -474,6 +478,10 @@ export type Database = {
       get_total_message_count: {
         Args: Record<PropertyKey, never>
         Returns: number
+      }
+      is_admin_authenticated: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       is_admin_user: {
         Args: Record<PropertyKey, never>

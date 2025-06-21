@@ -62,16 +62,15 @@ export const useAdminStats = () => {
 
       console.log('Subscriber counts:', subscriberCounts, 'Error:', subscriberError);
 
-      // Get total users count - using profiles table
-      const { count: totalUsersCount, error: usersError } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true });
+      // Use the new admin stats function to get data safely
+      const { data: adminStatsData, error: adminStatsError } = await supabase
+        .rpc('get_admin_stats');
 
-      console.log('Users count:', totalUsersCount, 'Error:', usersError);
+      console.log('Admin stats data:', adminStatsData, 'Error:', adminStatsError);
 
       // Calculate free users (total users minus subscribers)
       const totalSubscribers = (subscriberCounts?.[0]?.devotee_count || 0) + (subscriberCounts?.[0]?.guru_count || 0);
-      const totalUsers = totalUsersCount || 0;
+      const totalUsers = adminStatsData?.total_users || 0;
       const freeUsers = Math.max(totalUsers - totalSubscribers, 0);
 
       // Get recent payments for revenue calculation
@@ -87,23 +86,50 @@ export const useAdminStats = () => {
       // Calculate total revenue
       const totalRevenue = payments?.reduce((sum, payment) => sum + (payment.amount || 0), 0) || 0;
 
-      // Get contact form submissions
-      const { data: contactSubmissions, error: contactError } = await supabase
-        .from('contact_submissions')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
+      // Get contact form submissions - try direct query first, fallback to admin function if needed
+      let contactSubmissions = [];
+      try {
+        const { data: contactData, error: contactError } = await supabase
+          .from('contact_submissions')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(50);
 
-      console.log('Contact submissions:', contactSubmissions, 'Error:', contactError);
+        if (contactError) {
+          console.log('Contact submissions error:', contactError);
+          // If direct query fails, we'll show empty array for now
+          contactSubmissions = [];
+        } else {
+          contactSubmissions = contactData || [];
+        }
+      } catch (error) {
+        console.log('Contact submissions fetch error:', error);
+        contactSubmissions = [];
+      }
 
-      // Get feedback submissions
-      const { data: feedbackSubmissions, error: feedbackError } = await supabase
-        .from('feedback')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
+      console.log('Contact submissions:', contactSubmissions);
 
-      console.log('Feedback submissions:', feedbackSubmissions, 'Error:', feedbackError);
+      // Get feedback submissions - try direct query first
+      let feedbackSubmissions = [];
+      try {
+        const { data: feedbackData, error: feedbackError } = await supabase
+          .from('feedback')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(50);
+
+        if (feedbackError) {
+          console.log('Feedback submissions error:', feedbackError);
+          feedbackSubmissions = [];
+        } else {
+          feedbackSubmissions = feedbackData || [];
+        }
+      } catch (error) {
+        console.log('Feedback submissions fetch error:', error);
+        feedbackSubmissions = [];
+      }
+
+      console.log('Feedback submissions:', feedbackSubmissions);
 
       setStats({
         totalUsers: totalUsers,
@@ -114,8 +140,8 @@ export const useAdminStats = () => {
         freeUsers: Math.max(freeUsers, 0),
         totalRevenue: totalRevenue / 100, // Convert from paise to rupees
         recentPayments: payments || [],
-        contactSubmissions: contactSubmissions || [],
-        feedbackSubmissions: feedbackSubmissions || []
+        contactSubmissions: contactSubmissions,
+        feedbackSubmissions: feedbackSubmissions
       });
 
     } catch (error) {
