@@ -9,8 +9,10 @@ interface RazorpayPaymentProps {
   planName: string;
   price: number;
   onSuccess?: () => void;
+  onPaymentSuccess?: () => void;
   buttonText?: string;
   className?: string;
+  disabled?: boolean;
 }
 
 declare global {
@@ -24,8 +26,10 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
   planName,
   price,
   onSuccess,
+  onPaymentSuccess,
   buttonText,
-  className
+  className,
+  disabled
 }) => {
   const { toast } = useToast();
   const { createSubscription, verifyPayment, refetch } = useSubscription();
@@ -47,7 +51,7 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
   };
 
   const handlePayment = async () => {
-    if (isLoading) return;
+    if (isLoading || disabled) return;
     
     try {
       setIsLoading(true);
@@ -96,8 +100,9 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
               description: `Welcome to ${planName}! Your subscription is now active.`,
             });
 
-            // Call onSuccess callback if provided
+            // Call success callbacks if provided
             if (onSuccess) onSuccess();
+            if (onPaymentSuccess) onPaymentSuccess();
             
             // Additional refresh after a short delay to ensure UI updates
             setTimeout(() => {
@@ -164,7 +169,7 @@ const RazorpayPayment: React.FC<RazorpayPaymentProps> = ({
   return (
     <Button 
       onClick={handlePayment}
-      disabled={isLoading}
+      disabled={isLoading || disabled}
       className={className || "w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"}
     >
       {isLoading ? "Processing..." : (buttonText || `Subscribe to ${planName} - ₹${price}`)}

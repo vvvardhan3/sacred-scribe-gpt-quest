@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,7 @@ import { PricingSection } from "@/components/PricingSection";
 import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
 import ScriptureCard from "@/components/ScriptureCard";
-import HinduGPTAI from "@/components/HinduGPTAI";
+import { HinduGPTAI } from "@/components/HinduGPTAI";
 // import { Link, Element } from "react-scroll";
 
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
