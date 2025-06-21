@@ -34,6 +34,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isNewSignup, setIsNewSignup] = useState(false);
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -44,8 +45,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(session?.user ?? null);
         setLoading(false);
         
-        // Send welcome email for new signups
-        if (event === 'SIGNED_UP' && session?.user) {
+        // Send welcome email for new signups - check if this is a new signup
+        if (event === 'SIGNED_IN' && session?.user && isNewSignup) {
           console.log('New user signed up, sending welcome email...');
           try {
             const { error } = await supabase.functions.invoke('send-welcome-email', {
@@ -64,6 +65,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           } catch (error) {
             console.error('Error sending welcome email:', error);
           }
+          setIsNewSignup(false); // Reset the flag
         }
       }
     );
@@ -77,10 +79,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [isNewSignup]);
 
   const signUp = async (email: string, password: string, data?: { firstName?: string; lastName?: string; displayName?: string }) => {
     const redirectUrl = `${window.location.origin}/dashboard`;
+
+    // Set flag to indicate this is a new signup
+    setIsNewSignup(true);
 
     const { error } = await supabase.auth.signUp({
       email,
