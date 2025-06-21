@@ -1,12 +1,9 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Crown, Infinity, Check } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import RazorpayPayment from '@/components/RazorpayPayment';
+import { Check, Crown, Zap } from 'lucide-react';
+import RazorpayPayment from '../RazorpayPayment';
 
 interface Plan {
   id: string;
@@ -16,98 +13,98 @@ interface Plan {
   period: string;
   description: string;
   features: string[];
-  popular: boolean;
+  limitations: string[];
+  popular?: boolean;
   color: string;
 }
 
 interface PlanCardProps {
   plan: Plan;
   isCurrentPlan: boolean;
-  onPaymentSuccess?: () => void;
+  onPaymentSuccess: () => void;
 }
 
 export const PlanCard: React.FC<PlanCardProps> = ({ plan, isCurrentPlan, onPaymentSuccess }) => {
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handlePaymentSuccess = () => {
+    setIsProcessing(true);
+    // Add a small delay to ensure backend processes the payment
+    setTimeout(() => {
+      onPaymentSuccess();
+      setIsProcessing(false);
+      // Force page reload to show updated subscription status
+      window.location.reload();
+    }, 2000);
+  };
+
+  const getIcon = () => {
+    if (plan.id === 'guru') return <Crown className="w-6 h-6" />;
+    if (plan.id === 'devotee') return <Zap className="w-6 h-6" />;
+    return null;
+  };
+
   return (
-    <Card className={`relative bg-white border-2 ${plan.popular ? 'border-orange-500 shadow-lg' : 'border-gray-200'} hover:shadow-md transition-shadow h-full flex flex-col`}>
+    <Card className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg ${
+      plan.popular ? 'ring-2 ring-orange-500 scale-105' : ''
+    } ${isCurrentPlan ? 'ring-2 ring-green-500 bg-green-50' : ''}`}>
       {plan.popular && (
-        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-          <Badge className="bg-gradient-to-r from-orange-500 to-red-600 text-white px-4 py-1">
-            Most Popular
-          </Badge>
+        <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-orange-500 to-red-500 text-white text-center py-2 text-sm font-medium">
+          Most Popular
         </div>
       )}
-      <CardHeader className="text-center flex-shrink-0">
-        <div className={`w-16 h-16 mx-auto rounded-full bg-gradient-to-r ${plan.color} flex items-center justify-center mb-4`}>
-          {plan.name === 'Devotee Plan' && <Crown className="w-8 h-8 text-white" />}
-          {plan.name === 'Guru Plan' && <Infinity className="w-8 h-8 text-white" />}
+      
+      {isCurrentPlan && (
+        <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-center py-2 text-sm font-medium">
+          Your Current Plan
         </div>
-        <CardTitle className="text-xl font-bold">{plan.name}</CardTitle>
-        <div className="space-y-2">
-          <div className="text-3xl font-bold text-orange-600">
-            ₹{plan.price}
-            <span className="text-sm text-gray-600 font-normal">/{plan.period}</span>
+      )}
+
+      <CardHeader className={`${plan.popular || isCurrentPlan ? 'pt-12' : 'pt-6'}`}>
+        <div className="flex items-center gap-3 mb-2">
+          <div className={`p-2 rounded-lg bg-gradient-to-r ${plan.color} text-white`}>
+            {getIcon()}
           </div>
-          {plan.originalPrice && (
-            <div className="text-lg text-gray-400 line-through">
-              ₹{plan.originalPrice}/{plan.period}
-            </div>
-          )}
-        </div>
-        <p className="text-gray-600 mt-2">{plan.description}</p>
-      </CardHeader>
-      <CardContent className="flex-grow flex flex-col">
-        <div className="flex-grow space-y-4">
-          <div className="text-center mx-auto">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button 
-                        variant="outline" 
-                        className="font-semibold text-green-700 hover:text-green-800 hover:bg-green-50 border-green-200 mx-auto"
-                      >
-                        What's Included
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-md">
-                      <DialogHeader>
-                        <DialogTitle className="text-center text-green-700">
-                          {plan.name} Features
-                        </DialogTitle>
-                      </DialogHeader>
-                      <ul className="space-y-3 mt-4">
-                        {plan.features.map((feature, featureIndex) => (
-                          <li key={featureIndex} className="flex items-start text-sm text-gray-700">
-                            <Check className="w-4 h-4 text-green-500 mr-3 flex-shrink-0 mt-0.5" />
-                            <span className="text-left">{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </DialogContent>
-                  </Dialog>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <ul className="space-y-1">
-                    {plan.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-start text-sm">
-                        <Check className="w-3 h-3 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
+          <CardTitle className="text-xl font-bold text-gray-900">{plan.name}</CardTitle>
         </div>
         
-        <div className="mt-6 pt-4">
+        <div className="flex items-baseline gap-2">
+          <span className="text-4xl font-bold text-gray-900">₹{plan.price}</span>
+          {plan.originalPrice && (
+            <span className="text-lg text-gray-500 line-through">₹{plan.originalPrice}</span>
+          )}
+          <span className="text-gray-600">/{plan.period}</span>
+        </div>
+        
+        {plan.originalPrice && (
+          <div className="inline-flex items-center bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+            Save {Math.round(((plan.originalPrice - plan.price) / plan.originalPrice) * 100)}%
+          </div>
+        )}
+      </CardHeader>
+
+      <CardContent className="space-y-6">
+        <p className="text-gray-600">{plan.description}</p>
+
+        <div className="space-y-3">
+          <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+            <Check className="w-4 h-4 text-green-500" />
+            What's Included
+          </h4>
+          <ul className="space-y-2">
+            {plan.features.map((feature, index) => (
+              <li key={index} className="flex items-start gap-2 text-sm text-gray-600">
+                <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                <span>{feature}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="pt-4">
           {isCurrentPlan ? (
-            <Button 
-              className="w-full bg-gray-200 text-gray-700"
-              disabled
-            >
+            <Button disabled className="w-full bg-green-500 text-white">
+              <Check className="w-4 h-4 mr-2" />
               Current Plan
             </Button>
           ) : (
@@ -115,9 +112,10 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, isCurrentPlan, onPayme
               planId={plan.id}
               planName={plan.name}
               price={plan.price}
-              buttonText={`Choose ${plan.name}`}
+              onPaymentSuccess={handlePaymentSuccess}
+              buttonText={`Upgrade to ${plan.name}`}
+              disabled={isProcessing}
               className="w-full"
-              onSuccess={onPaymentSuccess}
             />
           )}
         </div>

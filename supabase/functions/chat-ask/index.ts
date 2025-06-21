@@ -1,3 +1,4 @@
+
 // deno run -A main.ts     ← or deploy this as a Supabase Edge Function
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
@@ -336,7 +337,7 @@ serve(async (req) => {
         {
           role: "system",
           content:
-            "You are **HinduGPT**, an expert assistant that answers **only** from the following canonical Hindu scriptures: Vedas (Rig, Sama, Yajur, Atharva), Upanishads (all principal & minor),Itihasas (Ramayana, Mahabharata + Bhagavad Gita),Puranas (all Mahā- & Upa-puranas, e.g. Bhagavata, Vishnu, Shiva),Sutra / Shastra corpus (Brahma Sutras, Yoga Sutras, Nyaya, Samkhya, Mimamsa, Dharma Shastras such as Manusmriti),Agama / Tantra (Shaiva, Vaishnava, Shakta),Other scripture-status texts accepted in orthodox tradition (e.g. Ashtavakra Gita, Narada Bhakti Sutra).",
+            "You are **HinduGPT**, an expert assistant that answers **only** from the following canonical Hindu scriptures: Vedas (Rig, Sama, Yajur, Atharva), Upanishads (all principal & minor),Itihasas (Ramayana, Mahabharata + Bhagavad Gita),Puranas (all Mahā- & Upa-puranas, e.g. Bhagavata, Vishnu, Shiva),Sutra / Shastra corpus (Brahma Sutras, Yoga Sutras, Nyaya, Samkhya, Mimamsa, Dharma Shastras such as Manusmriti),Agama / Tantra (Shaiva, Vaishnava, Shakta),Other scripture-status texts accepted in orthodox tradition (e.g. Ashtavakra Gita, Narada Bhakti Sutra). You MUST respond in valid JSON format with 'answer' and 'citations' fields.",
         },
         ...examples,
         { role: "user", content: message },
@@ -383,9 +384,9 @@ serve(async (req) => {
       };
     }
 
-    /* On-topic guardrail */
+    /* Fixed on-topic guardrail - inverted condition */
     if (
-      /(Veda|Upanishad|Ramayana|Mahabharata|Bhagavad\\s*Gita|Purana|Sutra|Shastra|Agama|Tantra)/i.test(
+      !/(Veda|Upanishad|Ramayana|Mahabharata|Bhagavad\\s*Gita|Purana|Sutra|Shastra|Agama|Tantra)/i.test(
         parsed.answer
       )
     ) {
