@@ -43,6 +43,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        
+        // Send welcome email for new signups
+        if (event === 'SIGNED_UP' && session?.user) {
+          try {
+            const { error } = await supabase.functions.invoke('send-welcome-email', {
+              body: {
+                userId: session.user.id,
+                email: session.user.email,
+                displayName: session.user.user_metadata?.display_name || session.user.user_metadata?.first_name || 'Friend'
+              },
+            });
+            
+            if (error) {
+              console.error('Failed to send welcome email:', error);
+            } else {
+              console.log('Welcome email sent successfully');
+            }
+          } catch (error) {
+            console.error('Error sending welcome email:', error);
+          }
+        }
       }
     );
 
