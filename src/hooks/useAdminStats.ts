@@ -35,26 +35,11 @@ export const useAdminStats = () => {
       setLoading(true);
       console.log('Fetching admin stats...');
 
-      // Check if user is admin first
-      const { data: { user } } = await supabase.auth.getUser();
-      console.log('Current user:', user?.id);
-
-      if (!user) {
-        console.error('No authenticated user');
-        return;
-      }
-
-      // Get current user profile to check admin status
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-      console.log('User profile:', profile, 'Profile error:', profileError);
-
-      if (profileError || profile?.role !== 'admin') {
-        console.error('User is not admin or profile error:', profileError);
+      // Check if admin is authenticated via localStorage
+      const isAdminAuthenticated = localStorage.getItem('admin_authenticated') === 'true';
+      
+      if (!isAdminAuthenticated) {
+        console.error('Admin not authenticated');
         return;
       }
 
@@ -77,16 +62,16 @@ export const useAdminStats = () => {
 
       console.log('Subscriber counts:', subscriberCounts, 'Error:', subscriberError);
 
-      // Get total users count - using a more direct approach
-      const { data: usersData, error: usersError } = await supabase
+      // Get total users count - using profiles table
+      const { count: totalUsersCount, error: usersError } = await supabase
         .from('profiles')
-        .select('id', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true });
 
-      console.log('Users count:', usersData, 'Error:', usersError);
+      console.log('Users count:', totalUsersCount, 'Error:', usersError);
 
       // Calculate free users (total users minus subscribers)
       const totalSubscribers = (subscriberCounts?.[0]?.devotee_count || 0) + (subscriberCounts?.[0]?.guru_count || 0);
-      const totalUsers = usersData?.length || 0;
+      const totalUsers = totalUsersCount || 0;
       const freeUsers = Math.max(totalUsers - totalSubscribers, 0);
 
       // Get recent payments for revenue calculation
@@ -102,7 +87,7 @@ export const useAdminStats = () => {
       // Calculate total revenue
       const totalRevenue = payments?.reduce((sum, payment) => sum + (payment.amount || 0), 0) || 0;
 
-      // Get contact form submissions - try with service role
+      // Get contact form submissions
       const { data: contactSubmissions, error: contactError } = await supabase
         .from('contact_submissions')
         .select('*')

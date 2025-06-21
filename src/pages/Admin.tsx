@@ -10,7 +10,7 @@ import {
   Zap, 
   IndianRupee,
   RefreshCw,
-  ArrowLeft,
+  LogOut,
   TrendingUp,
   BookOpen,
   UserCheck,
@@ -20,7 +20,7 @@ import {
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAdminStats } from '@/hooks/useAdminStats';
 import {
   Table,
@@ -35,6 +35,12 @@ const Admin = () => {
   const { stats, loading, refetch } = useAdminStats();
   const [showContactSubmissions, setShowContactSubmissions] = useState(false);
   const [showFeedbackSubmissions, setShowFeedbackSubmissions] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSignOut = () => {
+    localStorage.removeItem('admin_authenticated');
+    navigate('/admin-login');
+  };
 
   const statCards = [
     {
@@ -121,28 +127,30 @@ const Admin = () => {
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center space-x-4">
-              <Link to="/dashboard">
-                <Button variant="ghost" size="sm" className="text-gray-600 hover:text-orange-600 hover:bg-orange-50">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Dashboard
-                </Button>
-              </Link>
-              <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-                  Admin Dashboard
-                </h1>
-                <p className="text-lg text-gray-600">Monitor system performance and user engagement</p>
-              </div>
+            <div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+                Admin Dashboard
+              </h1>
+              <p className="text-lg text-gray-600">Monitor system performance and user engagement</p>
             </div>
-            <Button 
-              onClick={() => refetch()} 
-              disabled={loading}
-              className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white"
-            >
-              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
+            <div className="flex items-center space-x-4">
+              <Button 
+                onClick={() => refetch()} 
+                disabled={loading}
+                className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white"
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+              <Button 
+                onClick={handleSignOut}
+                variant="outline"
+                className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
           </div>
 
           {/* Stats Grid */}
