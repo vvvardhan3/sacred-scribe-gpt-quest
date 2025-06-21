@@ -451,6 +451,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number
       }
+      is_admin_user: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       reset_daily_messages_if_needed: {
         Args: { p_user_id: string }
         Returns: undefined
