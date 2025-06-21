@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, BookOpen, Clock, Trophy, AlertCircle } from 'lucide-react';
+import { ArrowLeft, BookOpen, Clock, Trophy, AlertCircle, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -56,7 +56,7 @@ const QuizCategory = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
-  const { canCreateQuiz, usage, limits, incrementQuizCount } = useUserLimits();
+  const { canCreateQuiz, usage, limits, incrementQuizCount, isCategoryAllowed } = useUserLimits();
 
   const categoryData = categories[category as keyof typeof categories];
 
@@ -74,13 +74,24 @@ const QuizCategory = () => {
     );
   }
 
-  const canCreateNewQuiz = canCreateQuiz();
+  // Check if category is allowed for user's subscription
+  const categoryAllowed = isCategoryAllowed(categoryData.name);
+  const canCreateNewQuiz = canCreateQuiz() && categoryAllowed;
   const remainingQuizzes = limits.maxQuizzes === Infinity 
     ? Infinity 
     : Math.max(0, limits.maxQuizzes - (usage?.quizzes_created_total || 0));
 
   const handleCreateQuiz = async () => {
-    if (!canCreateNewQuiz) {
+    if (!categoryAllowed) {
+      toast({
+        title: "Category Not Available",
+        description: `${categoryData.name} is not available in your current plan. Please upgrade to access this category.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!canCreateQuiz()) {
       toast({
         title: "Quiz Creation Limit Reached",
         description: `You've reached your quiz creation limit of ${limits.maxQuizzes} for ${limits.subscriptionTier} plan. Please upgrade to create more quizzes.`,
@@ -92,12 +103,15 @@ const QuizCategory = () => {
     setIsGenerating(true);
     
     try {
+      console.log('Starting quiz generation for category:', categoryData.name);
+      
       const { data, error } = await supabase.functions.invoke('quiz-generate', {
         body: { 
-          category: categoryData.name,
-          difficulty: 'medium',
-          questionCount: 10
-        }
+          category: categoryData.name
+        },
+        headers: {
+          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+        },
       });
 
       if (error) {
@@ -105,10 +119,13 @@ const QuizCategory = () => {
         throw new Error(error.message || 'Failed to generate quiz');
       }
 
-      if (!data?.quizId) {
-        throw new Error('Quiz generation failed - no quiz ID returned');
+      if (!data?.success || !data?.quiz) {
+        throw new Error('Quiz generation failed - no quiz returned');
       }
 
+      console.log('Quiz generated successfully:', data.quiz);
+      
+      // Increment quiz count
       await incrementQuizCount();
       
       toast({
@@ -116,7 +133,8 @@ const QuizCategory = () => {
         description: "Your quiz has been created successfully.",
       });
 
-      navigate(`/quiz/play/${data.quizId}`);
+      // Navigate to play the quiz
+      navigate(`/quiz/play/${data.quiz.id}`);
     } catch (error: any) {
       console.error('Error generating quiz:', error);
       toast({
@@ -132,7 +150,7 @@ const QuizCategory = () => {
   const handlePaymentSuccess = () => {
     toast({
       title: "Subscription Updated!",
-      description: "You can now create more quizzes. Page will refresh shortly.",
+      description: "You can now access more categories and create more quizzes. Page will refresh shortly.",
     });
     setTimeout(() => {
       window.location.reload();
@@ -163,6 +181,17 @@ const QuizCategory = () => {
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">{categoryData.description}</p>
           </div>
 
+          {/* Category Access Warning */}
+          {!categoryAllowed && (
+            <Alert className="mb-8 border-orange-200 bg-orange-50">
+              <Crown className="h-4 w-4 text-orange-600" />
+              <AlertDescription className="text-orange-800">
+                <strong>{categoryData.name}</strong> is not available in your current plan ({limits.subscriptionTier}). 
+                Upgrade your subscription to access this category.
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Usage Limits Display */}
           {limits.maxQuizzes !== Infinity && (
             <Card className="mb-8">
@@ -182,7 +211,7 @@ const QuizCategory = () => {
                       Remaining: {remainingQuizzes === Infinity ? '∞' : remainingQuizzes}
                     </p>
                   </div>
-                  {!canCreateNewQuiz && (
+                  {(!canCreateNewQuiz || !categoryAllowed) && (
                     <div className="flex gap-2">
                       <RazorpayPayment 
                         planId="devotee"
@@ -208,7 +237,7 @@ const QuizCategory = () => {
           )}
 
           {/* Quota Warning */}
-          {!canCreateNewQuiz && (
+          {!canCreateNewQuiz && categoryAllowed && (
             <Alert className="mb-8 border-red-200 bg-red-50">
               <AlertCircle className="h-4 w-4 text-red-600" />
               <AlertDescription className="text-red-800">
@@ -243,8 +272,10 @@ const QuizCategory = () => {
             </CardContent>
           </Card>
 
-          {/* Previous Quizzes */}
-          <PreviousQuizzes category={categoryData.name} />
+          {/* Previous Quizzes - Only show if category is allowed */}
+          {categoryAllowed && (
+            <PreviousQuizzes category={categoryData.name} />
+          )}
         </div>
       </div>
     </div>

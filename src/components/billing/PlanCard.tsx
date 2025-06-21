@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Check, Crown, Zap } from 'lucide-react';
 import RazorpayPayment from '../RazorpayPayment';
+import { useToast } from '@/hooks/use-toast';
 
 interface Plan {
   id: string;
@@ -26,16 +27,36 @@ interface PlanCardProps {
 
 export const PlanCard: React.FC<PlanCardProps> = ({ plan, isCurrentPlan, onPaymentSuccess }) => {
   const [isProcessing, setIsProcessing] = useState(false);
+  const { toast } = useToast();
 
-  const handlePaymentSuccess = () => {
+  const handlePaymentSuccess = async () => {
     setIsProcessing(true);
-    // Add a small delay to ensure backend processes the payment
-    setTimeout(() => {
+    
+    try {
+      // Show success message
+      toast({
+        title: "Payment Successful!",
+        description: `Welcome to ${plan.name}! Your subscription is now active.`,
+      });
+
+      // Call the parent callback
       onPaymentSuccess();
+      
+      // Wait a bit for backend to process, then reload
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Error handling payment success:', error);
+      toast({
+        title: "Error",
+        description: "There was an issue updating your subscription. Please refresh the page.",
+        variant: "destructive",
+      });
+    } finally {
       setIsProcessing(false);
-      // Force page reload to show updated subscription status
-      window.location.reload();
-    }, 2000);
+    }
   };
 
   const getIcon = () => {
@@ -113,7 +134,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, isCurrentPlan, onPayme
               planName={plan.name}
               price={plan.price}
               onPaymentSuccess={handlePaymentSuccess}
-              buttonText={`Upgrade to ${plan.name}`}
+              buttonText={isProcessing ? "Processing..." : `Upgrade to ${plan.name}`}
               disabled={isProcessing}
               className="w-full"
             />

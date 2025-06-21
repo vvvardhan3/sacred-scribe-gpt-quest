@@ -43,6 +43,16 @@ const QuizPlay = () => {
   const state = location.state as { category?: string; mode?: 'generate' | 'play'; quizId?: string } | null;
 
   useEffect(() => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to take quizzes.",
+        variant: "destructive"
+      });
+      navigate('/login');
+      return;
+    }
+
     if (state?.mode === 'generate' && state.category) {
       generateNewQuiz(state.category);
     } else if (quizId || state?.quizId) {
@@ -54,8 +64,9 @@ const QuizPlay = () => {
         description: "No quiz specified",
         variant: "destructive"
       });
+      navigate('/dashboard');
     }
-  }, [quizId, state]);
+  }, [quizId, state, user, navigate]);
 
   const generateNewQuiz = async (category: string) => {
     if (!user) return;
@@ -105,7 +116,10 @@ const QuizPlay = () => {
   };
 
   const fetchQuizData = async (id?: string) => {
-    if (!id) return;
+    if (!id) {
+      setLoading(false);
+      return;
+    }
 
     try {
       // Fetch quiz details
@@ -115,7 +129,11 @@ const QuizPlay = () => {
         .eq('id', id)
         .single();
 
-      if (quizError) throw quizError;
+      if (quizError) {
+        console.error('Quiz fetch error:', quizError);
+        throw new Error('Quiz not found or you don\'t have access to it');
+      }
+      
       setQuiz(quizData);
 
       // Fetch questions
@@ -125,8 +143,15 @@ const QuizPlay = () => {
         .eq('quiz_id', id)
         .order('created_at', { ascending: true });
 
-      if (questionsError) throw questionsError;
+      if (questionsError) {
+        console.error('Questions fetch error:', questionsError);
+        throw questionsError;
+      }
       
+      if (!questionsData || questionsData.length === 0) {
+        throw new Error('No questions found for this quiz');
+      }
+
       // Transform the data to match our interface
       const transformedQuestions: Question[] = questionsData.map(q => ({
         id: q.id,
@@ -137,13 +162,14 @@ const QuizPlay = () => {
       }));
       
       setQuestions(transformedQuestions);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching quiz data:', error);
       toast({
         title: "Error",
-        description: "Failed to load quiz data",
+        description: error.message || "Failed to load quiz data",
         variant: "destructive"
       });
+      navigate('/dashboard');
     } finally {
       setLoading(false);
     }
@@ -171,6 +197,17 @@ const QuizPlay = () => {
   const handleSubmit = async () => {
     if (!user || !quiz) return;
 
+    // Check if all questions are answered
+    const unansweredQuestions = questions.filter(q => !selectedAnswers[q.id]);
+    if (unansweredQuestions.length > 0) {
+      toast({
+        title: "Incomplete Quiz",
+        description: `Please answer all questions before submitting. ${unansweredQuestions.length} questions remaining.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
     setSubmitting(true);
     try {
       // Calculate score
@@ -195,7 +232,10 @@ const QuizPlay = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Progress save error:', error);
+        throw new Error('Failed to save quiz results');
+      }
 
       toast({
         title: "Quiz Completed!",
@@ -204,11 +244,11 @@ const QuizPlay = () => {
 
       // Navigate to results page with progress ID
       navigate(`/quiz/results/${progressData.id}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting quiz:', error);
       toast({
         title: "Error",
-        description: "Failed to submit quiz",
+        description: error.message || "Failed to submit quiz",
         variant: "destructive"
       });
     } finally {
