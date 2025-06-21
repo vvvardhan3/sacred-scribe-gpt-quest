@@ -47,39 +47,61 @@ export const sendMessageToAPI = async (message: string): Promise<{ answer: strin
   }
 };
 
-// Generate proper UUIDs for message IDs using crypto.randomUUID()
+// Enhanced UUID generation with timestamp to ensure uniqueness
 const generateMessageId = (): string => {
-  // Ensure we have a proper UUID v4
+  // Use crypto.randomUUID if available
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID();
+    const uuid = crypto.randomUUID();
+    console.log('Generated UUID:', uuid);
+    return uuid;
   }
   
-  // Fallback UUID generation for older browsers
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+  // Fallback UUID generation with timestamp for extra uniqueness
+  const timestamp = Date.now().toString(36);
+  const randomPart = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
     const r = Math.random() * 16 | 0;
     const v = c == 'x' ? r : (r & 0x3 | 0x8);
     return v.toString(16);
   });
+  
+  const uuid = `${timestamp}-${randomPart}`;
+  console.log('Generated fallback UUID:', uuid);
+  return uuid;
 };
 
-export const createUserMessage = (content: string): Message => ({
-  id: generateMessageId(),
-  role: 'user',
-  content,
-  timestamp: new Date()
-});
+export const createUserMessage = (content: string): Message => {
+  const id = generateMessageId();
+  const message = {
+    id,
+    role: 'user' as const,
+    content,
+    timestamp: new Date()
+  };
+  console.log('Created user message:', message);
+  return message;
+};
 
-export const createAssistantMessage = (content: string, citations?: string[]): Message => ({
-  id: generateMessageId(),
-  role: 'assistant',
-  content,
-  citations: citations || [],
-  timestamp: new Date()
-});
+export const createAssistantMessage = (content: string, citations?: string[]): Message => {
+  const id = generateMessageId();
+  const message = {
+    id,
+    role: 'assistant' as const,
+    content,
+    citations: citations || [],
+    timestamp: new Date()
+  };
+  console.log('Created assistant message:', message);
+  return message;
+};
 
-export const createErrorMessage = (): Message => ({
-  id: generateMessageId(),
-  role: 'assistant',
-  content: "I apologize, but I'm unable to process your request at the moment. Please try again later.",
-  timestamp: new Date()
-});
+export const createErrorMessage = (): Message => {
+  const id = generateMessageId();
+  const message = {
+    id,
+    role: 'assistant' as const,
+    content: "I apologize, but I'm unable to process your request at the moment. Please try again later.",
+    timestamp: new Date()
+  };
+  console.log('Created error message:', message);
+  return message;
+};

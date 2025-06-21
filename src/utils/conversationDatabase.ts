@@ -114,6 +114,18 @@ export const conversationDb = {
   async saveMessage(conversationId: string, message: any): Promise<void> {
     console.log('Saving single message to database:', conversationId, message);
     
+    // Check if message already exists to prevent duplicates
+    const { data: existingMessage } = await supabase
+      .from('messages')
+      .select('id')
+      .eq('id', message.id)
+      .single();
+
+    if (existingMessage) {
+      console.log('Message already exists, skipping save:', message.id);
+      return;
+    }
+
     const messageToSave = {
       id: message.id,
       conversation_id: conversationId,
@@ -130,6 +142,11 @@ export const conversationDb = {
       .insert(messageToSave);
 
     if (error) {
+      // If it's a duplicate key error, just log and continue (message already exists)
+      if (error.code === '23505') {
+        console.log('Message already exists (duplicate key), skipping:', message.id);
+        return;
+      }
       console.error('Error saving message:', error);
       throw error;
     }
@@ -152,28 +169,45 @@ export const conversationDb = {
     const existingIds = new Set(existingMessages.map(msg => msg.id));
 
     // Filter out messages that already exist
-    const newMessages = messages.filter(msg => !existingIds.has(msg.id));
+    const newMessages = messages.filter(msg => {
+      const exists = existingIds.has(msg.id);
+      if (exists) {
+        console.log('Skipping existing message:', msg.id);
+      }
+      return !exists;
+    });
 
     if (newMessages.length === 0) {
       console.log('No new messages to save');
       return;
     }
 
-    // Prepare messages for insertion
-    const messagesToSave = newMessages.map(msg => ({
-      id: msg.id,
-      conversation_id: conversationId,
-      role: msg.role,
-      content: msg.content,
-      citations: msg.citations || null,
-      created_at: msg.timestamp?.toISOString() || new Date().toISOString()
-    }));
+    // Prepare messages for insertion with validation
+    const messagesToSave = newMessages.map(msg => {
+      if (!msg.id || !msg.role || !msg.content) {
+        console.error('Invalid message structure:', msg);
+        throw new Error('Message missing required fields');
+      }
+      
+      return {
+        id: msg.id,
+        conversation_id: conversationId,
+        role: msg.role,
+        content: msg.content,
+        citations: msg.citations || null,
+        created_at: msg.timestamp?.toISOString() || new Date().toISOString()
+      };
+    });
 
     console.log('Inserting new messages:', messagesToSave);
 
+    // Use upsert to handle any remaining duplicates gracefully
     const { error } = await supabase
       .from('messages')
-      .insert(messagesToSave);
+      .upsert(messagesToSave, { 
+        onConflict: 'id',
+        ignoreDuplicates: true 
+      });
 
     if (error) {
       console.error('Error saving messages:', error);
