@@ -76,18 +76,7 @@ export const conversationDb = {
   async deleteConversation(id: string): Promise<void> {
     console.log('Deleting conversation:', id);
     
-    // First delete messages
-    const { error: messagesError } = await supabase
-      .from('messages')
-      .delete()
-      .eq('conversation_id', id);
-
-    if (messagesError) {
-      console.error('Error deleting messages:', messagesError);
-      throw messagesError;
-    }
-
-    // Then delete conversation
+    // The CASCADE will automatically delete messages, so we just delete the conversation
     const { error } = await supabase
       .from('conversations')
       .delete()
