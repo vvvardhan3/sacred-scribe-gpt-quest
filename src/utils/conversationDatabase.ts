@@ -125,15 +125,7 @@ export const conversationDb = {
   async saveMessage(conversationId: string, message: any): Promise<void> {
     console.log('Saving single message to database:', conversationId, message);
     
-    // Validate UUID format
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(message.id)) {
-      console.error('Invalid UUID format for message ID:', message.id);
-      throw new Error(`Invalid UUID format: ${message.id}`);
-    }
-
-    // Use upsert to handle potential duplicates gracefully
-    const messageToUpsert = {
+    const messageToSave = {
       id: message.id,
       conversation_id: conversationId,
       role: message.role,
@@ -142,26 +134,18 @@ export const conversationDb = {
       created_at: message.timestamp?.toISOString() || new Date().toISOString()
     };
 
-    console.log('Upserting message:', messageToUpsert);
+    console.log('Saving message:', messageToSave);
 
     const { error } = await supabase
       .from('messages')
-      .upsert(messageToUpsert, { 
-        onConflict: 'id',
-        ignoreDuplicates: true 
-      });
+      .insert(messageToSave);
 
     if (error) {
-      // If it's a duplicate key error, log it but don't throw - message already exists
-      if (error.code === '23505') {
-        console.log('Message already exists, skipping insert');
-        return;
-      }
       console.error('Error saving message:', error);
       throw error;
     }
 
-    console.log('Message saved/updated successfully');
+    console.log('Message saved successfully');
 
     // Update conversation timestamp
     await this.updateConversation(conversationId, {}).catch(err => {
@@ -174,17 +158,20 @@ export const conversationDb = {
     
     if (messages.length === 0) return;
 
-    // Validate all message IDs are proper UUIDs
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    const invalidMessages = messages.filter(msg => !uuidRegex.test(msg.id));
-    
-    if (invalidMessages.length > 0) {
-      console.error('Invalid UUID formats found:', invalidMessages.map(m => m.id));
-      throw new Error(`Invalid UUID formats found: ${invalidMessages.map(m => m.id).join(', ')}`);
+    // Get existing messages to avoid duplicates
+    const existingMessages = await this.getMessages(conversationId);
+    const existingIds = new Set(existingMessages.map(msg => msg.id));
+
+    // Filter out messages that already exist
+    const newMessages = messages.filter(msg => !existingIds.has(msg.id));
+
+    if (newMessages.length === 0) {
+      console.log('No new messages to save');
+      return;
     }
 
-    // Prepare messages for upsert
-    const messagesToUpsert = messages.map(msg => ({
+    // Prepare messages for insertion
+    const messagesToSave = newMessages.map(msg => ({
       id: msg.id,
       conversation_id: conversationId,
       role: msg.role,
@@ -193,26 +180,18 @@ export const conversationDb = {
       created_at: msg.timestamp?.toISOString() || new Date().toISOString()
     }));
 
-    console.log('Upserting messages:', messagesToUpsert);
+    console.log('Inserting new messages:', messagesToSave);
 
-    const { error: upsertError } = await supabase
+    const { error } = await supabase
       .from('messages')
-      .upsert(messagesToUpsert, { 
-        onConflict: 'id',
-        ignoreDuplicates: true 
-      });
+      .insert(messagesToSave);
 
-    if (upsertError) {
-      // Log duplicate key errors but don't throw - some messages might already exist
-      if (upsertError.code === '23505') {
-        console.log('Some messages already exist, continuing...');
-      } else {
-        console.error('Error saving messages:', upsertError);
-        throw upsertError;
-      }
+    if (error) {
+      console.error('Error saving messages:', error);
+      throw error;
     }
 
-    console.log('Messages saved/updated successfully');
+    console.log('Messages saved successfully');
 
     // Update conversation timestamp
     await this.updateConversation(conversationId, {}).catch(err => {

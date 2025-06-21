@@ -431,6 +431,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_current_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_or_create_user_usage: {
         Args: { p_user_id: string }
         Returns: {

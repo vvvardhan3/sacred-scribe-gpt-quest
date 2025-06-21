@@ -45,17 +45,28 @@ export const useConversations = () => {
         const convertedConversations = await Promise.all(
           dbConversations.map(async (dbConv: DatabaseConversation) => {
             // Get message count for preview
-            const messages = await conversationDb.getMessages(dbConv.id);
-            const userMessages = messages.filter(msg => msg.role === 'user');
-            const lastUserMessage = userMessages[userMessages.length - 1];
+            try {
+              const messages = await conversationDb.getMessages(dbConv.id);
+              const userMessages = messages.filter(msg => msg.role === 'user');
+              const lastUserMessage = userMessages[userMessages.length - 1];
 
-            return {
-              id: dbConv.id,
-              title: dbConv.title,
-              lastMessage: lastUserMessage ? lastUserMessage.content.slice(0, 100) : 'No messages yet',
-              timestamp: new Date(dbConv.updated_at),
-              messages: [] // Don't store messages here, load them when needed
-            };
+              return {
+                id: dbConv.id,
+                title: dbConv.title,
+                lastMessage: lastUserMessage ? lastUserMessage.content.slice(0, 100) : 'No messages yet',
+                timestamp: new Date(dbConv.updated_at),
+                messages: [] // Don't store messages here, load them when needed
+              };
+            } catch (error) {
+              console.error('Error loading messages for conversation:', dbConv.id, error);
+              return {
+                id: dbConv.id,
+                title: dbConv.title,
+                lastMessage: 'Error loading messages',
+                timestamp: new Date(dbConv.updated_at),
+                messages: []
+              };
+            }
           })
         );
 

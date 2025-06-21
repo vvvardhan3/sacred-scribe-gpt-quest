@@ -66,14 +66,21 @@ export const useChatMessages = (
         }
       } catch (error) {
         console.error('Error auto-saving messages:', error);
-        // Don't show error to user for auto-save failures
+        // Don't show error to user for auto-save failures unless it's critical
+        if (error && typeof error === 'object' && 'code' in error && error.code !== '23505') {
+          toast({
+            title: "Save Warning",
+            description: "There was an issue saving your conversation. Please try refreshing the page.",
+            variant: "destructive"
+          });
+        }
       } finally {
         setSavingMessage(false);
       }
-    }, 1000); // Reduced timeout for faster saves
+    }, 1000);
 
     return () => clearTimeout(timeoutId);
-  }, [messages, activeConversationId, titleGenerated, getActiveConversation, updateConversation, setTitleGenerated, savingMessage]);
+  }, [messages, activeConversationId, titleGenerated, getActiveConversation, updateConversation, setTitleGenerated, savingMessage, toast]);
 
   // Calculate remaining messages
   const getRemainingMessages = () => {
@@ -161,7 +168,7 @@ export const useChatMessages = (
     setLoading(true);
     setStreamingMessageId(undefined);
 
-    // Save user message immediately to database with retry logic
+    // Save user message immediately to database
     try {
       await conversationDb.saveMessage(currentConvId, userMessage);
       console.log('User message saved to database');
@@ -182,7 +189,7 @@ export const useChatMessages = (
       addMessage(assistantMessage);
       setStreamingMessageId(assistantMessage.id);
 
-      // Save assistant message to database with retry logic
+      // Save assistant message to database
       try {
         await conversationDb.saveMessage(currentConvId, assistantMessage);
         console.log('Assistant message saved to database');
