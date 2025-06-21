@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, BookOpen, Clock, Trophy, AlertCircle, Crown } from 'lucide-react';
@@ -51,6 +50,29 @@ const categories = {
   }
 };
 
+// Helper function to normalize category names for URL matching
+const normalizeCategoryName = (name: string): string => {
+  return name.toLowerCase().replace(/\s+/g, '-');
+};
+
+// Helper function to find category by URL parameter
+const findCategoryByParam = (param: string) => {
+  // First try direct match
+  if (categories[param as keyof typeof categories]) {
+    return categories[param as keyof typeof categories];
+  }
+  
+  // Then try to match by normalized name
+  const normalizedParam = param.toLowerCase();
+  for (const [key, category] of Object.entries(categories)) {
+    if (key === normalizedParam || normalizeCategoryName(category.name) === normalizedParam) {
+      return category;
+    }
+  }
+  
+  return null;
+};
+
 const QuizCategory = () => {
   const { category } = useParams();
   const navigate = useNavigate();
@@ -58,13 +80,23 @@ const QuizCategory = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const { canCreateQuiz, usage, limits, incrementQuizCount, isCategoryAllowed } = useUserLimits();
 
-  const categoryData = categories[category as keyof typeof categories];
+  console.log('Category parameter:', category);
+  console.log('Available categories:', Object.keys(categories));
+
+  const categoryData = category ? findCategoryByParam(category) : null;
+
+  console.log('Found category data:', categoryData);
 
   if (!categoryData) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Category Not Found</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Category Not Found: "{category}"
+          </h1>
+          <p className="text-gray-600 mb-4">
+            Available categories: {Object.keys(categories).join(', ')}
+          </p>
           <Button onClick={() => navigate('/dashboard')} variant="outline">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
@@ -114,12 +146,15 @@ const QuizCategory = () => {
         },
       });
 
+      console.log('Quiz generation response:', { data, error });
+
       if (error) {
         console.error('Quiz generation error:', error);
         throw new Error(error.message || 'Failed to generate quiz');
       }
 
       if (!data?.success || !data?.quiz) {
+        console.error('Quiz generation failed - no quiz returned:', data);
         throw new Error('Quiz generation failed - no quiz returned');
       }
 

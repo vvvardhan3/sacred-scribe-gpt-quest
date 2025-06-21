@@ -89,6 +89,8 @@ export const useChatMessages = (
     const trimmedInput = input.trim();
     if (!trimmedInput || loading) return;
 
+    console.log('Attempting to send message:', trimmedInput);
+
     // Check if user can send messages based on subscription limits
     if (!canSendMessage()) {
       const remainingMessages = getRemainingMessages();
@@ -113,11 +115,15 @@ export const useChatMessages = (
     const trimmedInput = input.trim();
     if (!trimmedInput || loading) return;
 
+    console.log('Executing send message:', trimmedInput);
+
     // Create new conversation if none is active
     let currentConvId = activeConversationId;
     if (!currentConvId) {
+      console.log('Creating new conversation...');
       currentConvId = await createNewConversation();
       if (!currentConvId) {
+        console.error('Failed to create new conversation');
         toast({
           title: "Error",
           description: "Failed to create new conversation. Please try again.",
@@ -125,6 +131,7 @@ export const useChatMessages = (
         });
         return;
       }
+      console.log('New conversation created:', currentConvId);
     }
 
     const userMessage = createUserMessage(trimmedInput);
@@ -140,12 +147,16 @@ export const useChatMessages = (
     // Save user message immediately to database
     try {
       await conversationDb.saveMessage(currentConvId, userMessage);
+      console.log('User message saved to database');
     } catch (error) {
       console.error('Error saving user message:', error);
     }
 
     try {
+      console.log('Sending message to API...');
       const data = await sendMessageToAPI(trimmedInput);
+      console.log('API response received:', data);
+      
       const assistantMessage = createAssistantMessage(data.answer, data.citations);
       
       // Stop loading and start streaming
@@ -156,27 +167,36 @@ export const useChatMessages = (
       // Save assistant message to database
       try {
         await conversationDb.saveMessage(currentConvId, assistantMessage);
+        console.log('Assistant message saved to database');
       } catch (error) {
         console.error('Error saving assistant message:', error);
       }
 
       // Increment message count after successful API call
-      await incrementMessageCount();
+      try {
+        await incrementMessageCount();
+        console.log('Message count incremented');
+      } catch (error) {
+        console.error('Error incrementing message count:', error);
+      }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending message:', error);
+      
+      // Stop loading state
+      setLoading(false);
+      setStreamingMessageId(undefined);
+      
+      // Show more specific error message
+      const errorMessage = error.message || 'Failed to send message. Please try again.';
       toast({
         title: "Error",
-        description: "Failed to send message. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
       
-      const errorMessage = createErrorMessage();
-      addMessage(errorMessage);
-      
-      // Clear all loading states on error
-      setLoading(false);
-      setStreamingMessageId(undefined);
+      const errorMsg = createErrorMessage();
+      addMessage(errorMsg);
     }
   };
 
