@@ -15,6 +15,14 @@ export interface AdminStats {
   feedbackSubmissions: any[];
 }
 
+// Type for the admin stats response
+interface AdminStatsResponse {
+  total_users?: number;
+  contact_submissions?: number;
+  feedback_submissions?: number;
+  error?: string;
+}
+
 export const useAdminStats = () => {
   const [stats, setStats] = useState<AdminStats>({
     totalUsers: 0,
@@ -68,9 +76,15 @@ export const useAdminStats = () => {
 
       console.log('Admin stats data:', adminStatsData, 'Error:', adminStatsError);
 
+      // Type guard and parse the admin stats response
+      let parsedAdminStats: AdminStatsResponse = {};
+      if (adminStatsData && typeof adminStatsData === 'object' && adminStatsData !== null) {
+        parsedAdminStats = adminStatsData as AdminStatsResponse;
+      }
+
       // Calculate free users (total users minus subscribers)
       const totalSubscribers = (subscriberCounts?.[0]?.devotee_count || 0) + (subscriberCounts?.[0]?.guru_count || 0);
-      const totalUsers = adminStatsData?.total_users || 0;
+      const totalUsers = parsedAdminStats.total_users || 0;
       const freeUsers = Math.max(totalUsers - totalSubscribers, 0);
 
       // Get recent payments for revenue calculation
