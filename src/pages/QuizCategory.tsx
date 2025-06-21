@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, BookOpen, Clock, Trophy, AlertCircle, Crown } from 'lucide-react';
@@ -57,19 +58,40 @@ const normalizeCategoryName = (name: string): string => {
 
 // Helper function to find category by URL parameter
 const findCategoryByParam = (param: string) => {
-  // First try direct match
+  console.log('Finding category for param:', param);
+  
+  // Decode the URL parameter to handle spaces and special characters
+  const decodedParam = decodeURIComponent(param).toLowerCase();
+  console.log('Decoded param:', decodedParam);
+  
+  // Try direct match first
   if (categories[param as keyof typeof categories]) {
+    console.log('Found direct match:', param);
     return categories[param as keyof typeof categories];
   }
   
-  // Then try to match by normalized name
-  const normalizedParam = param.toLowerCase();
+  // Try normalized match (spaces to hyphens)
+  const normalizedParam = normalizeCategoryName(decodedParam);
+  console.log('Normalized param:', normalizedParam);
+  
+  if (categories[normalizedParam as keyof typeof categories]) {
+    console.log('Found normalized match:', normalizedParam);
+    return categories[normalizedParam as keyof typeof categories];
+  }
+  
+  // Try to match by category name
   for (const [key, category] of Object.entries(categories)) {
-    if (key === normalizedParam || normalizeCategoryName(category.name) === normalizedParam) {
+    const normalizedCategoryName = normalizeCategoryName(category.name);
+    console.log('Checking category:', category.name, 'normalized:', normalizedCategoryName);
+    
+    if (normalizedCategoryName === normalizedParam || 
+        category.name.toLowerCase() === decodedParam) {
+      console.log('Found category by name match:', key);
       return category;
     }
   }
   
+  console.log('No category found for param:', param);
   return null;
 };
 

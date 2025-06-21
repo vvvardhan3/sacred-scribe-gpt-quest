@@ -50,22 +50,28 @@ const Chat = () => {
 
   useEffect(() => {
     if (conversationId && conversationId !== activeConversationId) {
+      console.log('Setting active conversation ID:', conversationId);
       setActiveConversationId(conversationId);
     }
   }, [conversationId, activeConversationId, setActiveConversationId]);
 
   const handleNewConversation = async () => {
     console.log('Creating new conversation...');
-    const newId = await createNewConversation();
-    if (newId) {
-      console.log('New conversation created with ID:', newId);
-      navigate(`/chat/${newId}`);
-    } else {
-      console.error('Failed to create new conversation');
+    try {
+      const newId = await createNewConversation();
+      if (newId) {
+        console.log('New conversation created with ID:', newId);
+        navigate(`/chat/${newId}`);
+      } else {
+        console.error('Failed to create new conversation');
+      }
+    } catch (error) {
+      console.error('Error creating new conversation:', error);
     }
   };
 
   const handleConversationSelect = (id: string) => {
+    console.log('Selecting conversation:', id);
     navigate(`/chat/${id}`);
   };
 
