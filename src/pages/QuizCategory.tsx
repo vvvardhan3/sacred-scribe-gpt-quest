@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, BookOpen, Clock, Trophy, AlertCircle, Crown } from 'lucide-react';
@@ -11,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useUserLimits } from '@/hooks/useUserLimits';
 import { PreviousQuizzes } from '@/components/quiz/PreviousQuizzes';
 import RazorpayPayment from '@/components/RazorpayPayment';
+import LoadingSkeleton from '@/components/LoadingSkeleton';
 
 const categories = {
   'vedas': {
@@ -100,7 +100,7 @@ const QuizCategory = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
-  const { canCreateQuiz, usage, limits, incrementQuizCount, isCategoryAllowed } = useUserLimits();
+  const { canCreateQuiz, usage, limits, incrementQuizCount, isCategoryAllowed, loading } = useUserLimits();
 
   console.log('Category parameter:', category);
   console.log('Available categories:', Object.keys(categories));
@@ -238,100 +238,111 @@ const QuizCategory = () => {
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">{categoryData.description}</p>
           </div>
 
-          {/* Category Access Warning */}
-          {!categoryAllowed && (
-            <Alert className="mb-8 border-orange-200 bg-orange-50">
-              <Crown className="h-4 w-4 text-orange-600" />
-              <AlertDescription className="text-orange-800">
-                <strong>{categoryData.name}</strong> is not available in your current plan ({limits.subscriptionTier}). 
-                Upgrade your subscription to access this category.
-              </AlertDescription>
-            </Alert>
-          )}
+          {/* Loading State */}
+          {loading ? (
+            <div className="space-y-6">
+              <LoadingSkeleton />
+              <LoadingSkeleton />
+              <LoadingSkeleton />
+            </div>
+          ) : (
+            <>
+              {/* Category Access Warning */}
+              {!categoryAllowed && (
+                <Alert className="mb-8 border-orange-200 bg-orange-50">
+                  <Crown className="h-4 w-4 text-orange-600" />
+                  <AlertDescription className="text-orange-800">
+                    <strong>{categoryData.name}</strong> is not available in your current plan ({limits.subscriptionTier}). 
+                    Upgrade your subscription to access this category.
+                  </AlertDescription>
+                </Alert>
+              )}
 
-          {/* Usage Limits Display */}
-          {limits.maxQuizzes !== Infinity && (
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Trophy className="w-5 h-5 text-orange-500" />
-                  Quiz Creation Status - {limits.subscriptionTier}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">
-                      Quizzes Created: {usage?.quizzes_created_total || 0} / {limits.maxQuizzes}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Remaining: {remainingQuizzes === Infinity ? '∞' : remainingQuizzes}
-                    </p>
-                  </div>
-                  {(!canCreateNewQuiz || !categoryAllowed) && (
-                    <div className="flex gap-2">
-                      <RazorpayPayment 
-                        planId="devotee"
-                        planName="Devotee Plan"
-                        price={499}
-                        onPaymentSuccess={handlePaymentSuccess}
-                        buttonText="Upgrade to Devotee"
-                        className="text-sm px-3 py-1 h-8"
-                      />
-                      <RazorpayPayment 
-                        planId="guru"
-                        planName="Guru Plan"
-                        price={999}
-                        onPaymentSuccess={handlePaymentSuccess}
-                        buttonText="Upgrade to Guru"
-                        className="text-sm px-3 py-1 h-8"
-                      />
+              {/* Usage Limits Display */}
+              {limits.maxQuizzes !== Infinity && (
+                <Card className="mb-8">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Trophy className="w-5 h-5 text-orange-500" />
+                      Quiz Creation Status - {limits.subscriptionTier}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">
+                          Quizzes Created: {usage?.quizzes_created_total || 0} / {limits.maxQuizzes}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Remaining: {remainingQuizzes === Infinity ? '∞' : remainingQuizzes}
+                        </p>
+                      </div>
+                      {(!canCreateNewQuiz || !categoryAllowed) && (
+                        <div className="flex gap-2">
+                          <RazorpayPayment 
+                            planId="devotee"
+                            planName="Devotee Plan"
+                            price={499}
+                            onPaymentSuccess={handlePaymentSuccess}
+                            buttonText="Upgrade to Devotee"
+                            className="text-sm px-3 py-1 h-8"
+                          />
+                          <RazorpayPayment 
+                            planId="guru"
+                            planName="Guru Plan"
+                            price={999}
+                            onPaymentSuccess={handlePaymentSuccess}
+                            buttonText="Upgrade to Guru"
+                            className="text-sm px-3 py-1 h-8"
+                          />
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                  </CardContent>
+                </Card>
+              )}
 
-          {/* Quota Warning */}
-          {!canCreateNewQuiz && categoryAllowed && (
-            <Alert className="mb-8 border-red-200 bg-red-50">
-              <AlertCircle className="h-4 w-4 text-red-600" />
-              <AlertDescription className="text-red-800">
-                You've reached your quiz creation limit of {limits.maxQuizzes} for {limits.subscriptionTier} plan. 
-                Upgrade your subscription to create more quizzes and unlock additional features.
-              </AlertDescription>
-            </Alert>
-          )}
+              {/* Quota Warning */}
+              {!canCreateNewQuiz && categoryAllowed && (
+                <Alert className="mb-8 border-red-200 bg-red-50">
+                  <AlertCircle className="h-4 w-4 text-red-600" />
+                  <AlertDescription className="text-red-800">
+                    You've reached your quiz creation limit of {limits.maxQuizzes} for {limits.subscriptionTier} plan. 
+                    Upgrade your subscription to create more quizzes and unlock additional features.
+                  </AlertDescription>
+                </Alert>
+              )}
 
-          {/* Create New Quiz */}
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-blue-500" />
-                Create New Quiz
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 mb-2">Generate a new 10-question quiz on {categoryData.name}</p>
-                  <p className="text-sm text-gray-500">Estimated time: 5-10 minutes</p>
-                </div>
-                <Button 
-                  onClick={handleCreateQuiz}
-                  disabled={isGenerating || !canCreateNewQuiz}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  {isGenerating ? 'Generating...' : 'Create Quiz'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              {/* Create New Quiz */}
+              <Card className="mb-8">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-blue-500" />
+                    Create New Quiz
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-600 mb-2">Generate a new 10-question quiz on {categoryData.name}</p>
+                      <p className="text-sm text-gray-500">Estimated time: 5-10 minutes</p>
+                    </div>
+                    <Button 
+                      onClick={handleCreateQuiz}
+                      disabled={isGenerating || !canCreateNewQuiz}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      {isGenerating ? 'Generating...' : 'Create Quiz'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
 
-          {/* Previous Quizzes - Only show if category is allowed */}
-          {categoryAllowed && (
-            <PreviousQuizzes category={categoryData.name} />
+              {/* Previous Quizzes - Only show if category is allowed */}
+              {categoryAllowed && (
+                <PreviousQuizzes category={categoryData.name} />
+              )}
+            </>
           )}
         </div>
       </div>
