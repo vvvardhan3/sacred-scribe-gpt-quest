@@ -440,17 +440,6 @@ export type Database = {
           quizzes_created_total: number
         }[]
       }
-      get_subscriber_counts: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          devotee_count: number
-          guru_count: number
-        }[]
-      }
-      get_total_message_count: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
       reset_daily_messages_if_needed: {
         Args: { p_user_id: string }
         Returns: undefined
