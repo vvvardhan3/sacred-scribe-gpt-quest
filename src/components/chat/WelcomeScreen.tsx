@@ -13,7 +13,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 }) => {
   const suggestions = [
     "What is the significance of Om in Hindu philosophy?",
-    "Explain the concept of Dharma in everyday life",
+    "Explain the concept of Dharma in everyday life?",
     "What are the main teachings of the Bhagavad Gita?",
     "How can I practice mindfulness through Hindu traditions?"
   ];

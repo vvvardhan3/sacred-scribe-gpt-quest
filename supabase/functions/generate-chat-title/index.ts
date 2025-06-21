@@ -29,7 +29,7 @@ serve(async (req) => {
         messages: [
           { 
             role: 'system', 
-            content: 'Create a concise 6-word or less title that captures the main topic of the user\'s message. Be specific and descriptive. Only return the title, nothing else.' 
+            content: 'Create a concise 4-word or less title that captures the main topic of the user\'s message. Be specific and descriptive. Only return the title, nothing else.' 
           },
           { role: 'user', content: message }
         ],
