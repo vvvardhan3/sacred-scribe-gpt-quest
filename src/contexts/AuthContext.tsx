@@ -34,7 +34,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isNewSignup, setIsNewSignup] = useState(false);
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -45,27 +44,41 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(session?.user ?? null);
         setLoading(false);
         
-        // Send welcome email for new signups - check if this is a new signup
-        if (event === 'SIGNED_IN' && session?.user && isNewSignup) {
-          console.log('New user signed up, sending welcome email...');
-          try {
-            const { error } = await supabase.functions.invoke('send-welcome-email', {
-              body: {
-                userId: session.user.id,
-                email: session.user.email,
-                displayName: session.user.user_metadata?.display_name || session.user.user_metadata?.first_name || 'Friend'
-              },
-            });
-            
-            if (error) {
-              console.error('Failed to send welcome email:', error);
-            } else {
-              console.log('Welcome email sent successfully');
+        // Send welcome email for new users on their first sign in
+        if (event === 'SIGNED_IN' && session?.user) {
+          console.log('User signed in, checking if new user...');
+          
+          // Check if this is a new user (created within the last 5 minutes)
+          const userCreatedAt = new Date(session.user.created_at);
+          const now = new Date();
+          const timeDifferenceMinutes = (now.getTime() - userCreatedAt.getTime()) / (1000 * 60);
+          
+          console.log('User created at:', userCreatedAt);
+          console.log('Time difference (minutes):', timeDifferenceMinutes);
+          
+          // If user was created within the last 5 minutes, consider them a new signup
+          if (timeDifferenceMinutes <= 5) {
+            console.log('New user detected, sending welcome email...');
+            try {
+              const { error } = await supabase.functions.invoke('send-welcome-email', {
+                body: {
+                  userId: session.user.id,
+                  email: session.user.email,
+                  displayName: session.user.user_metadata?.display_name || session.user.user_metadata?.first_name || 'Friend'
+                },
+              });
+              
+              if (error) {
+                console.error('Failed to send welcome email:', error);
+              } else {
+                console.log('Welcome email sent successfully');
+              }
+            } catch (error) {
+              console.error('Error sending welcome email:', error);
             }
-          } catch (error) {
-            console.error('Error sending welcome email:', error);
+          } else {
+            console.log('Existing user sign in, no welcome email needed');
           }
-          setIsNewSignup(false); // Reset the flag
         }
       }
     );
@@ -79,13 +92,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     });
 
     return () => subscription.unsubscribe();
-  }, [isNewSignup]);
+  }, []);
 
   const signUp = async (email: string, password: string, data?: { firstName?: string; lastName?: string; displayName?: string }) => {
     const redirectUrl = `${window.location.origin}/dashboard`;
-
-    // Set flag to indicate this is a new signup
-    setIsNewSignup(true);
 
     const { error } = await supabase.auth.signUp({
       email,
