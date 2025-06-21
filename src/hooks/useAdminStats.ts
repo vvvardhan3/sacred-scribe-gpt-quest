@@ -33,58 +33,96 @@ export const useAdminStats = () => {
   const fetchStats = async () => {
     try {
       setLoading(true);
+      console.log('Fetching admin stats...');
 
-      // Get total users count
-      const { count: usersCount } = await supabase
+      // Check if user is admin first
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log('Current user:', user?.id);
+
+      if (!user) {
+        console.error('No authenticated user');
+        return;
+      }
+
+      // Get current user profile to check admin status
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('*', { count: 'exact', head: true });
+        .select('role')
+        .eq('id', user.id)
+        .single();
 
-      // Get total messages count
-      const { count: messagesCount } = await supabase
-        .from('messages')
-        .select('*', { count: 'exact', head: true });
+      console.log('User profile:', profile, 'Profile error:', profileError);
+
+      if (profileError || profile?.role !== 'admin') {
+        console.error('User is not admin or profile error:', profileError);
+        return;
+      }
+
+      // Get total messages count using RPC function
+      const { data: messageCountData, error: messageError } = await supabase
+        .rpc('get_total_message_count');
+      
+      console.log('Message count:', messageCountData, 'Error:', messageError);
 
       // Get total quizzes count
-      const { count: quizzesCount } = await supabase
+      const { count: quizzesCount, error: quizzesError } = await supabase
         .from('quizzes')
         .select('*', { count: 'exact', head: true });
 
-      // Get subscriber counts
-      const { data: subscriberCounts } = await supabase
+      console.log('Quizzes count:', quizzesCount, 'Error:', quizzesError);
+
+      // Get subscriber counts using RPC function
+      const { data: subscriberCounts, error: subscriberError } = await supabase
         .rpc('get_subscriber_counts');
+
+      console.log('Subscriber counts:', subscriberCounts, 'Error:', subscriberError);
+
+      // Get total users count - using a more direct approach
+      const { data: usersData, error: usersError } = await supabase
+        .from('profiles')
+        .select('id', { count: 'exact', head: true });
+
+      console.log('Users count:', usersData, 'Error:', usersError);
 
       // Calculate free users (total users minus subscribers)
       const totalSubscribers = (subscriberCounts?.[0]?.devotee_count || 0) + (subscriberCounts?.[0]?.guru_count || 0);
-      const freeUsers = (usersCount || 0) - totalSubscribers;
+      const totalUsers = usersData?.length || 0;
+      const freeUsers = Math.max(totalUsers - totalSubscribers, 0);
 
       // Get recent payments for revenue calculation
-      const { data: payments } = await supabase
+      const { data: payments, error: paymentsError } = await supabase
         .from('payments')
         .select('*')
         .eq('status', 'captured')
         .order('created_at', { ascending: false })
         .limit(10);
 
+      console.log('Payments:', payments, 'Error:', paymentsError);
+
       // Calculate total revenue
       const totalRevenue = payments?.reduce((sum, payment) => sum + (payment.amount || 0), 0) || 0;
 
-      // Get contact form submissions
-      const { data: contactSubmissions } = await supabase
+      // Get contact form submissions - try with service role
+      const { data: contactSubmissions, error: contactError } = await supabase
         .from('contact_submissions')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(50);
 
+      console.log('Contact submissions:', contactSubmissions, 'Error:', contactError);
+
       // Get feedback submissions
-      const { data: feedbackSubmissions } = await supabase
+      const { data: feedbackSubmissions, error: feedbackError } = await supabase
         .from('feedback')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(50);
 
+      console.log('Feedback submissions:', feedbackSubmissions, 'Error:', feedbackError);
+
       setStats({
-        totalUsers: usersCount || 0,
-        totalMessages: messagesCount || 0,
+        totalUsers: totalUsers,
+        totalMessages: messageCountData || 0,
         totalQuizzes: quizzesCount || 0,
         devoteeSubscribers: subscriberCounts?.[0]?.devotee_count || 0,
         guruSubscribers: subscriberCounts?.[0]?.guru_count || 0,
