@@ -11,11 +11,14 @@ import { Link } from 'react-router-dom';
 
 interface UserProfile {
   id: string;
-  display_name: string;
+  display_name: string | null;
   first_name: string | null;
   last_name: string | null;
   email: string;
   profile_picture_url: string | null;
+  role: string | null;
+  created_at: string | null;
+  updated_at: string;
 }
 
 const Profile = () => {
@@ -41,7 +44,7 @@ const Profile = () => {
     try {
       console.log('Fetching profile for user:', user.id);
       
-      // First check if profile exists
+      // Check if profile exists
       const { data: existingProfile, error: fetchError } = await supabase
         .from('profiles')
         .select('*')
@@ -63,9 +66,10 @@ const Profile = () => {
           id: user.id,
           email: user.email || '',
           display_name: user.email?.split('@')[0] || 'User',
-          first_name: '',
-          last_name: '',
-          profile_picture_url: null
+          first_name: null,
+          last_name: null,
+          profile_picture_url: null,
+          role: 'user'
         };
 
         const { data: createdProfile, error: createError } = await supabase
