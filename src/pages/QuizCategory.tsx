@@ -1,317 +1,284 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, BookOpen, Clock, Trophy, AlertCircle, Crown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import Navigation from '@/components/Navigation';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { useUserLimits } from '@/hooks/useUserLimits';
-import { PreviousQuizzes } from '@/components/quiz/PreviousQuizzes';
-import RazorpayPayment from '@/components/RazorpayPayment';
 
-const categories = {
-  'vedas': {
-    name: 'Vedas',
-    description: 'Test your knowledge of the four Vedas - Rig, Sama, Yajur, and Atharva Veda',
-    image: '/vedas.jpg',
-    color: 'from-orange-500 to-red-600'
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { BookOpen, ArrowLeft, Sparkles, Clock, Trophy } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { useUserLimits } from '@/hooks/useUserLimits';
+import Navigation from '@/components/Navigation';
+
+// Normalize category names for comparison
+const normalizeCategory = (category: string): string => {
+  return category.toLowerCase().replace(/[^a-z0-9]/g, '');
+};
+
+const CATEGORIES = {
+  'bhagavadgita': {
+    name: 'Bhagavad Gita',
+    description: 'Test your knowledge of Krishna\'s teachings and divine wisdom',
+    color: 'from-amber-400 to-orange-500',
+    icon: '🕉️',
+    topics: ['Dharma', 'Karma Yoga', 'Bhakti Yoga', 'Jnana Yoga', 'Divine Teachings']
   },
   'upanishads': {
     name: 'Upanishads',
-    description: 'Explore the philosophical teachings of the principal Upanishads',
-    image: '/upanishads.jpg',
-    color: 'from-purple-500 to-indigo-600'
-  },
-  'bhagavad-gita': {
-    name: 'Bhagavad Gita',
-    description: 'Test your understanding of Krishna\'s teachings to Arjuna',
-    image: '/bhagavadgita.png',
-    color: 'from-blue-500 to-teal-600'
-  },
-  'puranas': {
-    name: 'Puranas',
-    description: 'Challenge yourself with stories and teachings from the Puranas',
-    image: '/puranas.jpg',
-    color: 'from-green-500 to-emerald-600'
-  },
-  'mahabharata': {
-    name: 'Mahabharata',
-    description: 'Test your knowledge of the great epic and its profound teachings',
-    image: '/mahabharatha.jpg',
-    color: 'from-yellow-500 to-orange-600'
+    description: 'Explore the philosophical foundations of Vedantic thought',
+    color: 'from-purple-400 to-violet-500',
+    icon: '📿',
+    topics: ['Brahman', 'Atman', 'Moksha', 'Vedantic Philosophy', 'Spiritual Wisdom']
   },
   'ramayana': {
     name: 'Ramayana',
-    description: 'Explore the story of Lord Rama and its timeless lessons',
-    image: '/Ramayana.jpg',
-    color: 'from-pink-500 to-rose-600'
+    description: 'Journey through Rama\'s epic story of dharma and devotion',
+    color: 'from-emerald-400 to-teal-500',
+    icon: '🏹',
+    topics: ['Rama\'s Journey', 'Dharma', 'Devotion', 'Epic Characters', 'Moral Lessons']
+  },
+  'mahabharata': {
+    name: 'Mahabharata',
+    description: 'Dive into the great epic of duty, war, and righteousness',
+    color: 'from-red-400 to-pink-500',
+    icon: '⚔️',
+    topics: ['Kurukshetra War', 'Pandavas', 'Krishna', 'Dharma', 'Epic Tales']
+  },
+  'puranas': {
+    name: 'Puranas',
+    description: 'Ancient stories of gods, creation, and cosmic cycles',
+    color: 'from-yellow-400 to-amber-500',
+    icon: '🌟',
+    topics: ['Creation Stories', 'Divine Tales', 'Cosmic Cycles', 'Mythology', 'Ancient Wisdom']
+  },
+  'vedas': {
+    name: 'Vedas',
+    description: 'Test your knowledge of the four Vedas - the foundation of Hindu knowledge',
+    color: 'from-cyan-400 to-blue-500',
+    icon: '📚',
+    topics: ['Rig Veda', 'Sama Veda', 'Yajur Veda', 'Atharva Veda', 'Sacred Hymns']
   }
-};
-
-// Helper function to normalize category names for URL matching
-const normalizeCategoryName = (name: string): string => {
-  return name.toLowerCase().replace(/\s+/g, '-');
-};
-
-// Helper function to find category by URL parameter
-const findCategoryByParam = (param: string) => {
-  // First try direct match
-  if (categories[param as keyof typeof categories]) {
-    return categories[param as keyof typeof categories];
-  }
-  
-  // Then try to match by normalized name
-  const normalizedParam = param.toLowerCase();
-  for (const [key, category] of Object.entries(categories)) {
-    if (key === normalizedParam || normalizeCategoryName(category.name) === normalizedParam) {
-      return category;
-    }
-  }
-  
-  return null;
 };
 
 const QuizCategory = () => {
   const { category } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isGenerating, setIsGenerating] = useState(false);
-  const { canCreateQuiz, usage, limits, incrementQuizCount, isCategoryAllowed } = useUserLimits();
+  const { canCreateQuiz, incrementQuizCount, isCategoryAllowed } = useUserLimits();
+  const [isCreating, setIsCreating] = useState(false);
 
-  console.log('Category parameter:', category);
-  console.log('Available categories:', Object.keys(categories));
+  // Normalize the category parameter for lookup
+  const normalizedCategory = category ? normalizeCategory(decodeURIComponent(category)) : '';
+  const categoryData = CATEGORIES[normalizedCategory as keyof typeof CATEGORIES];
 
-  const categoryData = category ? findCategoryByParam(category) : null;
-
-  console.log('Found category data:', categoryData);
+  useEffect(() => {
+    if (category && !categoryData) {
+      console.error('Category not found:', { 
+        original: category, 
+        decoded: decodeURIComponent(category),
+        normalized: normalizedCategory,
+        available: Object.keys(CATEGORIES)
+      });
+    }
+  }, [category, categoryData, normalizedCategory]);
 
   if (!categoryData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Category Not Found: "{category}"
-          </h1>
-          <p className="text-gray-600 mb-4">
-            Available categories: {Object.keys(categories).join(', ')}
-          </p>
-          <Button onClick={() => navigate('/dashboard')} variant="outline">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
-          </Button>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50">
+        <Navigation />
+        <div className="max-w-4xl mx-auto px-6 py-12">
+          <Card className="text-center py-12">
+            <CardHeader>
+              <CardTitle className="text-2xl text-red-600">Category Not Found</CardTitle>
+              <CardDescription>
+                The category "{decodeURIComponent(category || '')}" doesn't exist.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={() => navigate('/dashboard')} className="mt-4">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Dashboard
+              </Button>
+              <div className="mt-6 text-sm text-gray-500">
+                <p>Available categories:</p>
+                <div className="mt-2 flex flex-wrap gap-2 justify-center">
+                  {Object.values(CATEGORIES).map((cat) => (
+                    <Badge key={cat.name} variant="outline">{cat.name}</Badge>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
   }
 
-  // Check if category is allowed for user's subscription
-  const categoryAllowed = isCategoryAllowed(categoryData.name);
-  const canCreateNewQuiz = canCreateQuiz() && categoryAllowed;
-  const remainingQuizzes = limits.maxQuizzes === Infinity 
-    ? Infinity 
-    : Math.max(0, limits.maxQuizzes - (usage?.quizzes_created_total || 0));
+  const isAllowed = isCategoryAllowed(categoryData.name);
 
   const handleCreateQuiz = async () => {
-    if (!categoryAllowed) {
-      toast({
-        title: "Category Not Available",
-        description: `${categoryData.name} is not available in your current plan. Please upgrade to access this category.`,
-        variant: "destructive"
-      });
-      return;
-    }
-
     if (!canCreateQuiz()) {
       toast({
-        title: "Quiz Creation Limit Reached",
-        description: `You've reached your quiz creation limit of ${limits.maxQuizzes} for ${limits.subscriptionTier} plan. Please upgrade to create more quizzes.`,
-        variant: "destructive"
+        title: "Quiz Limit Reached",
+        description: "You've reached your quiz limit. Please upgrade your plan to create more quizzes.",
+        variant: "destructive",
       });
       return;
     }
 
-    setIsGenerating(true);
+    if (!isAllowed) {
+      toast({
+        title: "Premium Feature",
+        description: "This category requires a premium subscription. Please upgrade your plan.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsCreating(true);
     
     try {
-      console.log('Starting quiz generation for category:', categoryData.name);
+      const { data: { session } } = await supabase.auth.getSession();
       
+      if (!session) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to create a quiz.",
+          variant: "destructive",
+        });
+        navigate('/login');
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('quiz-generate', {
         body: { 
-          category: categoryData.name
-        },
-        headers: {
-          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
+          category: categoryData.name,
+          difficulty: 'medium',
+          questionCount: 10
+        }
       });
-
-      console.log('Quiz generation response:', { data, error });
 
       if (error) {
-        console.error('Quiz generation error:', error);
-        throw new Error(error.message || 'Failed to generate quiz');
+        throw error;
       }
 
-      if (!data?.success || !data?.quiz) {
-        console.error('Quiz generation failed - no quiz returned:', data);
-        throw new Error('Quiz generation failed - no quiz returned');
+      if (data?.success && data?.quiz?.id) {
+        await incrementQuizCount();
+        navigate(`/quiz/play/${data.quiz.id}`);
+      } else {
+        throw new Error('Failed to create quiz');
       }
-
-      console.log('Quiz generated successfully:', data.quiz);
-      
-      // Increment quiz count
-      await incrementQuizCount();
-      
-      toast({
-        title: "Quiz Generated!",
-        description: "Your quiz has been created successfully.",
-      });
-
-      // Navigate to play the quiz
-      navigate(`/quiz/play/${data.quiz.id}`);
     } catch (error: any) {
-      console.error('Error generating quiz:', error);
+      console.error('Error creating quiz:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to generate quiz. Please try again.",
-        variant: "destructive"
+        title: "Error Creating Quiz",
+        description: error.message || "Failed to create quiz. Please try again.",
+        variant: "destructive",
       });
     } finally {
-      setIsGenerating(false);
+      setIsCreating(false);
     }
-  };
-
-  const handlePaymentSuccess = () => {
-    toast({
-      title: "Subscription Updated!",
-      description: "You can now access more categories and create more quizzes. Page will refresh shortly.",
-    });
-    setTimeout(() => {
-      window.location.reload();
-    }, 2000);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50">
       <Navigation />
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-6 py-12">
+        {/* Back Button */}
         <Button 
-          onClick={() => navigate('/dashboard')} 
           variant="ghost" 
-          className="mb-6 text-gray-600 hover:text-orange-600"
+          onClick={() => navigate('/dashboard')}
+          className="mb-6 text-gray-600 hover:text-gray-900"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Dashboard
         </Button>
 
-        <div className="max-w-4xl mx-auto">
-          {/* Category Header */}
-          <div className="text-center mb-8">
-            <div className={`inline-block p-4 rounded-full bg-gradient-to-r ${categoryData.color} mb-4`}>
-              <BookOpen className="w-8 h-8 text-white" />
-            </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">{categoryData.name}</h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">{categoryData.description}</p>
+        {/* Category Header */}
+        <div className="text-center mb-12">
+          <div className={`w-20 h-20 mx-auto mb-4 bg-gradient-to-r ${categoryData.color} rounded-full flex items-center justify-center text-3xl`}>
+            {categoryData.icon}
           </div>
-
-          {/* Category Access Warning */}
-          {!categoryAllowed && (
-            <Alert className="mb-8 border-orange-200 bg-orange-50">
-              <Crown className="h-4 w-4 text-orange-600" />
-              <AlertDescription className="text-orange-800">
-                <strong>{categoryData.name}</strong> is not available in your current plan ({limits.subscriptionTier}). 
-                Upgrade your subscription to access this category.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Usage Limits Display */}
-          {limits.maxQuizzes !== Infinity && (
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Trophy className="w-5 h-5 text-orange-500" />
-                  Quiz Creation Status - {limits.subscriptionTier}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">
-                      Quizzes Created: {usage?.quizzes_created_total || 0} / {limits.maxQuizzes}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Remaining: {remainingQuizzes === Infinity ? '∞' : remainingQuizzes}
-                    </p>
-                  </div>
-                  {(!canCreateNewQuiz || !categoryAllowed) && (
-                    <div className="flex gap-2">
-                      <RazorpayPayment 
-                        planId="devotee"
-                        planName="Devotee Plan"
-                        price={499}
-                        onPaymentSuccess={handlePaymentSuccess}
-                        buttonText="Upgrade to Devotee"
-                        className="text-sm px-3 py-1 h-8"
-                      />
-                      <RazorpayPayment 
-                        planId="guru"
-                        planName="Guru Plan"
-                        price={999}
-                        onPaymentSuccess={handlePaymentSuccess}
-                        buttonText="Upgrade to Guru"
-                        className="text-sm px-3 py-1 h-8"
-                      />
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Quota Warning */}
-          {!canCreateNewQuiz && categoryAllowed && (
-            <Alert className="mb-8 border-red-200 bg-red-50">
-              <AlertCircle className="h-4 w-4 text-red-600" />
-              <AlertDescription className="text-red-800">
-                You've reached your quiz creation limit of {limits.maxQuizzes} for {limits.subscriptionTier} plan. 
-                Upgrade your subscription to create more quizzes and unlock additional features.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Create New Quiz */}
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-blue-500" />
-                Create New Quiz
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 mb-2">Generate a new 10-question quiz on {categoryData.name}</p>
-                  <p className="text-sm text-gray-500">Estimated time: 5-10 minutes</p>
-                </div>
-                <Button 
-                  onClick={handleCreateQuiz}
-                  disabled={isGenerating || !canCreateNewQuiz}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  {isGenerating ? 'Generating...' : 'Create Quiz'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Previous Quizzes - Only show if category is allowed */}
-          {categoryAllowed && (
-            <PreviousQuizzes category={categoryData.name} />
-          )}
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">{categoryData.name}</h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">{categoryData.description}</p>
         </div>
+
+        {/* Topics Overview */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <BookOpen className="w-5 h-5 mr-2" />
+              Topics Covered
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {categoryData.topics.map((topic, index) => (
+                <Badge key={index} variant="secondary" className="bg-orange-100 text-orange-700">
+                  {topic}
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Quiz Creation Card */}
+        <Card className="text-center">
+          <CardHeader>
+            <CardTitle className="text-2xl flex items-center justify-center">
+              <Sparkles className="w-6 h-6 mr-2 text-orange-500" />
+              Create Your Quiz
+            </CardTitle>
+            <CardDescription>
+              Generate a personalized quiz on {categoryData.name} with 10 thoughtful questions
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div className="flex items-center justify-center space-x-2">
+                <Clock className="w-4 h-4 text-blue-500" />
+                <span>10-15 minutes</span>
+              </div>
+              <div className="flex items-center justify-center space-x-2">
+                <Trophy className="w-4 h-4 text-yellow-500" />
+                <span>10 Questions</span>
+              </div>
+              <div className="flex items-center justify-center space-x-2">
+                <BookOpen className="w-4 h-4 text-green-500" />
+                <span>Medium Difficulty</span>
+              </div>
+            </div>
+
+            {!isAllowed ? (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <p className="text-yellow-800 font-medium">Premium Category</p>
+                <p className="text-yellow-700 text-sm mt-1">
+                  Upgrade to Devotee or Guru plan to access this category
+                </p>
+              </div>
+            ) : null}
+
+            <Button
+              onClick={handleCreateQuiz}
+              disabled={isCreating || !isAllowed}
+              className={`w-full py-6 text-lg font-semibold ${
+                isAllowed 
+                  ? 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600' 
+                  : 'bg-gray-300 cursor-not-allowed'
+              }`}
+            >
+              {isCreating ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  Creating Quiz...
+                </>
+              ) : (
+                'Create Quiz'
+              )}
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

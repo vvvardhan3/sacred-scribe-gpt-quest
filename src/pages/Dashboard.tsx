@@ -1,5 +1,5 @@
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,11 +9,13 @@ import {
   Crown,
   Star,
   SquareLibrary,
-  Lock
+  Lock,
+  Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Navigation from '@/components/Navigation';
 import { useUserLimits } from '@/hooks/useUserLimits';
+import { useSubscription } from '@/hooks/useSubscription';
 import RazorpayPayment from '@/components/RazorpayPayment';
 import FeedbackButton from '@/components/FeedbackButton';
 import Footer from '@/components/Footer';
@@ -55,18 +57,52 @@ const SCRIPTURE_CATEGORIES = [
 const Dashboard = () => {
   const navigate = useNavigate();
   const { limits, usage, isCategoryAllowed } = useUserLimits();
+  const { subscription, loading: subscriptionLoading } = useSubscription();
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+
+  // Wait for subscription to load before showing content
+  useEffect(() => {
+    if (!subscriptionLoading) {
+      // Add a small delay to prevent flickering
+      const timer = setTimeout(() => {
+        setIsInitialLoading(false);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [subscriptionLoading]);
 
   // Memoize categories with their access status
   const categoriesWithAccess = useMemo(() => {
+    if (subscriptionLoading || isInitialLoading) {
+      // Return all categories as loading while subscription loads
+      return SCRIPTURE_CATEGORIES.map(category => ({
+        ...category,
+        isAllowed: false,
+        isLoading: true
+      }));
+    }
+    
     return SCRIPTURE_CATEGORIES.map(category => ({
       ...category,
-      isAllowed: isCategoryAllowed(category.name)
+      isAllowed: isCategoryAllowed(category.name),
+      isLoading: false
     }));
-  }, [isCategoryAllowed]);
+  }, [isCategoryAllowed, subscriptionLoading, isInitialLoading]);
 
-  const hasLockedCategories = categoriesWithAccess.some(cat => !cat.isAllowed);
+  const hasLockedCategories = categoriesWithAccess.some(cat => !cat.isAllowed && !cat.isLoading);
 
   const renderScriptureCard = (category: any) => {
+    if (category.isLoading) {
+      return (
+        <Card className="h-full transition-all duration-300 border-0 bg-white overflow-hidden min-h-[200px]">
+          <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${category.color} opacity-50`} />
+          <div className="p-6 flex items-center justify-center">
+            <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+          </div>
+        </Card>
+      );
+    }
+
     if (category.isAllowed) {
       return (
         <Link to={`/quiz/category/${encodeURIComponent(category.name)}`} className="group block">
@@ -119,9 +155,23 @@ const Dashboard = () => {
   };
 
   const handleStartConversation = () => {
-    // Navigate to chat instead of opening new window
     navigate('/chat');
   };
+
+  // Show loading state while subscription is loading
+  if (subscriptionLoading || isInitialLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50">
+        <Navigation />
+        <div className="max-w-6xl mx-auto px-6 py-12 flex items-center justify-center">
+          <div className="flex items-center space-x-3">
+            <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
+            <span className="text-lg text-gray-600">Loading your dashboard...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50">
